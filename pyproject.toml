@@ -1,0 +1,107 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hybrid-multi-agent-trading-system"
+version = "0.1.0"
+description = "Hybrid multi-agent system for algorithmic trading using heterogeneous AI techniques"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Wojciech Neuman" }]
+
+dependencies = [
+    # Data & numerics
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "scipy>=1.13",
+
+    # Financial data
+    "yfinance>=0.2",
+
+    # Deep learning (forecasting agents)
+    "torch>=2.3",
+
+    # NLP / sentiment
+    "transformers>=4.40",
+    "datasets>=2.19",
+
+    # Reinforcement learning
+    "gymnasium>=0.29",
+    "stable-baselines3>=2.3",
+
+    # Evolutionary algorithms
+    "deap>=1.4",
+
+    # Utilities
+    "pydantic>=2.7",
+    "loguru>=0.7",
+    "python-dotenv>=1.0",
+    "tqdm>=4.66",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "pytest-asyncio>=0.23",
+    "ipykernel>=6.29",
+    "jupyter>=1.0",
+]
+
+[project.scripts]
+trading = "hmats.cli:app"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in default arguments
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["hmats"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=hmats --cov-report=term-missing -q"
+asyncio_mode = "auto"
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hmats"]
