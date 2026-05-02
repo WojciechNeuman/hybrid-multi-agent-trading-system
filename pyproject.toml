@@ -7,7 +7,7 @@ name = "hybrid-multi-agent-trading-system"
 version = "0.1.0"
 description = "Hybrid multi-agent system for algorithmic trading using heterogeneous AI techniques"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Wojciech Neuman" }]
 
@@ -34,6 +34,12 @@ dependencies = [
     # Evolutionary algorithms
     "deap>=1.4",
 
+    # Visualization
+    "matplotlib>=3.8",
+
+    # Parquet support
+    "pyarrow>=16.0",
+
     # Utilities
     "pydantic>=2.7",
     "loguru>=0.7",
@@ -57,7 +63,7 @@ dev = [
 trading = "hmats.cli:app"
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
@@ -87,7 +93,7 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 strict = true
 ignore_missing_imports = true
 
