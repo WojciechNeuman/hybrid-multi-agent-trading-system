@@ -33,6 +33,8 @@ dependencies = [
 
     # Evolutionary algorithms
     "deap>=1.4",
+    "neat-python>=0.92",
+    "requests>=2.31",
 
     # Visualization
     "matplotlib>=3.8",
