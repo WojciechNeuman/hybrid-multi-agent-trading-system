@@ -1,0 +1,24 @@
+# Python bytecode
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Virtual environment
+.venv/
+
+# Data files & cache — large binary/tabular files, not useful as context
+data/raw/
+data/cache/
+src/hmats/notebooks/data_cache/
+**/*.parquet
+**/*.csv
+**/*.npz
+
+# Trained models — binary, not readable
+models/
+
+# Local research notes & PDFs — personal scratchpad, not code context
+local/
+
+# Misc
+papers.csv

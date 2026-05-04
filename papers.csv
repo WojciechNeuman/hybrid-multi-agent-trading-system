@@ -1,0 +1,31 @@
+title,year,citations,doi
+A Comparison of ARIMA and LSTM in Forecasting Time Series,2018,1198,https://doi.org/10.1109/icmla.2018.00227
+A deep learning framework for financial time series using stacked autoencoders and long-short term memory,2017,1062,https://doi.org/10.1371/journal.pone.0180944
+Multivariate Temporal Convolutional Network: A Deep Neural Networks Approach for Multivariate Time Series Forecasting,2019,360,https://doi.org/10.3390/electronics8080876
+"Fractional Brownian Motions, Fractional Noises and Applications",1968,7652,https://doi.org/10.1137/1010093
+A Review of ARIMA vs. Machine Learning Approaches for Time Series Forecasting in Data Driven Networks,2023,313,https://doi.org/10.3390/fi15080255
+"Forecasting Stock Market Prices Using Machine Learning and Deep Learning Models: A Systematic Review, Performance Analysis and Discussion of Implications",2023,205,https://doi.org/10.3390/ijfs11030094
+Financial Time Series Forecasting – A Deep Learning Approach,2017,116,https://doi.org/10.18178/ijmlc.2017.7.5.632
+Combining time-series and textual data for taxi demand prediction in event areas: A deep learning approach,2018,176,https://doi.org/10.1016/j.inffus.2018.07.007
+"Profit Prediction Using ARIMA, SARIMA and LSTM Models in Time Series Forecasting: A Comparison",2022,181,https://doi.org/10.1109/access.2022.3224938
+Temporal Convolutional Networks with RNN approach for chaotic time series prediction,2022,188,https://doi.org/10.1016/j.asoc.2022.109945
+Financial time series forecasting with deep learning : A systematic literature review: 2005–2019,2020,110,https://doi.org/10.1016/j.asoc.2020.106181
+A Cross-Sectional Machine Learning Approach for Hedge Fund Return Prediction and Selection,2020,108,https://doi.org/10.1287/mnsc.2020.3696
+Leveraging Hybrid Deep Learning Models for Enhanced Multivariate Time Series Forecasting,2024,57,https://doi.org/10.1007/s11063-024-11656-3
+Forecasting Economics and Financial Time Series: ARIMA vs. LSTM,2018,59,https://doi.org/10.48550/arxiv.1803.06386
+Deep Time Series Forecasting Models: A Comprehensive Survey,2024,87,https://doi.org/10.3390/math12101504
+Research on exchange rate forecasting based on deep belief network,2017,68,https://doi.org/10.1007/s00521-017-3039-z
+A Memory-Network Based Solution for Multivariate Time-Series Forecasting,2018,54,https://doi.org/10.48550/arxiv.1809.02105
+Time series forecasting model for non-stationary series pattern extraction using deep learning and GARCH modeling,2024,48,https://doi.org/10.1186/s13677-023-00576-7
+Multivariate Time-Series Forecasting: A Review of Deep Learning Methods in Internet of Things Applications to Smart Cities,2023,45,https://doi.org/10.3390/smartcities6050114
+Less Is More: Fast Multivariate Time Series Forecasting with Light Sampling-oriented MLP Structures,2022,88,https://doi.org/10.48550/arxiv.2207.01186
+Event prediction within directional change framework using a CNN-LSTM model,2022,63,https://doi.org/10.1007/s00521-022-07687-3
+Enhanced Prediction of Intra-day Stock Market Using Metaheuristic Optimization on RNN–LSTM Network,2020,86,https://doi.org/10.1007/s00354-020-00104-0
+Deep learning in predicting cryptocurrency volatility,2022,78,https://doi.org/10.1016/j.physa.2022.127158
+Forecasting Foreign Exchange Volatility Using Deep Learning Autoencoder‐LSTM Techniques,2021,64,https://doi.org/10.1155/2021/6647534
+Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting,2021,5767,https://doi.org/10.1609/aaai.v35i12.17325
+A Labeling Method for Financial Time Series Prediction Based on Trends,2020,69,https://doi.org/10.3390/e22101162
+Intelligent Productivity Transformation,2024,29,https://doi.org/10.4018/joeuc.336284
+"Ensemble deep learning techniques for time series analysis: a comprehensive review, applications, open issues, challenges, and future directions",2024,45,https://doi.org/10.1007/s10586-024-04684-0
+Machine learning advances for time series forecasting,2021,49,https://doi.org/10.1111/joes.12429
+Series decomposition Transformer with period-correlation for stock market index prediction,2023,53,https://doi.org/10.1016/j.eswa.2023.121424

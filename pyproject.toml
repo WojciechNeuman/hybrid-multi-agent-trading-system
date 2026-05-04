@@ -17,8 +17,7 @@ dependencies = [
     "pandas>=2.2",
     "scipy>=1.13",
 
-    # Financial data
-    "yfinance>=0.2",
+    # Financial data (Binance REST API via requests)
 
     # Deep learning (forecasting agents)
     "torch>=2.3",

@@ -222,6 +222,7 @@ __marimo__/
 
 # Project data files
 data/
+data_cache/
 
 # Model artifacts (keep .gitkeep)
 models/*
