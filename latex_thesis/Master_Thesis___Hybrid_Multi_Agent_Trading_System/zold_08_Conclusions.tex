@@ -1,0 +1,70 @@
+
+% Conclusion File
+
+% \textcolor{blue}{\chapter{Concluding Remarks}}
+\chapter{Concluding Remarks}
+\label{08_Concluding_Remarks}
+\thispagestyle{empty}
+
+% 1. Restate the Research Objective
+
+This research has effectively met its goal of creating, exploring, and evaluating various machine learning and deep learning models for distinguishing between human-written and AI-generated text, with a focus on both performance and interpretability.
+
+\vspace{3mm}
+
+% 2. Summarize Key Findings
+
+Among all evaluated models, the fine-tuned, state-of-the-art BERT model performed best across nearly all metrics, achieving an impressive F1 score of 96.3\% and maintaining high Accuracy across different text lengths. It showed no signs of overfitting and is an adaptable solution for a wide range of applications. Thanks to its superior context extraction capabilities, it is the preferred solution in almost every use case, especially when high accuracy is the most crucial factor.
+
+\vspace{3mm} 
+
+The BiLSTM model, leveraging fastText embeddings, achieved the second-best results with an F1 score of 93.4\% and the highest Precision of 95.4\%. This makes it particularly effective in minimizing false positives, which is critical in applications where human-written text must not be misclassified. However, its higher false-negative rate limits its effectiveness in scenarios where detecting as many AI-generated texts as possible is crucial.
+
+\vspace{3mm} 
+
+The CNN model, also based on fastText embeddings, performed well with an F1 score of 90.4\% and an Accuracy of 90.2\%, though these metrics were over 3\% lower than those of the BiLSTM. While CNNs are effective at capturing local n-grams, they have big limitations in capturing long-range dependencies. 
+
+\vspace{3mm}
+
+As expected, classic machine learning methods such as Logistic Regression and SVM reached the lowest results. These models, combined with BoW and TF-IDF representations, achieved F1 scores of 88.7\% and 86.2\%, respectively. Despite their reliance solely
+
+\newpage on statistical features and inability to extract context of the statements, they provide a fast and lightweight solution for simpler tasks.
+
+\vspace{3mm}
+
+% 3. Interpretability insights
+
+Interpretability analysis revealed that stop words, oftentimes removed in NLP tasks, played a critical role in this particular classification problem. XAI techniques such as SHAP and LIME highlighted the importance of these words, as they generally had the biggest contributions to classification decisions. Another key finding is that rephrased texts consist of many words of more advanced, scientific, or stylistic language and models relied on differences of occurrences of such words and their context very much.
+
+\vspace{3mm}
+
+% 4. Limitations
+
+This thesis could not fully grasp this problem due to computational constraints that limited the exploration of using advanced neural architectures with BERT transformer. Additionally, the very computationally expensive SHAP analysis, which would have analyzed the whole model, could not be performed on any of the deep learning models, leading to the use of only LIME instance-level analysis on the fine-tuned BERT model.
+
+\vspace{3mm}
+
+
+% 5. Future directions
+
+There are several promising fields for future research:
+
+\vspace{3mm}
+
+\begin{itemize}
+    \item \textbf{Dataset Expansion:} Using larger and more diverse datasets, including newer AI-generated texts from models like ChatGPT, LLaMA, and Gemini, as well as human-written inputs from various web sources, could improve classification performance. In this study, we focused only on fully rephrased texts, which limits its applicability. Further research could explore datasets containing partially modified texts, as these are more common in real-world scenarios. Moreover, entirely AI-generated texts (created from prompts) should be analyzed to cover all possible input cases.
+    \item \textbf{Hyperparameter Tuning:} Experimenting with learning rates, dropout rates, and batch sizes, as well as exploring advanced fine-tuning techniques in all models discussed, might lead to additional gains.
+    \item \textbf{Advanced BERT Training:} Extending the training process for BERT with larger batch sizes and more epochs could enhance performance further. Employing BERT in a hybrid architecture, such as combining it with BiLSTM, could improve contextual extraction and classification accuracy.
+    \item \textbf{Deeper XAI Integration:}  Applying Explainable AI (XAI) to analyze model-level behavior, rather than focusing only on individual predictions, can provide deeper insights into the "black box" nature of models like CNNs, BiLSTMs, and fine-tuned BERT. This would deepen our understanding of their decision-making processes. 
+\end{itemize}
+
+\vspace{3mm}
+
+
+% 6. Closing statement
+
+By achieving its objectives, this study not only advances the classification of AI-generated and human-written text but also provides a generalizable basis for other text classification tasks. The framework developed in this study is flexible and can be easily adjusted to work with other binary or general classification problems.
+
+\vspace{3mm}
+
+However, this task will likely become increasingly challenging. As these generative models continue to evolve, their ability to mimic human writing will improve gradually, making classification more complex. Over time, even the most advanced classifiers may struggle to maintain their current levels of accuracy. Furthermore, generative models could potentially be trained to bypass detection by leveraging classifiers like those discussed in this paper. This connection between text generation and classification highlights the need for continuous innovation in both fields.

@@ -1,0 +1,561 @@
+
+% Chapter 4 File
+
+\chapter{Overview of classification models}
+\label{05_Models_Overview}
+\thispagestyle{empty}
+
+This chapter analyzes five text classification models, arranged from the least complex, oldest methods to the newest, state-of-the-art approaches. The progression reflects the evolution of techniques, from simpler frequency-based methods to advanced models that capture deep contextual and linguistic patterns.
+
+\vspace{3mm} 
+
+% \textbf{\large Text Preprocessing} \ 
+\label{Text Preprocessing}
+\noindent Having input text in all of the models discussed, we first preprocess the data by removing unnecessary elements such as punctuation. Additionally, all words are converted to lowercase to ensure consistency and reduce redundancy caused by case differences. Normally, stopwords -- common words such as "are", "it", or "you" -- are removed in Natural Language Processing (NLP) tasks like text classification or sentiment analysis to focus on more meaningful terms. However, in this case, we find that retaining stopwords produces better results, as they contribute to the model's understanding of the text.
+
+\vspace{3mm} 
+
+\noindent After preprocessing, we perform tokenization for all of the models. It is a process of breaking down a text into smaller units called tokens. In the context of NLP, tokenization refers to splitting a text document into individual words, sentences, or even smaller units like characters or subwords. In our case, we will be splitting this text into individual~words.
+
+
+% \section{Traditional machine learning techniques}
+
+% This is Traditional machine learning techniques section
+
+% \subsection{Feature Engineering}
+
+% This is Feature Engineering subsection.
+
+
+
+\section{Logistic Regression}
+\label{logistic_regression}
+
+The first model uses the most straightforward and interpretable approach for classifying text. Following text preprocessing and tokenization, classification pipeline is divided into two main steps:
+
+\newpage
+
+\textbf{\large Vectorization (BoW)}
+
+In this step, text data is transformed into a numerical format suitable for machine learning models. We use the Bag of Words (BoW) representation implemented via the \texttt{CountVectorizer()} class from the Scikit-learn library. In the BoW model:
+
+\begin{itemize}
+    \item Each document (or sentence) is represented as a sparse vector.
+    \item Each dimension of the vector corresponds to a unique word in the corpus.
+    \item The value in each dimension represents the frequency or presence of that word in the document.
+\end{itemize}
+
+To perform this, we use \texttt{CountVectorizer.fit\_transform()} method which learns the vocabulary from the training data (by mapping words to indices) and creates mathematical matrix that describes the frequency of terms that occur in each document in a collection (DTM -- document-term matrix) by transforming it into the BoW representation.
+
+% \begin{minted}{python}
+% from sklearn.feature_extraction.text import CountVectorizer
+% vect = CountVectorizer()
+% X_train_dtm = vect.fit_transform(X_train_df)
+% \end{minted}
+
+\vspace{3mm}
+
+It is worth highlighting that the product of this vectorization is huge -- shape of \texttt{X\_train\_dtm} reached (101284, 547607) -- 101284 being the number of samples and 547607 being the number of distinct words found in them.
+
+\vspace{3mm} 
+
+\textbf{\large Logistic Regression Model Creation}
+
+\vspace{3mm}
+
+For classification we are going to use Logistic Regression (LR). It is a special case of Linear Regression, designed for problems where the output is not continuous but categorical -- typically binary, such as 0 or 1. Logistic Regression takes the outcome variable and predicts probabilities by applying a sigmoid function to map these probabilities to binary classes.
+
+\vspace{3mm} 
+
+In this case, we use the \texttt{sklearn.linear\_model.LogisticRegression} class from the Scikit-learn library. This class implements logistic regression for binary (or multinomial) classification tasks, offering flexibility with hyperparameters and extensive documentation and resources online.
+
+\vspace{3mm} 
+
+In order to find the best set of hyperparameters, we are going to use Grid Search, also known as a full factorial design. It is the most basic hyperparameter optimization (HPO) technique. The user specifies a finite set of values for each hyperparameter, and Grid Search evaluates the Cartesian product of these sets. This results in extremely high computational cost -- required number of model trainings grows exponentially with the  dimensionality of the configuration space. At the same time, it is not deterministic when it comes to finding the best set of parameters, as it is limited to the values that we provide in the grid. 
+
+\vspace{3mm} 
+
+However, Logistic Regression is a relatively simple model compared to the more complex models that will be discussed later in this project. This simplicity allows us to afford the computational cost of an exhaustive search using Grid Search. To remove the risk of overfitting, we are using cross-validation. 
+
+\vspace{3mm} 
+
+Cross-validation is a technique used to evaluate the performance of a model on unseen data -- it divides the available data into multiple folds, using one as a validation set, and the rest for training. Yet again, Scikit-learn provides a solution -- the \texttt{GridSearchCV} class. The hyperparameter search explores a defined parameter grid to identify the best set of parameters for the \texttt{LogisticRegression} model. The Table~\ref{tab:hyperparameter_grid} summarizes the hyperparameter ranges considered.
+
+\vspace{3mm} 
+% \begin{minted}{python}
+% from sklearn.linear_model import LogisticRegression
+% from sklearn.model_selection import GridSearchCV
+% logreg = LogisticRegression(random_state=42)
+% param_grid = [
+%     {'penalty': ['l1', 'l2'], 
+%     'C': np.logspace(-1, 3, 5), 
+%     'solver': ['lbfgs', 'liblinear', 'sag'], 
+%     'max_iter': [200, 400, 800, 1600]
+% ]
+% grid_search_lr = GridSearchCV(logreg,
+%                               param_grid, 
+%                               cv=5, 
+%                               scoring='f1', 
+%                               n_jobs=-1, 
+%                               verbose=3)
+% grid_search_lr.fit(X_train_dtm, y_train_df)
+% \end{minted}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3} % Row height
+\begin{tabular}{ll}
+\hline
+\textbf{Hyperparameter} & \textbf{Range Explored}                          \\ \hline
+Penalty                 & \{'l1', 'l2'\}                                    \\ 
+C                       & \{0.1, 1, 10, 100, 1000\} (logarithmic scale)     \\ 
+Solver                  & \{'lbfgs', 'liblinear', 'sag'\}                   \\ 
+Max Iterations          & \{200, 400, 800, 1600\}                          \\ \hline
+\end{tabular}
+\caption{Grid Search Hyperparameter Ranges for Logistic Regression}
+\label{tab:hyperparameter_grid}
+\end{table}
+
+\vspace{3mm} 
+
+
+This implementation results in 450 different fits due to the Cartesian product of all parameter combinations with 5-fold cross-validation. The set with the best hyperparameters found is displayed in Table~\ref{tab:logistic_regression_hyperparameters}.
+
+\vspace{3mm}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.2} % Row height
+\begin{tabular}{ll}
+\hline
+\textbf{Hyperparameter} & \textbf{Final Value}       \\ \hline
+C                       & 0.1                        \\ 
+Max Iterations          & 200                        \\ 
+Penalty                 & l1                         \\ 
+Random State            & 42                         \\ 
+Solver                  & liblinear                  \\ \hline
+\end{tabular}
+\caption{Best Hyperparameters for Logistic Regression}
+\label{tab:logistic_regression_hyperparameters}
+\end{table}
+
+\vspace{3mm}
+
+% \begin{minted}{python}
+% LogisticRegression(C=0.1, max_iter=200, penalty='l1', 
+%                    random_state=42, solver='liblinear')
+% \end{minted}
+
+\newpage
+
+\section{Support Vector Machines (SVM)}
+
+\noindent The second model introduces a more complex approach for text classification, leveraging advanced techniques to capture the significance of words more effectively. This process comprises the following steps:
+
+\vspace{3mm} 
+
+\textbf{\large Vectorization (TF-IDF)}
+
+\vspace{3mm}
+
+Similarly to the approach discussed in the previous section, we perform vectorization on the tokenized and preprocessed text. This time, we use a more advanced technique, Term Frequency-Inverse Document Frequency (TF-IDF), to represent the importance of words in the documents. As the term implies, TF-IDF calculates values for each word in a document through an inverse proportion of the frequency of the word in a particular document to the percentage of documents the word appears in. Words with high TF-IDF values indicate that they are both frequent in the document and unique across the corpus, making them more significant for classification~\cite{ramos2003using}. This method consists of three main~components: 
+
+\begin{enumerate}
+    \item \textbf{Term Frequency (TF)} \\
+    The Term Frequency measures how often a term \( t \) appears in a document \( d \). It is defined as:
+    \[
+    \text{TF}(t, d) = \frac{\text{Number of times } t \text{ appears in } d}{\text{Total number of terms in } d}
+    \]
+\newpage
+    \item \textbf{Inverse Document Frequency (IDF)} \\
+    The Inverse Document Frequency measures how unique or significant a term is across the corpus. It is calculated as:
+    \[
+    \text{IDF}(t) = \log\left(\frac{N}{1 + \text{DF}(t)}\right)
+    \]
+    Where:
+    \begin{itemize}
+        \item \( N \): Total number of documents in the corpus.
+        \item \( \text{DF}(t) \): Number of documents containing the term \( t \).
+        \item Adding \( 1 \) to \( \text{DF}(t) \) prevents division by zero.
+    \end{itemize}
+
+    \item \textbf{TF-IDF Score} \\
+    The TF-IDF score for a term \( t \) in a document \( d \) is given by:
+    \[
+    \text{TF-IDF}(t, d) = \text{TF}(t, d) \times \text{IDF}(t)
+    \]
+\end{enumerate}
+
+
+\noindent To perform this transformation, we use the \texttt{TfidfVectorizer} class from the Scikit-learn library and its \texttt{fit\_transform()} method. This method learns the vocabulary from the training data and computes the TF-IDF values for each term. The result is a sparse matrix where each row represents a document, and each column corresponds to a unique term in the corpus. The matrix contains the TF-IDF values, which are then used as features for~classification.
+
+\vspace{3mm} 
+
+\textbf{\large Support Vector Machines Model Creation}
+
+\vspace{3mm}
+
+SVM is a supervised machine learning algorithm designed to classify data by finding an optimal line or hyperplane that maximizes the margin between different classes in an N-dimensional space. Among the various classification techniques available for data classification, no single method has been found to consistently deliver the best accuracy across all kinds of datasets. SVM is gaining increasing attention because its pure mathematical foundation and proven performance in diverse real-world applications~\cite{chandra2021survey}.
+
+\newpage
+
+Once again, for similar reasons highlighted in the previous section, we are utilizing the Scikit-learn library, which provides a comprehensive \texttt{sklearn.svm.SVC} class.
+
+\vspace{3mm} 
+
+To identify the optimal set of hyperparameters, we employ Sequential Model-Based Optimization (SMBO), also known as Bayesian optimization. SMBO is a general-purpose technique for function optimization that is among the most call-efficient methods in terms of function evaluations currently available. This approach leverages probabilistic models to guide the search for the optimal hyperparameters. By focusing on the more promising regions of the search space, SMBO reduces the number of evaluations required, making it particularly suitable for high-dimensional or computationally expensive models where evaluations are costly.
+
+\vspace{3mm} 
+
+However, despite its crucial advantages, some downsides of Bayesian Optimization must be acknowledged. This method may get stuck in local optima, and finding the absolute optimal set of hyperparameters is not guaranteed, as it remains a heuristic approach.
+
+\vspace{3mm} 
+
+In this study, we utilize Optuna~\cite{akiba2019optuna}, an open-source hyperparameter optimization framework, to automate hyperparameter search. Optuna allows us to define "studies" with specific objectives -- here, we aim to maximize the average cross-validation F1 score. During the initial exploration of various parameter grids with different kernels, we found that the linear kernel achieved the highest performance metrics. Additionally, it offered faster execution times, enabling the exploration of additional hyperparameters. Based on this observation, we expand the grid only for the linear kernel. 
+
+\vspace{3mm} 
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3} % Row height
+\begin{tabular}{ll}
+\hline
+\textbf{Hyperparameter} & \textbf{Range Explored}                          \\ \hline
+C                       & \{0.001, 0.01, 0.1, 1, 10, 100\} (logarithmic scale) \\ 
+Tolerance (tol)         & \{0.00001, 0.001, 0.1\} (logarithmic scale)      \\ 
+Max Iterations          & \{100, 500, 1000, 5000, 10000\}                  \\ 
+Shrinking Heuristic     & \{True, False\}                                  \\ \hline
+\end{tabular}
+\caption{Hyperparameter Ranges Explored for Linear Kernel SVM}
+\label{tab:hyperparameter_ranges}
+\end{table}
+
+\newpage
+
+During the training process, 5-fold cross-validation is used to evaluate the performance of the model on unseen data, dividing our dataset into multiple subsets and rotating validation sets. The optimization was run for 50 trials, which provided satisfactory results without excessive computational resources. 
+
+\vspace{3mm}
+
+To standardize our feature space and ensure consistent scaling, a \texttt{StandardScaler} from the Scikit-learn library is included in the preprocessing pipeline. The scaling step ensures that all features are normalized to a consistent range, improving the convergence behavior of the linear kernel SVM.
+
+\vspace{3mm}
+
+The set with the best hyperparameters found is displayed in Table~\ref{tab:best_hyperparameters}:
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3} % Row height
+\begin{tabular}{ll}
+\hline
+\textbf{Hyperparameter}  & \textbf{Final Value}          \\ \hline
+C                        & 0.433                         \\ 
+Tolerance (tol)          & $1.736 \times 10^{-5}$        \\ 
+Max Iterations           & 6000                          \\ 
+Shrinking Heuristic      & True                          \\ 
+Random State             & 42                            \\ \hline
+\end{tabular}
+\caption{Best hyperparameters found using Optuna with preprocessing pipeline}
+\label{tab:best_hyperparameters}
+\end{table}
+
+\vspace{3mm}
+
+
+
+% \begin{minted}{python}
+% SVC(kernel='linear', C=0.433, class_weight=None, 
+%     tol=1.736e-05, max_iter=6000, random_state=42)
+% \end{minted}
+
+
+
+% \begin{minted}{python}
+% def objective(trial):
+%     # Hyperparameter search space
+%     C = trial.suggest_float('C', 1e-3, 100, log=True)  # Range for C
+%     class_weight = trial.suggest_categorical('class_weight', ['balanced', None])  # Optional, for imbalanced data
+%     tol = trial.suggest_float('tol', 1e-5, 1e-1, log=True)  # Tolerance for stopping criteria
+%     max_iter = trial.suggest_int('max_iter', 100, 10000, step=100)  # Max iterations for convergence
+%     shrinking = trial.suggest_categorical('shrinking', [True, False])  # Whether to use shrinking heuristic
+
+%     # Define pipeline with fixed StandardScaler configuration
+%     pipeline = Pipeline([
+%         ('scaler', StandardScaler(with_mean=False)),
+%         ('svm', svm.SVC(C=C, kernel='linear', class_weight=class_weight, tol=tol, 
+%                         max_iter=max_iter, shrinking=shrinking, random_state=42))
+%     ])
+
+%     # Cross-validation to evaluate performance
+%     scores = cross_val_score(pipeline, X_train_tfidf, y_train_df, cv=5, scoring='f1')
+    
+%     return scores.mean() 
+
+% # Run SMBO
+% study = optuna.create_study(study_name='SVM-Linear-Bayesian-Optimization', direction='maximize')
+% study.optimize(objective, n_trials=50)
+
+% print("Best parameters:", study.best_params)
+
+% \end{minted}
+
+% As we can see, the hyperparameter space is infinite because it contains continuous parameters, which cannot be fully explored using Grid Search. We run this optimization for 50 trials, which turns out to provide satisfactory results without requiring excessive computational resources. The best set of parameters is shown below (each decimal number is rounded to three places after the decimal):
+
+% \begin{minted}{python}
+% SVC(kernel='linear', C=0.433, class_weight=None, 
+%     tol=1.736e-05, max_iter=6000, random_state=42)
+% \end{minted}
+
+\section{Convolutional Neural Networks (CNNs)}
+
+\noindent Although Convolutional Neural Networks (CNN) are best known for their success in computer vision field, their architecture design also enables very effective performance in natural language processing (NLP). Their effectiveness arises from their convolutional layers having power of extracting local features from data and accumulating global information by building hierarchical structures~\cite{shin2018contextual}. In other words, the CNN model can detect context well.
+
+\vspace{3mm} 
+
+\noindent The architecture of the model is based on the design outlined in 2014 by Kim~\cite{kim2014convolutionalneuralnetworkssentence} and further refined in 2016 by Zhang~\cite{zhang2016sensitivityanalysisandpractitioners}. A visualization of Zhang's architecture is shown in~Figure~\ref{fig:cnn_architecture}.
+
+\begin{figure}[h!] 
+    \centering 
+    \includegraphics[width=\textwidth]{Images/cnn_architecture.png} 
+    \caption{CNN architecture for text classification~\cite{zhang2016sensitivityanalysisandpractitioners}.}
+    \label{fig:cnn_architecture} 
+\end{figure}
+
+% \noindent \textbf{\large Preprocessing and Embedding for CNN Input} \\
+\newpage
+\subsection*{Preprocessing and Embedding for CNN Input}
+\label{CNN Preprocessing}
+
+Even though training of this model is highly complex, we could leverage the NVIDIA A100 GPU with 40 GB of GPU VRAM and 83.5 GB of system RAM to efficiently process computations on the entire dataset.
+
+\vspace{3mm} 
+
+The data undergoes preprocessing, as described Section~\ref{Text Preprocessing}. Next, tokenization is performed. During this process, we determine the maximum sentence length and pad each tokenized sentence with the '\textless pad\textgreater ' token if it is shorter than the max\_len. If a token is not found during the testing phase, it is assigned the '\textless unk\textgreater ' token. The result of this encoding process is a dictionary mapping each word to its corresponding~index.
+
+\vspace{3mm} 
+
+After obtaining the tokenized output, we use it to create word embeddings. Word embeddings are projections in a continuous space of words designed to preserve the semantic and syntactic similarities between them~\cite{ghannay2016word}. Instead of Word2Vec suggested in the reference paper, our key modification is using fastText embeddings~\cite{mikolov2018advances}. These embeddings contain 2 million word vectors that were trained with 600 billion tokens and are newer and larger version of Word2Vec. This choice is supported by the work described in a public article that is a basis for this model implementation~\cite{tran2020cnn}. We select an embedding dimension of 300, meaning that each word is represented by a 300-dimensional vector.
+
+\vspace{3mm} 
+
+Using these embeddings, each text input is transformed into a sentence matrix, where each row corresponds to the word embedding of a token in the sentence. This matrix has a \( s\times d \) dimensionality, where s is the length of the input (always equal to the longest training document due to padding) and d is the size of word embedding -- 300.
+
+\vspace{3mm} 
+
+The final step involves converting the datasets into PyTorch tensors, which is essential for using the this library. We then create TensorDataset objects to group the inputs and labels together. After that, we prepare the data for training and validation by creating DataLoader instances, which handle batching, shuffling, and efficient data loading. The training data is shuffled to ensure randomness during training, while the validation data is not shuffled. The \texttt{DataLoaders} are then returned for use during model training and~evaluation.
+
+\vspace{3mm} 
+
+% \noindent \textbf{\large Model Creation} \\
+\subsection*{CNN Model creation}
+\label{CNN model creation}
+
+The model implemented is a 1-dimensional Convolutional Neural Network (CNN), as shown in Figure~\ref{fig:cnn_architecture}. The architecture begins with an embedding layer, followed by multiple 1D convolutional layers using filters of varying sizes. These layers are designed to capture local patterns in the input sentences effectively.
+
+\vspace{3mm} 
+
+In the research, various filter region sizes were examined, ranging from a few filters (1–4 regions) to different sizes (2–16). All configurations demonstrated similar accuracy. However, a combination of filter sizes of 2, 3, 4, and 5 achieved the best performance. For example, consider the sentence: 
+
+\newpage
+
+\begin{center}
+    \textit{"Life is like a box of chocolates."}
+\end{center}
+
+\vspace{3mm} 
+
+Filters of varying sizes can extract different n-gram features from this sentence, as shown below:
+
+\begin{itemize}
+    \item \textbf{Filter size 2}: Extracts bigrams, e.g., 
+    \textit{["Life is", "is like"]}.
+    
+    \item \textbf{Filter size 3}: Extracts trigrams, e.g., 
+    \textit{["Life is like", "is like a"]}.
+    
+    \item \textbf{Filter size 4}: Extracts 4-grams, e.g., 
+    \textit{["Life is like a", "is like a box"]}.
+    
+    \item \textbf{Filter size 5}: Extracts 5-grams, e.g., 
+    \textit{["Life is like a box", "is like a box of"]}.
+\end{itemize}
+
+\vspace{3mm} 
+
+Additionally, the number of feature maps for each filter region size is carefully examined. Researchers observed that this number should ideally range between 100 and 600, as exceeding 600 features significantly increases the risk of overfitting. After experimenting with various values for the number of feature maps, we select 200, 300, 400, and 500 feature maps for filter sizes of 2, 3, 4, and 5, respectively, as the optimal configuration for our model.
+
+\vspace{3mm} 
+
+The convolutional layers are followed by a max pooling operation, to reduce the dimensionality and retain the most important features. The pooled features are then passed through a fully connected layer, followed by a dropout layer with a dropout rate of 0.6 to mitigate overfitting, an issue commonly encountered during training. For optimization, we use Adadelta, a stochastic optimization technique that allows for per-dimension learning rate method for stochastic gradient descent (SGD). Finally, the model outputs logits for each class in the classification task.
+
+\vspace{3mm} 
+
+The model is trained with a learning rate of 0.1 over 30 epochs. Additionally, an early stopping mechanism is added. If the validation F1 score does not improve over the last three epochs, we end the process, and the model state with the highest F1 score is saved.
+
+\section{Bidirectional Long Short-Term Memory (BiLSTM): An Advanced RNN Architecture}
+
+
+Recurrent Neural Networks (RNNs) are a class of neural networks designed specifically for sequential data. In contrast to CNNs, RNNs are unable to extract features in a parallel way. Their bidirectional nature allows them to better capture dependencies between elements in a sequence, making them suitable for tasks such as text classification. On the other hand, they raise significant challenges when dealing with long sequences, such as vanishing or exploding gradient problem, which limits their ability to learn long-term~dependencies.
+
+\vspace{3mm} 
+
+To address these limitations, Long Short-Term Memory (LSTM) networks were developed. They incorporate memory cells and gates to control the flow of information, which enable for retaining long-term dependencies mitigating vanishing and exploding gradient problems~\cite{hochreiter1997long}. BiLSTM is a further development of LSTM, combining the forward hidden layer and the backward hidden layer, which can access both the preceding and succeeding contexts. In contrast, standard LSTMs focus solely on historical context. Therefore, BiLSTMs are better suited for solving sequential modeling tasks than LSTMs~\cite{liu2019bidirectional}.
+
+\vspace{3mm} 
+
+\subsection*{Preprocessing and Embedding for BiLSTM Input}
+The input preparation process for the BiLSTM model follows the same steps described in CNN~Section~\ref{CNN Preprocessing}. This is because both models require tokenized sequences and numerical embeddings as their inputs. Since embeddings like fastText are designed to represent text data independently of the model's structure, they can easily be applied to preprocessing pipelines for both CNNs and RNNs, including BiLSTMs.
+
+\subsection*{BiLSTM Model Creation}
+
+The BiLSTM model implemented for this study is a Bidirectional Long Short-Term Memory network, tailored specifically for sentence classification tasks. Its architecture begins with an embedding layer that converts tokenized input sequences into dense vector representations. This layer is initialized with pretrained embeddings (fastText), which are frozen during training to leverage their high-quality representations without altering them.
+
+\vspace{3mm} 
+
+Following the embedding layer, the model incorporates a Bidirectional LSTM (BiLSTM) layer. This component allows the model to capture both forward and backward dependencies in the input sequence. By combining these contextual features, the BiLSTM layer enables a more comprehensive understanding of the sequential data compared to a unidirectional LSTM.
+
+\vspace{3mm} 
+
+To reduce dimensionality and focus on the most important features, the BiLSTM outputs are passed through a global max-pooling layer, which extracts the maximum value for each feature across the sequence. This operation effectively condenses the variable-length sequence data into a fixed-size vector.
+
+\vspace{3mm} 
+
+Next, a fully connected layer maps the pooled features to the output classes. A dropout layer with a rate of 0.7 is added before this step to prevent overfitting during training by randomly zeroing out a portion of the neurons. Finally, the model outputs logits for each class, which are used to compute the loss and make predictions.
+
+\vspace{3mm} 
+
+For optimization, we use the Adam optimizer with a learning rate of \(1 \times 10^{-3}\), a widely used adaptive learning rate optimization algorithm. The model is trained over 20 epochs, with early stopping implemented to halt training if the validation loss does not improve for 5 consecutive epochs. This ensures efficient training while avoiding overfitting.
+
+\vspace{3mm} 
+
+\section{BERT (Bidirectional Encoder Representations from Transformers) Transformer}
+
+The Transformer model, first introduced in the 2017 paper "Attention is All You Need"~\cite{vaswani2023attentionneed} by researchers at Google, revolutionized the field of NLP. It is based on Attention mechanism, a technique that can be used by computers as a resource allocation scheme, which is the main means to solve the problem of information overload. By doing that, machines can process most important information focusing on what is crucial and save computing resources as a result~\cite{niu2021review}.
+
+\vspace{3mm} 
+
+The Transformer architecture is composed of two main parts: the Encoder and the Decoder. Both parts use stacked self-attention mechanisms and fully connected layers. Here is an overview of these components:
+
+\begin{itemize}
+    \item \textbf{Encoder}: The encoder takes an input sequence of symbols (e.g., \( x_1, x_2, \dots, x_n \)) and maps it to a sequence of continuous representations \( (z_1, z_2, \dots, z_n) \).
+
+    \item \textbf{Decoder}: The decoder takes the encoder's output sequence \( z \) and generates the corresponding output sequence \( (y_1, y_2, \dots, y_m) \) one element at a time. At each decoding step, the model is auto-regressive, meaning it consumes the previously generated symbols as additional input when generating the next symbol.
+\end{itemize}
+
+In the Transformer, both the encoder and decoder consist of stacked layers of self-attention mechanism and fully connected feed-forward networks. The encoder processes the input sequence in parallel and outputs a sequence of contextualized representations. The decoder, on the other hand, generates the output sequence step by step, taking into account the representations from the encoder and its own previously generated outputs. The architecture is visualized in Figure \ref{fig:transformer_architecture}.
+
+\vspace{3mm} 
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{Images/transformer_full_architecture.png}
+    \caption{Transformer architecture. Image source: Godoy, D. V. (2021). \textit{Illustrations for the Transformer, and attention mechanism. Transformer, full architecture} \cite{godoy2021transformer}.}
+    \label{fig:transformer_architecture}
+\end{figure}
+
+
+BERT (Bidirectional Encoder Representations from Transformers) leverages the power of the Transformer architecture to pre-train contextualized word representations. Unlike traditional unidirectional models, BERT employs a bidirectional approach, capturing both the left and right contexts of words in a sentence during pre-training. This is achieved using the Masked Language Model (MLM) objective, where words are randomly masked, and the model is trained to predict these words based on their context~\cite{devlin-etal-2019-bert}. Such an approach results in a robust understanding of language that can be fine-tuned for a variety of downstream tasks. The architecture is visualized in Figure \ref{fig:bert_architecture}.
+
+\vspace{3mm} 
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{Images/BERT_architecture.png}
+    \caption{BERT architecture. Image source: Godoy, D. V. (2021). \textit{BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding} \cite{godoy2021bert}.}
+
+    \label{fig:bert_architecture}
+\end{figure}
+
+\vspace{3mm} 
+
+For this study, we use the pre-trained BERT model provided by Hugging Face, specifically the \texttt{bert-base-uncased} variant. The model and its tokenizer are initialized as follows:
+
+\begin{minted}{python}
+pretrained_model_name = "bert-base-uncased"
+model = TFAutoModel.from_pretrained(pretrained_model_name)
+tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name)
+\end{minted}
+
+After initializing the model and tokenizer, we perform fine-tuning. Fine-tuning involves adapting the pre-trained model to a specific task -- in this case, text classification. During fine-tuning, BERT's weights are updated while training on the target dataset, allowing the model to learn task-specific patterns and representations.
+
+\vspace{3mm} 
+
+Following preprocessing, texts are converted into Hugging Face datasets. Tokenization is applied using the Hugging Face \texttt{AutoTokenizer}, ensuring compatibility with the BERT~model.
+
+\newpage
+
+The BERT model architecture for classification, which is used in our experiments, is summarized in Table~\ref{tab:bert_architecture}. The model consists of a pre-trained BERT backbone, a dropout layer, and a classifier layer that performs binary classification:
+
+\vspace{3mm} 
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3} % Row height
+\begin{tabular}{ll}
+\hline
+\textbf{Component}    & \textbf{Description}                        \\ \hline
+Model                & Pre-trained BERT (bert-base-uncased)       \\ 
+Dropout              & Dropout layer with rate 0.5                \\ 
+Classifier Layer     & Dense layer with 2 classes and softmax activation \\ 
+Input                & Tokenized input data (text)               \\ 
+Output               & Predicted class probabilities              \\ \hline
+\end{tabular}
+\caption{BERT Model Architecture for Classification}
+\label{tab:bert_architecture}
+\end{table}
+
+\vspace{3mm} 
+
+While BERT is highly effective, it is computationally expensive. To meet the resource requirements, we utilize Google Colab Pro's most powerful engine, equipped with an NVIDIA A100 GPU (40 GB of VRAM) and 83.5 GB of system RAM. However, due to these constraints, the BERTForClassification model is relatively simple. The model is trained on the entire dataset, but due to the GPU RAM constraint, only 32 instances can be processed in each batch. This results in a total of 3166 batches. Even with a relatively high dropout rate of 0.5, the model converges quickly, allowing for just 2 epochs.
+
+\vspace{3mm} 
+
+% \noindent Despite its simplicity, this configuration proved effective, demonstrating the power of fine-tuning BERT for text classification tasks while acknowledging the resource limitations inherent in such approaches.
+
+
+
+
+% \noindent Transformer is an encoder-decode model that relies upon attention mechanism to draw global dependencies between input and output. It was first developed by researchers at Google that followed process described in the 2017 paper Attention is All You Need \cite{vaswani2017attention}. Attention is a complex cognitive function that is indispensable for human beings. Attention mechanism can be used by computers as a resource allocation scheme, which is the main means to solve the problem of information overload. By doing that, machines can process more important information focusing on what's crucial and save computing resources as a result \cite{niu2021review}. It contains two important layers:
+% \begin{itemize}
+%     \item Encoder - the encoder maps an input sequence of symbol representations (x1, ..., xn) to a sequence
+% of continuous representations z = (z1, ..., zn).
+%     \item Decoder - Given z, the decoder then generates an output sequence (y1, ..., ym) of symbols one element at a time.
+% \end{itemize}
+
+% At each step the model is auto-regressive consuming the previously generated symbols as additional input when generating the next.
+% The Transformer follows this overall architecture using stacked self-attention and point-wise, fully
+% connected layers for both the encoder and decoder, shown in the left and right halves of Figure \ref{fig:transformer_architecture}
+% respectively.
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=\textwidth]{Images/transformer_full_architecture.png}
+%     \caption{Transformer architecture}
+%     \label{fig:transformer_architecture}
+% \end{figure}
+
+
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=\textwidth]{Images/.png}
+%     \caption{BERT architecture}
+%     \label{fig:bert_architecture}
+% \end{figure}
+
+
+% BERT - Bidirectional Encoder Representation from Transformers.
+
+% It contains Encoder and Decoder
+
+% There ar three crucial phases:
+
+% - Pretraining - What is language? What is context?
+
+
+
+% Word Embeddings. 
+% We have 
+
+
+% Text classification is the task of automatically classifying a set
+% of documents into categories from a predefined set and is an important task in many areas of nature language processing (NLP).
+

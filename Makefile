@@ -78,3 +78,8 @@ clean: ## Remove build artefacts and cache files
 
 clean-all: clean ## Remove everything including the virtual environment
 	rm -rf .venv
+
+
+# make nbconvert NB=src/hmats/notebooks/06_lgbm_agent.ipynb
+nbconvert: ## Convert notebook to Python script (pass NB="path/to/notebook.ipynb")
+	uv run jupyter nbconvert --to script $(NB) --output-dir $(dir $(NB))

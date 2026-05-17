@@ -1,0 +1,174 @@
+\chapter{Theoretical Background}
+\label{02_Theoretical_Background}
+\thispagestyle{empty}
+Before presenting the proposed system, it is necessary to introduce the theoretical background related to financial time series and their analysis using artificial intelligence methods. This thesis focuses on the application of AI techniques to financial data, which requires understanding both the properties of time series and the models used to process them.
+\vspace{3mm}
+The following subsections describe the main characteristics of financial time series, the role of feature engineering, and selected artificial intelligence methods used in algorithmic trading. The chapter also introduces ensemble methods and decision fusion, as well as the concept of agents and multi-agent systems, which form the basis of the proposed approach.
+
+\subsection*{Financial Markets and Time Series Characteristics}
+
+
+A time series is a collection of observations indexed by the date of each observation ~\cite{hamilton2020time}. Most commonly, it is a sequence of values recorded at successive, equally spaced points in time, forming discrete-time data ~\cite{bangert2021machine}. Examples of such time series include environmental readings (e.g., temperature, rainfall), business data (e.g., sales, web traffic), and financial metrics such as asset prices. Time series are analyzed to uncover patterns, trends, and relationships that evolve over time, enabling informed decisions and predictions ~\cite{zhang2024deep}.
+\vspace{3mm} 
+In financial markets, observations of an asset’s price taken at equally spaced time intervals constitute a financial time series ~\cite{zhang2024deep}. These observations are typically represented in the form of OHLCV data, which includes the open, high, low, and close prices, as well as the traded volume within a given time interval. Depending on the chosen timeframe, such data can be recorded at different resolutions, ranging from high-frequency (e.g., tick or minute-level) to lower-frequency intervals such as daily or weekly data.
+\vspace{3mm} 
+Beyond aggregated price data, financial markets also generate more detailed information, such as limit order book (LOB) data, which captures the supply and demand dynamics of the market. While OHLCV data provides a compact representation of price movements, LOB data offers a more granular view of market activity and can be used to derive additional features for analysis ~\cite{tsantekidis2020using}.
+\vspace{3mm}
+Financial time series exhibit several properties that make modeling and prediction challenging. Returns typically show weak autocorrelation, meaning that past price changes provide limited direct information about future movements, while volatility measures, such as absolute or squared returns, often exhibit significant persistence. In addition, financial data is non-stationary, with statistical properties such as mean and variance changing over time, and displays volatility clustering, where periods of high variability tend to persist. Return distributions are also heavy-tailed, meaning that extreme events occur more frequently than expected under normal assumptions. Finally, nonlinear dependencies and long memory effects further complicate modeling, motivating the use of more advanced data-driven approaches  ~\cite{sewell2011characterization}. These characteristics highlight the complexity of financial time series and the challenges associated with their modeling, which require careful feature design and appropriate modeling approaches.
+% \vspace{3mm} while this is 
+% - Financial Markets and Time Series Characteristics
+% Market properties:
+% non-stationarity
+% noise
+% volatility clustering
+% Efficient Market Hypothesis (briefly)
+% Stylized facts:
+% fat tails
+% autocorrelation (weak)
+% Time series nature of financial data
+% Challenges:
+% regime changes
+% low signal-to-noise ratio
+\subsection*{Feature Engineering in Financial Data}
+OHLCV data
+Technical indicators:
+trend, momentum, volatility
+Sentiment data:
+news, social media
+Multi-timeframe features
+Feature limitations
+
+\subsection*{Artificial Intelligence Methods in Algorithmic Trading}
+
+The growing availability of financial data and advances in computational
+power have driven the widespread adoption of artificial intelligence
+methods in algorithmic trading. These methods range from classical
+statistical approaches to modern deep learning architectures, each
+capturing different aspects of market dynamics. Sezer et
+al.~\cite{sezer2020financial} surveyed 140 deep learning studies
+published between 2005 and 2019 and found that LSTM and its variants
+dominated as the architecture of choice, with stock price forecasting,
+trend forecasting, and index forecasting together accounting for more
+than 70\% of all publications. Zhang et al.~\cite{zhang2024deep}
+extended this picture to 2022, confirming the continued prominence of
+recurrent architectures while noting growing interest in Transformer-based
+models. Sonkavde et al.~\cite{sonkavde2023forecasting} provide a broader
+review encompassing both classical and deep learning methods alongside
+traditional statistical techniques.
+
+\paragraph{Classical and statistical approaches.}
+Before machine learning became prevalent, rule-based systems encoding
+explicit expert knowledge — such as moving-average crossovers or
+momentum thresholds — were the primary tools for automated trading.
+While interpretable and computationally lightweight, they do not adapt
+to changing market conditions~\cite{sonkavde2023forecasting}. Statistical
+models such as ARIMA and its extensions capture linear temporal
+dependencies and serve as theoretically grounded baselines, but their
+assumption of linearity and stationarity limits their effectiveness on
+financial data where nonlinear dynamics and regime changes are the
+norm~\cite{zhang2024deep, sonkavde2023forecasting}.
+
+\paragraph{Machine learning methods.}
+Machine learning methods learn patterns directly from data without
+requiring a predefined functional form. Tree-based ensembles — most
+notably Random Forest and XGBoost — have demonstrated competitive
+performance across multiple benchmarks. Sonkavde et
+al.~\cite{sonkavde2023forecasting} showed that combining such models with
+LSTM outperformed any individual model, illustrating the benefit of
+heterogeneous ensembles. Support vector machines and $k$-nearest
+neighbours are also widely used, though they scale poorly to
+high-dimensional feature spaces without careful preprocessing.
+
+\paragraph{Deep learning for time series.}
+Deep learning has become the dominant paradigm for financial forecasting
+due to its ability to learn hierarchical representations without heavy
+reliance on manual feature design~\cite{zhang2024deep}. LSTM networks
+address the vanishing gradient problem of plain RNNs through gating
+mechanisms that selectively retain or discard information over long
+sequences, making them the most widely applied architecture in the
+reviewed literature~\cite{sezer2020financial, zhang2024deep}. The GRU
+offers a lighter alternative with comparable accuracy. Temporal
+Convolutional Networks (TCNs) use dilated causal convolutions to capture
+multi-scale local patterns efficiently, while hybrid CNN-LSTM
+architectures combine local feature extraction with global temporal
+modelling. Transformer models leverage self-attention to capture
+long-range dependencies without sequential computation; efficient
+variants such as Informer, Autoformer, and PatchTST have specifically
+addressed the scalability challenges of applying Transformers to long
+financial sequences~\cite{zhang2024deep}.
+
+\paragraph{Reinforcement learning.}
+Reinforcement learning frames trading as a sequential decision problem
+in which an agent selects actions — buy, sell, or hold — and receives
+rewards reflecting realised returns. Unlike supervised methods, RL agents
+directly optimise cumulative trading performance, making the framework
+naturally aligned with the profit-maximisation objective. Value-based
+approaches such as Deep Q-Networks and policy gradient methods such as
+Proximal Policy Optimisation are the most common formulations. Sezer et
+al.~\cite{sezer2020financial} identify deep RL as one of the most
+promising directions for future research, particularly for applications
+requiring continuous adaptation to changing market conditions.
+
+\paragraph{Evolutionary computation.}
+Evolutionary methods such as genetic algorithms and neuroevolution
+provide gradient-free optimisation applicable to strategy design, feature
+selection, and hyperparameter tuning. In the financial deep learning
+literature they have been used primarily as auxiliary optimisers rather
+than standalone strategy generators~\cite{sonkavde2023forecasting,
+sezer2020financial}, though neuroevolution approaches additionally offer
+the ability to evolve network architectures alongside weights when
+gradient information is unavailable or unreliable.
+
+3.1 Classical approaches
+rule-based strategies
+statistical models (ARIMA, etc.)
+3.2 Machine learning methods
+regression, tree-based models
+3.3 Deep learning for time series
+LSTM, GRU, Transformers
+temporal dependencies
+3.4 Reinforcement learning
+trading as decision process
+reward-based learning
+3.5 Evolutionary computation
+genetic algorithms
+neuroevolution
+can
+\subsection*{Ensemble Methods and Decision Fusion}
+ensemble learning (bagging, boosting)
+weighted voting
+stacking / meta-learning
+mixture of experts
+\subsection*{Multi-Agent Systems}
+5.1 Definition of agents
+autonomy
+decision-making entities
+5.2 Multi-agent system types
+centralized
+decentralized
+hierarchical
+5.3 Cooperation vs competition
+5.4 Multi-agent systems in finance (if literature exists)
+2.1 Financial Markets & Data
+OHLCV, indicators (SMA, RSI, MACD)
+market efficiency, noise, non-stationarity
+paper: The Relation between Price Changes and Trading Volume: A Survey
+2.2 Artificial Intelligence in Trading
+time-series forecasting
+reinforcement learning in trading
+sentiment analysis
+2.3 Agents and Multi-Agent Systems
+This chapter provides an overview of 
+There is a great amount of articles regarding predicting time series.
+There are also lots regarding the special type of time series — that is financial data. However, this space is never filled — with how extensive the approaches may be regarding to trading, it seems that the space will never be fully discovered. Some may say that this kind of assumption that we can leverage mathematics, and AI being a derivative from it, to successfully move in the market is impossible, since markets rely in a heavy way on market sentiment, and it might be really hard to include some crucial news into any agent's abilities — [TBD - is NLP analysis included]. Like broad geopolitical events, or news
+Most of them include trading using only one method. 
+While the concept of intelligent agents dates back to the 1990s (Russell & Norvig, 1995; Wooldridge & Jennings, 1995), multi-agent systems have recently gained renewed attention due to the emergence of Large Language Models (LLMs), which enable more flexible reasoning, communication, and tool use.
+This paper follows the approach in which each agent implements a single method. An agent is understood as a computer system that exhibits the following properties~\cite{wooldridge1995intelligent}:
+\begin{itemize}
+    \item \textbf{autonomy}: operates without direct human intervention and has control over its actions and internal state;
+    \item \textbf{social ability}: interacts with other agents (and possibly humans) via a communication mechanism;
+    \item \textbf{reactivity}: perceives its environment and responds to changes in a timely manner;
+    \item \textbf{pro-activeness}: exhibits goal-directed behaviour by taking initiative, not only reacting to the environment.
+\end{itemize}
+While the concept of intelligent agents dates back to the 1990s, multi-agent systems recently gained a leap in attention due to fast-paced Large Language Models (LLMs) adoption.
+Multi-agents is not the most recent concept —— the definition of the agent [... year, definition]. The definition of multi-agent [.... year, definition]. Definitely the whole thing got very popular within last years - with the boom of Large Language Models. Most of the agent's  

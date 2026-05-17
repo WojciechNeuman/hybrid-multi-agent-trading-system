@@ -1,0 +1,43 @@
+\chapter{System Architecture}
+\label{03_System_Architecture}
+\thispagestyle{empty}
+
+3.1 Overall Architecture
+diagram of the system
+data flow
+3.2 Individual Agents
+
+Describe each agent as a module:
+
+Forecasting agents (GRU / Transformer / TCN)
+Reinforcement learning agent
+Evolutionary agent
+Sentiment (NLP) agent
+Baseline agents (rule-based / random)
+
+For each:
+
+input
+model
+output (signal)
+
+3.3 Supervisory / Aggregation Agent
+
+This is your key contribution:
+
+how signals are combined
+weighting / voting / meta-model
+handling conflicts
+risk preferences
+
+
+
+The proposed system is designed as a heterogeneous and hybrid multi-agent architecture. 
+
+Heterogeneous means...
+
+Hybrid means...
+
+Heterogeneous describes the nature of the components — the agents are built from fundamentally different AI paradigms: a GRU is gradient-based sequence learning, a genetic algorithm is evolutionary search, a PPO agent learns through reward signals, a sentiment model is transformer-based NLP. They are not variations of one technique — they are categorically different things.
+
+Hybrid describes the architecture — the fact that these dissimilar components are combined into a single unified system that produces one trading decision. Hybrid implies integration: there is a supervisory layer that aggregates, weights, and reconciles the signals from all those heterogeneous agents.

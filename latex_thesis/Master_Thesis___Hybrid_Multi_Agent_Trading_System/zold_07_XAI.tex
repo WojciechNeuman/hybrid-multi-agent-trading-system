@@ -1,0 +1,211 @@
+\chapter{Explainable Artificial Intelligence (XAI)}
+\label{07_XAI}
+\thispagestyle{empty}
+
+Machine learning models are becoming increasingly complex, powerful, and able to make accurate predictions. However, as complexity increases, they become less interpretable, turning into "black boxes". Understanding how they arrive at their predictions becomes a significant challenge. This has led to a growing focus on machine learning interpretability and explainability, where Explainable Artificial Intelligence (XAI) techniques play a crucial role. 
+
+\vspace{3mm}
+
+An important aspect of XAI involves differentiating between two related definitions of trust: (1) trusting a prediction, i.e., whether a user trusts an individual prediction sufficiently to take some action based on it, and (2) trusting a model, i.e., whether the user trusts a model to behave in reasonable ways if deployed~\cite{ribeiro2016should}. Both depend on how well a human understands a model's behavior, rather than seeing it as a black box.
+
+\section{Shapley Additive exPlanations (SHAP)}
+
+One of the most promising tools in this domain is Shapley Additive exPlanations values, which measure how much each feature contributes to the model's prediction. SHAP values can help you see which features are most important for the model and how they affect the outcome.
+
+\newpage
+
+
+SHAP (SHapley Additive exPlanations) values are a way to explain the output of any machine learning model. It uses a game theoretic approach that measures each player's contribution to the final outcome. In machine learning, each feature is assigned an importance value representing its contribution to the model's output. 
+
+\vspace{3mm}
+
+On the other hand, while SHAP is a powerful tool for interpretability, it is computationally costly. This raises significant challenges when attempting to apply SHAP to any of our deep learning models. Efforts to use SHAP in this study exceeded the available RAM in Google Colaboratory, even in its best environment with A100 GPU, and when tested with a small batch size of 12 inputs. Our models are trained on 101,284 training samples, with an average of 438 words per sample, resulting in a vocabulary of 547,607 unique words. Additionally, every deep learning model created in this study has a complex structure. Another layer of complexity arises from the text processing pipeline itself -- text data is first transformed into word embeddings as representations before being fed into the models, resulting in two interconnected layers for interpretation.
+
+\vspace{3mm}
+
+As a result, we limit SHAP analysis to the Logistic Regression model, which outperforms the Support Vector Machine (SVM) in terms of performance metrics. Even for this less complex model, using only a 3,000-sample subset of the test data, the RAM usage rises to 42.4 GB.
+
+\vspace{3mm}
+
+For this research, we use SHAP Python library. First, we create an instance of Explainer class, primary explainer interface for this library, with our Logistic Regression model and the Bag-of-Words (BoW) representation of the training dataset. The 3,000-sample test subset is converted into a dense array (from its original sparse BoW representation) to compute SHAP values. By using \texttt{summary\_plot} method, we can display most important features (words) in this model, as visible in Figure~\ref{fig:shap_summary_plot}.
+
+\vspace{3mm}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{Images/shap_summary_plot.png}
+    \caption{Summary plot showing the most important features based on SHAP values for the Logistic Regression model}
+    \label{fig:shap_summary_plot}
+\end{figure}
+
+\vspace{3mm}
+
+In the summary plot, the x-axis shows the SHAP value (impact on the model output), where negative values decrease the likelihood of the predicted class (AI-generated text with label 1), while positive values increase it. Features on the y-axis are ranked by their overall importance, measured by the average absolute SHAP value.
+
+\vspace{3mm}
+
+As observed, these words match significantly with the most popular words in the whole dataset as seen in Figure~\ref{fig:most_popular_words}. Notably, top two words, "the" and "to" occupy the first two positions in both summaries. However, their effects, like those of most other words visible on the SHAP summary plot, are inconsistent, leading to a wide range of SHAP values.
+
+\vspace{3mm}
+
+Words such as "however" and "due" are also impactful, but they also showcase clearer trends; their SHAP values lean consistently in one direction -- toward human-written text~class.
+
+\vspace{3mm}
+
+Next, let us analyze specific inputs from the dataset, as shown in Figure~\ref{fig:shap_waterfall_comparison}.
+
+\vspace{3mm}
+
+\begin{figure}[h!]
+    \centering
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth, height=0.35\textheight]{Images/shap_8_0.png}
+        \caption*{(a) Waterfall plot for correctly predicted human-written text.}
+        \label{fig:shap_8_0}
+    \end{minipage}
+    \hspace{0.02\textwidth} % Added space between the two minipages
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth, height=0.35\textheight]{Images/shap_9_1.png}
+        \caption*{(b) Waterfall plot for correctly predicted rephrased text.}
+        \label{fig:shap_9_1}
+    \end{minipage}
+    \caption{SHAP waterfall plots showing the feature contributions for the original text (label 0) and its rephrased version (label 1). The plots illustrate how different features (words) impact the model's classification decisions for both texts.}
+    \label{fig:shap_waterfall_comparison}
+\end{figure}
+
+
+
+
+
+\vspace{3mm}
+
+Yet again, words such as "the", "to", "said", and "however" have the biggest impact on the output. We can observe that rephrased text consists of many words categorized as indicative of more advanced language, such as  "however", "resulting", "consists", "approximately", "includes", and "emphasis".
+
+\vspace{3mm}
+
+Additionally, let us compare the percentages of occurrences of words with the highest SHAP values in these two records against their average occurrences in the entire dataset.
+
+\vspace{3mm}
+
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.3} % Adjust row height for readability
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Word} & \multicolumn{2}{c|}{\textbf{Avg. Percentile}} & \multicolumn{2}{c|}{\textbf{Percentage in Record}} \\ \hline
+               & \textbf{Human} & \textbf{AI} & \textbf{True Negative (\%)} & \textbf{True Positive (\%)} \\ \hline
+the            & 5.76\%         & 4.64\%      & 7.09\%                     & 7.28\%                     \\ 
+to             & 2.79\%         & 2.37\%      & 2.03\%                     & 0.88\%                     \\ 
+said           & 0.38\%         & 0.20\%      & 0.00\%                     & 0.00\%                     \\ 
+however        & 0.05\%         & 0.12\%      & 0.00\%                     & 0.44\%                     \\ \hline
+\end{tabular}
+\caption{Comparison of word percentiles in the whole dataset and two analyzed records (True Negative and True Positive).}
+\label{tab:word_occurrences_percentiles}
+\end{table}
+
+\vspace{3mm}
+
+In both examples, the high percentage of occurrences (over 7\%) of the word "the" led to a negative SHAP value. As we can see, generally, in human-written texts, 5.7\% of the words are "the", while in AI-generated texts, just 4.64\%. Similarly, the word "to" follows the same pattern: a high percentile of occurrences corresponds to a negative SHAP value. Logistic Regression model assumes that a high usage of these repetitive and easy-to-use words is indicative of human-written text.
+
+\vspace{3mm}
+
+What is interesting, the word "said" does not appear in either of these records, but the model associates the absence of this word with AI-generated text. This word is used 90\% more often in human text than in AI-generated text. Also, the word "however" appears approximately 140\% more often in AI-generated text, and the model assigns a high SHAP value to it. In the true positive record, "however" was used 0.44\% of the time, almost four times as often as in AI texts on average and nearly nine times more than in human-written texts on average. In this case, ChatGPT rephrased the word "but" into this more stylistic~word.
+
+\vspace{3mm}
+
+This pattern is commonly observed: the use of simple, repetitive words increases the likelihood of the text being written by a human, while the use of more complex, stylistic, and scientific words is associated with AI-generated text.
+
+\vspace{3mm}
+
+Let us analyze a pair of texts with a falsely predicted instance, as shown in~Figure~\ref{fig:shap_waterfall_comparison_2}.
+
+\vspace{3mm}
+
+\begin{figure}[h!]
+\centering
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\linewidth, height=0.35\textheight]{Images/shap_10_0.png}
+    \caption*{(a) Waterfall plot for correctly predicted human text.}
+\end{minipage} \hfill
+\begin{minipage}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\linewidth, height=0.35\textheight]{Images/shap_11_0-false.png}
+    \caption*{(b) Waterfall plot for the rephrased text, which was misclassified.}
+\end{minipage}
+\caption{Analysis of a text pair: the original human-written text (label 0) is correctly classified, while its rephrased version (label 1) is misclassified. The SHAP waterfall plots highlight the feature contributions for both cases.}
+
+\label{fig:shap_waterfall_comparison_2}
+\end{figure}
+
+\newpage
+
+This time, the final prediction value \( f(X) \) for both the original text and its rephrased version is very similar. We can observe that the SHAP values of certain words are also quite similar. After analyzing this rephrased text, it turns out that around 64\% of its length is identical to the original text. LLaMA model did not rephrase it. Only 36\% of the AI-generated text differs from the initial input, with 42 words rephrased out of 94 in the human text. This is a common issue observed in LLaMA's text generation, as the model often does not rephrase well-written sections, leading to only a small difference between the original and the generated text.
+
+
+\section{Local Interpretable Model-Agnostic Explanations (LIME)}
+
+
+LIME, or Local Interpretable Model-agnostic Explanations, is an algorithm that explains the predictions of any classifier in an interpretable and faithful manner, by learning an interpretable model locally around the prediction. It was first introduced to machine learning world in the groundbreaking paper \textit{“Why Should I Trust You?”: Explaining the Predictions of Any Classifier}~\cite{ribeiro2016should}. Researchers were mostly focused on three key aspects:
+
+\vspace{3mm}
+
+\begin{itemize}
+    \item \textbf{Interpretability}: LIME generates explanations that are easy to understand and provide qualitative insights between the input variables and the response.
+    \item \textbf{Local Fidelity}: Explanations are locally faithful, meaning they only explain the model's behavior for the specific instance being predicted, instead of trying to explain how the model works in general.
+
+    \item \textbf{Model-Agnostic}: LIME can be applied to any machine learning model, treating the original model as a black-box. This allows LIME to work with a wide variety of classifiers.
+\end{itemize}
+
+\vspace{3mm}
+
+Main LIME idea is that, while the overall behavior of a complex AI model might be difficult to understand, we can explain individual predictions by examining how the model behaves in the vicinity of that prediction.
+
+\vspace{3mm}
+
+Additionally, LIME is computationally more efficient than other techniques such as SHAP. Therefore, we can use it on our costly and best performing model -- fined-tuned BERT (trained on 20,000 samples).
+
+\vspace{3mm}
+
+To achieve this, we utilize the LIME Python library, specifically the LimeTextExplainer class and its \texttt{explain\_instance} function, which provides explanations for individual predictions. We aim to analyze the same inputs as in Figure~\ref{fig:shap_waterfall_comparison}. Let us produce the output of applying this method to a True Negative predicted instance (Figure~\ref{fig:lime_1}) and True Positive instance (Figure~\ref{fig:lime_2}).
+
+\vspace{3mm}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{Images/lime_8.png}
+    \caption{LIME explanation for a True Negative predicted instance. The figure highlights the most influential features contributing to the negative classification. The text is truncated.}
+    \label{fig:lime_1}
+\end{figure}
+
+% \vspace{3mm}
+
+% The same for True Positive instance (Figure~\ref{fig:lime_2}).
+
+\vspace{3mm}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{Images/lime_9.png}
+    \caption{LIME explanation for a True Positive predicted instance. The figure shows the features that significantly contributed to the positive classification. The text is truncated.}
+    \label{fig:lime_2}
+\end{figure}
+
+\vspace{3mm}
+
+Both figures illustrate the prediction probabilities and highlighted word contributions for classifying text as either "Human Text" or "AI Text" using the LIME explainability technique. In a True Negative instance, the model correctly predicts, with a 96\% certainty, that the text is human-written. Equivalently, in a True Positive instance, the model makes a correct prediction with 100\% certainty.
+
+\newpage
+
+Similar to the SHAP analysis performed on our Logistic Regression model, the word "the" emerges as the main contributor to the classification result. However, despite very similar percentage occurrences of this word in both texts (as shown in Table~\ref{tab:word_occurrences_percentiles}), the feature importance scores assigned by LIME differ. For the True Negative instance, LIME assigns a score of negative 0.37 to "the", whereas, for the True Positive instance, the score is negative 0.27. This disparity highlights BERT's ability to assign different embedding values to the same word based on its surrounding context. This capability underscores the strength of BERT in not only analyzing individual words but also considering their~context.
+
+\vspace{3mm}
+
+In the True Negative instance, we also observe that, apart from "the", other words present relatively small significance to the final prediction. Among 12 most important features, most exhibit lower positive values -- closer to supporting AI Text classification. Interestingly, one of these words is "with" (occurs in a non-visible paragraph). This word appears four times within a single paragraph of 118 words. Such repetition is more characteristic of human-written text, as AI-generated text often uses techniques like top-k and top-p sampling to avoid overusing a single word in short paragraphs. However, identifying this requires analyzing a much larger portion of the text, a task reliant on nuanced human intuition, something beyond current capabilities of BERT.
+
+\vspace{3mm}
+
+In contrast, the True Positive output reveals that apart from "the", 11 out of the 12 most important features have strong positive values, supporting the classification of the text as AI-generated with high confidence. Consistent with observations from SHAP analysis on the Logistic Regression model, words such as "around", "during", "however", and "resulting" are seen as strong indicators of AI-generated text. These words collectively contribute to a stylistic and complex writing style that is characteristic of AI-produced content. Another notable observation is the word "car". Although used less frequently in the rephrased instance compared to the original, it is assigned a high positive importance value in this case, correctly contributing to the prediction. This once again demonstrates BERT's strength in differentiating predictions based on a word's surrounding context.
+

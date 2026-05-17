@@ -1,0 +1,85 @@
+\chapter{Methodology}
+\label{04_Methodology}
+\thispagestyle{empty}
+
+\section{Data}
+\label{sec:data}
+
+The dataset used in this research consists of historical price data for ten cryptocurrency assets, selected based on their historical peak market capitalisation. All assets are quoted against USDT and sourced exclusively from the Binance exchange via its public REST API, ensuring consistency across symbols in terms of price discovery, liquidity, and data format. Stablecoins were excluded from the selection. The chosen assets are: Bitcoin (BTC), Ethereum (ETH), Binance Coin (BNB), XRP, Solana (SOL), Cardano (ADA), Dogecoin (DOGE), Avalanche (AVAX), Polkadot (DOT), and Chainlink (LINK).
+
+\vspace{3mm}
+
+Data collection was performed using a custom paginated downloader built on top of the Binance \texttt{/api/v3/klines} endpoint, which returns standard OHLCV (Open, High, Low, Close, Volume) candlestick data. For each asset, historical data was fetched from its earliest available hourly candle on Binance, resulting in varying start dates across symbols. Bitcoin and Ethereum data is available from August 2017, while more recently listed assets such as Solana and Avalanche begin in mid-2020. All data extends through May 2026. An overview of the dataset, including earliest availability dates and approximate peak market capitalisations, is presented in Table~\ref{tab:dataset_overview}.
+
+\vspace{3mm}
+
+\begin{table}[h!]
+    \centering
+    \caption{Dataset overview: ten cryptocurrency assets selected by historical peak market capitalisation. Peak capitalisation is approximated as the all-time high price multiplied by current circulating supply. Data sourced from Binance REST API and CoinGecko.}
+    \label{tab:dataset_overview}
+    \begin{tabular}{llrrr}
+        \toprule
+        \textbf{Asset} & \textbf{Data From} & \textbf{ATH Price (USD)} & \textbf{ATH Date} & \textbf{Peak Cap (approx.)} \\
+        \midrule
+        BTC  & 2017-08-17 & \$126,080.00 & 2025-10-06 & \$2,524.6B \\
+        ETH  & 2017-08-17 & \$4,946.05   & 2025-08-24 & \$596.9B   \\
+        BNB  & 2017-11-06 & \$1,369.99   & 2025-10-13 & \$184.7B   \\
+        XRP  & 2018-05-04 & \$3.65       & 2025-07-18 & \$225.6B   \\
+        SOL  & 2020-08-11 & \$293.31     & 2025-01-19 & \$169.0B   \\
+        ADA  & 2018-04-17 & \$3.09       & 2021-09-02 & \$114.3B   \\
+        DOGE & 2019-07-05 & \$0.73       & 2021-05-08 & \$112.7B   \\
+        AVAX & 2020-09-22 & \$144.96     & 2021-11-21 & \$62.6B    \\
+        DOT  & 2020-08-18 & \$54.98      & 2021-11-04 & \$92.5B    \\
+        LINK & 2019-01-16 & \$52.70      & 2021-05-10 & \$38.3B    \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\vspace{3mm}
+
+The primary resolution used throughout this research is the one-hour candlestick interval, which offers a balance between granularity and signal-to-noise ratio suitable for the range of AI methods employed. For visualisation and certain indicator computations, hourly data is resampled to daily candles using standard aggregation rules: the opening price of the first hourly candle, the maximum high, the minimum low, the closing price of the final candle, and the sum of volume across all candles within the day. Figure~\ref{fig:btc_price_volume} presents the full Bitcoin price history on a logarithmic scale, illustrating the characteristic bull and bear market cycles, the impact of the third and fourth halving events, and the corresponding evolution of trading volume over time.
+
+\vspace{3mm}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{Images/fig2_btc_price_volume.png}
+    \caption{Bitcoin (BTC/USDT) daily close price on a logarithmic scale from August 2017 to May 2026, with SMA~50, SMA~200, and Bollinger Bands (20-period, $\pm2\sigma$). The lower panel shows daily trading volume in billions of USDT, colour-coded by candle direction, with a 30-day moving average overlay. Vertical dotted lines mark the third (May 2020) and fourth (April 2024) Bitcoin halving events.}
+    \label{fig:btc_price_volume}
+\end{figure}
+
+\vspace{3mm}
+
+To ensure data integrity, the downloader implements an incremental update mechanism: upon re-execution, only candles newer than the most recently stored timestamp are fetched from the API, with all data persisted locally in the Apache Parquet format. This avoids redundant network requests and guarantees that the dataset remains consistent across training runs. A single Parquet file per asset stores the complete OHLCV history and serves as the sole input to all downstream preprocessing and feature engineering steps.
+
+% datasets (markets, timeframe)
+% feature engineering
+% training procedures
+% limitations
+% evaluation protocol (train/test split, walk-forward, etc.)
+
+
+% Start with Fear & Greed Index + VADER in a notebook to validate the data pipeline. Then swap in FinBERT when you're writing up the agent properly. That progression also makes a nice "methodology evolution" paragraph in your thesis.
+
+
+
+% 4.1 Data
+% assets (stocks, crypto, etc.)
+% time range
+% preprocessing
+% 4.2 Feature Engineering
+% indicators
+% sentiment signals
+% 4.3 Training Setup
+% train/test split (IMPORTANT: time-based)
+% walk-forward validation
+
+
+
+% feature engineering 
+
+% The First-Order Moving Average Process
+% This time series is called a first-order moving
+% average process, denoted MA(l). The term "moving average" comes from the fact
+% that Y, is constructed from a weighted sum, akin to an average, of the two most
+% recent values of e. ~\cite{hamilton2020time}. 

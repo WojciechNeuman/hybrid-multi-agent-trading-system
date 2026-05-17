@@ -1,0 +1,227 @@
+% Main Thesis File: This is the main file and it connects all the different parts of the thesis and compiles it into a single outcome file.
+
+% \documentclass[onecolumn, 11pt pt, doublespace, fullpage, a4paper]{report}
+\documentclass[onecolumn, 12pt, doublespace, fullpage, a4paper]{report}
+% \usepackage{times} % For Times New Roman font
+\renewcommand{\baselinestretch}{1.25} % baseline stretch
+
+\usepackage[a4paper, inner=3cm, outer=2cm, top=2cm, bottom=2cm, bindingoffset=0cm]{geometry}
+
+% \setlength{\footskip}{30pt} % Set footskip to 30pt
+
+
+
+% Packages
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[cmex10]{amsmath}
+\usepackage{adjustbox} 
+\usepackage{arabtex} 
+\usepackage{academicons}
+\usepackage{breakcites} 
+\usepackage{color}
+\usepackage{epsfig}
+\usepackage{epstopdf}
+\usepackage{etoolbox}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{graphics}
+%\usepackage{hyperref} % if you want to highlight the links
+\usepackage[hidelinks]{hyperref}
+\usepackage{latexsym,amsfonts}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{lscape} 
+\usepackage{lipsum}
+\usepackage{multirow}             
+\usepackage{pdfpages}
+\usepackage[figuresright]{rotating} 
+\usepackage{sectsty}
+\usepackage{setspace}
+\usepackage{subfigure}
+\usepackage{textcomp}
+\usepackage{utf8} 
+\usepackage{url} 
+\usepackage{wrapfig} 
+\usepackage{wasysym} 
+\usepackage{xcolor}
+
+
+% My packages
+% -------------------------------------------------------
+\usepackage[english]{babel}
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+% Python code
+\usepackage{tcolorbox}
+% \tcbuselibrary{minted,breakable,xparse,skins}
+\usepackage{minted}
+\usepackage{xcolor}
+
+% \usepackage{natbib}
+% \usepackage[numbers]{natbib}
+% \usepackage{natbib}
+\usepackage{soul}
+\usepackage{color}
+% \usepackage{xcolor}
+% \bibliographystyle{plainnat} % Choose a style, e.g., plainnat
+% \usepackage{piton}
+
+% Disable indentation globally
+\setlength{\parindent}{0pt}
+
+\usepackage{booktabs} % For professional table formatting
+
+\usepackage{titlesec}
+
+\usepackage{caption} % Subfigures
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+% Define chapter title style
+\titleformat{\chapter}[hang]{\normalfont\bfseries\huge}{\thechapter}{2pc}{}
+
+
+% Adjusting font size and boldness for headings
+% \chapterfont{\fontsize{24}{26}\selectfont\bfseries}   % Chapters: 20 pt, bold
+% \titleformat{\chapter}[block]{\normalfont\Huge\bfseries}{\thechapter}{1em}{}
+\sectionfont{\fontsize{18}{19}\selectfont\bfseries}   % Sections: 18 pt, bold
+\subsectionfont{\fontsize{16}{17}\selectfont\bfseries} % Subsections: 16 pt, bold
+\subsubsectionfont{\fontsize{14}{15}\selectfont\bfseries} % Subsubsections: 14 pt, bold
+
+
+       
+\pagestyle{fancy} % adds a line at the top of every page, except title-page
+\fancyhead{} \fancyfoot{} % for header and footer
+\fancyfoot[CO,CE]{\thepage}    % center odd and even page number
+% \fancyfoot[CO,CE]{\thepage\vspace{5pt}}  % Adds 5pt space below page number
+
+%centering the page numbers with text body
+\fancyheadoffset[L]{0.01mm}
+\renewcommand{\headrulewidth}{0pt}
+
+
+%The following code changes the empty vertical space above a new chapter title. It sets it from 50pt to 20pt
+\makeatletter
+\patchcmd{\@makechapterhead}{50\p@}{20pt}{}{}
+\patchcmd{\@makeschapterhead}{50\p@}{20pt}{}{}
+\makeatother
+%end of modification
+
+
+
+%centering the page numbers with text body
+\fancyheadoffset[L]{0.01mm}
+\renewcommand{\headrulewidth}{0pt}
+
+
+%The following code changes the empty vertical space above a new chapter title. It sets it from 50pt to 20pt
+\makeatletter
+\patchcmd{\@makechapterhead}{50\p@}{20pt}{}{}
+\patchcmd{\@makeschapterhead}{50\p@}{20pt}{}{}
+\makeatother
+%end of modification
+
+
+
+% The following code redefines the plain pagestyle with the objective of moving the page number from the bottom to the top of the page. This only affects new chapter pages.
+\fancypagestyle{plain}{
+\fancyhf{} %clear all header and footer fields
+\fancyhead[C]{\thepage} %puts number on top center of the page
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}}
+%ending of plain pagestyle modification.
+
+
+% Modified commands
+\newcommand{\Tab}{\hspace{2ex}}
+% \usepackage[lmargin=40mm, rmargin=25mm, vmargin=25mm, headsep=2.5mm]{geometry}
+\newcommand{\mathsym}[1]{{}}
+\newcommand{\unicode}[1]{{}}
+\renewcommand{\thechapter}{\arabic{chapter}}
+\renewcommand\bibname{\centering BIBLIOGRAPHY}
+%\newcommand{\orcid}[1]{\href{https://orcid.org/#1}{\textcolor[HTML]{A6CE39}{\aiOrcid}}}
+\newcommand{\orcid}{\includegraphics[width=8pt]{ORCID}} % ORCID ID
+
+
+\begin{document}
+
+
+\include{00_Title_Page}
+
+% CENTERED CHAPTERS
+\chaptertitlefont{\fontsize{14}{15}\selectfont\centering}  
+
+\include{001_Abstract}  % include your abstract file
+
+% \include{02_Acknowledgment}  % include your Acknowledgement file
+
+\begin{onehalfspacing}%To make the table of contents, figures, and tables single spaced, as required by the formatting guidelines, pg. 24.
+
+%\renewcommand{\contentsname}{\textbf{{\large TABLE OF CONTENTS}}}
+\tableofcontents
+
+
+\end{onehalfspacing}
+% \printglossary[style=altlist,title=Nomenclature, toctitle=Nomenclature, nonumberlist=true] 
+
+% $$$$$$$$$$$$$$$$$  Thesis front matter ends   $$$$$$$$$$$$$$
+
+
+% NOT-CENTERED CHAPTERS
+\chaptertitlefont{\fontsize{14}{15}\selectfont}  % <------ Add this line
+
+
+\include{01_Introduction}
+\include{02_Theoretical_Background}
+\include{03_System_Architecture}
+\include{04_Methodology}
+\include{05_Implementation}
+\include{06_Experiments_and_Results}
+\include{07_Financial_Evaluation}
+\include{08_Discussion}
+\include{09_Concluding_Remarks}
+
+
+% $$$$$$$$$$$$$$$$$  Reference style  Starts $$$$$$$$$$$$$$
+
+\begin{onehalfspacing}
+	\renewcommand*\bibname{\centerline{REFERENCES}} 
+    \phantomsection
+	\addcontentsline{toc}{chapter}{References}
+	\newcommand{\BIBdecl}{\setlength{\itemsep}{0pt}}%To control space between bibliography entries
+
+    \renewcommand\refname{\vskip -1.5em}
+    \bibliographystyle{IEEEtran}
+    \bibliography{References}
+    % \printbibliography
+\end{onehalfspacing}
+
+% $$$$$$$$$$$$$$$$$  Reference style Ends  $$$$$$$$$$$$$$
+
+
+% % $$$$$$$$$$$$$$$$$  include Appendices   $$$$$$$$$$$$$$
+
+% \appendix
+% 		\newpage
+% 		\begingroup
+% 			\let\clearpage\relax
+% 			\begin{center}
+% 			\vspace*{2\baselineskip}
+% 			{ \textbf{{\large APPENDICES}}} 
+%             % Fixes the numbering of "new" section created with "\addcontentsline."
+%             % You need to add the "\phantomsection" before *every* "\addcontentsline."
+%             \phantomsection
+% 			\addcontentsline{toc}{chapter}{Appendices} 
+% 			\end{center}
+%             \include{090_Apprendix_A}
+%             \include{091_Appendix_B}
+%             \include{Papers}
+% 		\endgroup
+% % $$$$$$$$$$$$$$$$$  Appendix ends  $$$$$$$$$$$$$$
+
+\end{document}
+

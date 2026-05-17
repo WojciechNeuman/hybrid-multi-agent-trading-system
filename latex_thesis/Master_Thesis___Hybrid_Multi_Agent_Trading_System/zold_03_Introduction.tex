@@ -1,0 +1,98 @@
+
+% Chapter 2 File
+
+\chapter{Introduction}
+% \label{03_Introduction}
+\thispagestyle{empty}
+
+Intelligence is one of the greatest virtues since the dawn of time. The ability to learn, understand, and make judgments or have opinions that are based on reason, was the thing that made our species so special and allowed our civilization to succeed. However, ever since computers were created in the mid-20th century, suddenly it became possible to simulate thinking, problem-solving, and even natural language: Artificial Intelligence was born~\cite{pfeifer2001understanding}. It is the science and engineering of making intelligent machines, especially intelligent computer programs~\cite{mccarthy2007artificial}.
+
+\vspace{3mm} 
+
+There has always been great debate over whether computers can reach a full Artificial General Intelligence -- a system that can do anything a human can do~\cite{Hutter:07aixigentle}, even in emotional, social, or musical spectrum. Those who agree that it is possible certainly have more arguments for it after rapid growth of Large Language Models (LLMs), particularly the most famous created by OpenAI -- called ChatGPT. These models are trained on massive amounts of text data and are able to generate human-like text, answer questions, and complete other language-related tasks with high accuracy. Steve Jobs, one of the greatest minds in the history of modern technology said this in 1985 about building a tool that can answer our questions like the best teacher: “My hope is someday, we can capture the underlying worldview of Aristotle -- in a computer. And someday, some student will be able not only to read the words Aristotle wrote, but ask him a question -- and get an answer.". Today, after less than 40 years, this dream came into reality and we are all blessed to experience it, having tools such as ChatGPT acting as a modern embodiment of Aristotle's wisdom.
+
+\vspace{3mm} 
+
+These tools not only enhance learning opportunities but also revolutionize teaching methodologies. They can automate increasingly complex tasks, scan the internet at lightning speed and pinpoint precision. Its utility can be shared across all students in the world, from kindergarten to esteemed professors, and across all professions -- from IT specialists and medical diagnosticians to paralegals and beyond.
+
+\vspace{3mm}
+
+However, with the great power comes a great responsibility -- this rapid adaptation of AI-generated text comes with plenty of issues. LLMs can never be fully trusted, as they can be often biased -- their functioning is based mostly on statistics, which may lead to a lack of true understanding and expertise. There is also an issue with distinguishing between real human text and generated human-like text~\cite{kasneci2023chatgpt}. These issues raise concerns across various domains, one most prominent is education. Beyond academic concerns, AI-generated text has been misused in various other contexts such as spreading spam across the internet. This includes junk emails or social media bots distributing malicious content or links, raising further challenges in ensuring online security and authenticity.
+
+\vspace{3mm} 
+
+
+\subsection*{Objectives and Workflow}
+
+\vspace{3mm} 
+
+The challenges that arise after this massive adoption of AI-generated text, as described above, call for effective solutions in order to distinguish between human-written and machine-generated content. One promising approach is to build classifiers capable of addressing this problem using various machine learning techniques. This thesis focuses on developing, analyzing, and comparing these classifiers. 
+
+\vspace{3mm} 
+
+In the following chapter (Chapter~\ref{04_Technical_Background}), we present the technical background of the project, including dataset preparation and a detailed explanation of the tools and technologies used. After this, in Chapter~\ref{05_Models_Overview}, we create five distinct models of varying complexity. We begin with simpler approaches, based on classic machine learning and natural language processing (NLP) techniques, such as Bag of Words and Logistic Regression, followed by TF-IDF (Term Frequency-Inverse Document Frequency) paired with Support Vector Machines. These foundational methods, while being effective in most cases, often struggle to capture the nuances and context within texts.
+
+\vspace{3mm} 
+
+As the complexity increases, the workflow transitions to more advanced models, including a Convolutional Neural Network (CNN) model and a Bidirectional Long Short-Term Memory (BiLSTM) model, paired with word embeddings. These models are better suited for understanding sequential patterns in texts. Finally, transformers are introduced as the state-of-the-art approach for most of the NLP tasks, including text classification, due to their high ability to capture context within paragraphs.
+
+\vspace{3mm} 
+
+After carefully designing these models, in Chapter~\ref{06_Comparative_Analysis} we conduct a comparative analysis of their performance and results. We want to show the strengths, if any, of each model, but also focus on their limitations and examples where they achieve low performance. From this, the goal is to identify the most reliable model that achieves the highest accuracy and can be relied upon for practical use.
+
+\vspace{3mm} 
+
+Given the inherent complexity of some of these models that at some point is no longer comprehensible to humans, explainability becomes crucial. We want to find out what is inside of the "Black Box", for that, in Chapter~\ref{07_XAI} we are going to use Explainable Artificial Intelligence (XAI). This technique aims to make AI behavior more intelligible to humans by providing explanations~\cite{gunning2019xai}. Specifically, SHapley Additive exPlanations (SHAP) and Local Interpretable Model-agnostic Explanations (LIME) will be employed to analyze and interpret model predictions.
+
+\vspace{3mm} 
+
+The final chapter (Chapter~\ref{08_Concluding_Remarks}) will conclude the thesis with a summary of the study and future directions. Following this workflow, this paper not only addresses the critical challenge of distinguishing between human and AI-generated text but also builds the foundation for future advancements in text classification by creating and comparing multiple models. Additionally, by emphasizing the importance of explainability, we ensure that the models are not only effective but also interpretable.
+
+
+% call for effective solutions to discern between human-authored and machine-generated content. One promising approach lies in building classifiers capable of addressing this issue by leveraging various machine learning techniques. This work focuses on developing and analyzing these classifiers to tackle the problem. The primary objectives of this paper are twofold: to create and evaluate different machine learning models for distinguishing text sources and to understand the unique strengths and weaknesses of these models.
+
+% To achieve this, five distinct models of varying complexity are explored. The journey begins with simpler approaches, such as the combination of the Bag of Words technique and Logistic Regression, followed by TF-IDF (Term Frequency-Inverse Document Frequency) paired with Support Vector Machines. These foundational methods, while effective in some contexts, often struggle to capture the nuances and context within text.
+
+% As the complexity increases, the workflow transitions to more advanced models, including Recurrent Neural Networks and Convolutional Neural Networks, which are better suited for understanding sequential and spatial patterns in text data. Finally, transformers are introduced as the state-of-the-art approach for text classification, celebrated for their ability to capture context effectively without prohibitive computational costs.
+
+
+% By evaluating models across a spectrum of complexity and incorporating explainability into the analysis, we offer a comprehensive view of the current state of AI in this domain. The findings aim to inspire further research while also equipping stakeholders with the tools and knowledge needed to address emerging challenges.
+
+
+% \textcolor{blue}{[ta wersja to wstępny szkic] The objective of this work, as described in the introduction chapter, is to create various machine learning models. Each algorithm behaves differently, which can lead to different results when applied to the same data. We want to understand their structure and functioning. To achieve this, less and more complex models have been created. By less complex I am thinking of classical machine learning and natural language processing techniques. Often such methods will not be able to detect one of the most important things in our classification - the detection of the context of an input. However, despite this, these models are able to achieve quite good performance. We will start our analysis with a combination of the Bag of Words technique and Logistic Regression, probably the simplest possible strategy for solving the given problem. We will then move on to a slightly more complicated approach combining TF-IDF (Term Frequency-Inverse Document Frequency) and Support Vector Machine. The next algorithms used can be considered more complicated - we will use neural networks for classification - starting with Recurrent Neural Network and Convolutional Neural Network. Finally, we will focus on transformers, widely considered in the literature to be the best possible approach - they have a high ability to detect the context of an utterance, while not exceeding computational complexity excessively. With these 5 models designed, we conduct a comparative analysis of their performance and results. We want to show the strengths, if any, of each model, but also focus on its limitations and examples where it achieved low performance. Working with such difficult models, there is a good chance that understanding their performance will be impossible. This will be inside the so-called “black box” - then Explainable Artificial Intelligence (XAI) will come to the rescue.}
+
+% Fortunately, there are ways to neutralize such concerns. Even though, people are decreasingly capable of distinction between texts written by humans and those generated by AI, we can build classifiers using various AI techniques to face this problem. Creating these models, as well as understanding differences between them, is a subject of this paper. At the same time, theif complexity can reach a point, where it is no longer comprehensible to humans. To meet this challenge, we are going to use Explainable Artificial Intelligence (XAI), which aims to make AI behavior more intelligible to humans by providing explanations \cite{gunning2019xai}.
+
+
+
+% T
+% We can build classifiers using various AI techniques to distinguish between two types of texts - those written by humans and those generated by computers. 
+
+% !!!!
+
+
+
+% This includes fraudulent emails or social media bots distributing malicious content or links, raising further challenges in ensuring online security and authenticity.
+
+% been used to generate large quantities of spam content in the Internet - emails or bots that spread messages with mallitious links or information.
+
+
+% AI-generated text has found misuse in various contexts, particularly in the spread of spam across the internet.
+
+% This issue raises concerns across various domains, particularly in education—how can one ascertain whether a submitted paper or essay is authored by a student or generated by an advanced language model? Beyond academia, the misuse of AI-generated text has also been observed in other areas, such as the proliferation of spam content on the internet. This includes emails or bots spreading malicious links, misinformation, or propaganda at an unprecedented scale, further complicating efforts to maintain trust and authenticity in digital communication.
+
+% % COPY TEXT
+% Difficulty to distinguish between real knowledge and convincingly written but unverified model output. The ability of large language models to generate human-like text can
+% make it difficult for students to distinguish between real knowledge and unverified information. This can lead to students
+% accepting false or misleading information as true, without
+% questioning its validity.
+% % COPY TEXT
+
+% from Garry Kasparov, considered by many the greatest chess player of all time, being beaten by Deep Blue, IBM's famous computer in 1997, to 
+
+% Intelligence is the ability to learn, understand, and make judgments or have opinions that are based on reason.
+
+
+% John McCarthy coined the term “artificial intelligence” (AI) in 1955, defining it as “the science and engineering of making intelligent machines”.
+
+% . [...] In our lifetime, we can build a tool that answers our questions."
