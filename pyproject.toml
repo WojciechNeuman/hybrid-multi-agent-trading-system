@@ -41,6 +41,9 @@ dependencies = [
     # Parquet support
     "pyarrow>=16.0",
 
+    "lightgbm>=4.3",
+    "scikit-learn>=1.4",
+
     # Utilities
     "pydantic>=2.7",
     "loguru>=0.7",
@@ -58,6 +61,7 @@ dev = [
     "pytest-asyncio>=0.23",
     "ipykernel>=6.29",
     "jupyter>=1.0",
+    "nbconvert>=7.17.1",
 ]
 
 [project.scripts]
