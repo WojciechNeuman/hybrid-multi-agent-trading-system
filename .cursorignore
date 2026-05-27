@@ -22,3 +22,6 @@ local/
 
 # Misc
 papers.csv
+
+# Any file that starts with zold
+zold*

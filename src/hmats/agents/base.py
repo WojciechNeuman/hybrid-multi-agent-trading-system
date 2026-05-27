@@ -16,6 +16,7 @@ class MarketSnapshot:
     timestamp: datetime
     ohlcv: pd.DataFrame
     indicators: dict[str, float]
+    interval: str = "1h"
     sentiment: float | None = None
 
 
@@ -29,19 +30,19 @@ class AgentSignal:
     action: Literal["buy", "sell", "hold"]
     confidence: float
     horizon: str = "1d"
+    interval: str = "1h"
     metadata: dict = field(default_factory=dict)
 
 
 @dataclass
 class TradingDecision:
-    """Output produced by the supervisor after aggregating agent signals."""
-
-    timestamp: datetime
-    ticker: str
-    action: Literal["buy", "sell", "hold"]
-    confidence: float
+    timestamp:     datetime
+    ticker:        str
+    action:        Literal["buy", "sell", "hold"]
+    confidence:    float
     position_size: float
-    reasoning: dict[str, AgentSignal] = field(default_factory=dict)
+    horizon:       str = "1h"      # add this
+    reasoning:     dict[str, AgentSignal] = field(default_factory=dict)
 
 
 class BaseAgent(ABC):

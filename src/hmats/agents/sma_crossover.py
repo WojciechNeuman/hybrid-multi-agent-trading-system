@@ -67,7 +67,7 @@ class SMACrossoverAgent(BaseAgent):
             ticker=snapshot.ticker,
             action=action,  # type: ignore[arg-type]
             confidence=confidence,
-            horizon="1d",
+            horizon="1h",
             metadata={"strategy": "sma_crossover"},
         )
 

@@ -227,3 +227,10 @@ data_cache/
 # Model artifacts (keep .gitkeep)
 models/*
 !models/.gitkeep
+
+# Local folders
+/local
+/local_models
+
+# Claude
+.claude/
