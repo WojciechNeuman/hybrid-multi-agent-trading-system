@@ -1,0 +1,36 @@
+{
+  "pipeline": {
+    "stage0_pool": 216,
+    "stage0_v1": 195,
+    "stage0_v3": 21,
+    "stage1_filter": 119,
+    "stage2_mi_rank": 60,
+    "stage3_stability": 40,
+    "stage4_prune": 13,
+    "v3_in_final": 2
+  },
+  "final_features": [
+    "close_vs_sma_7",
+    "stoch_k_14",
+    "ret_1h",
+    "ret_2h",
+    "ret_3h",
+    "cross_altcoin_breadth_24h",
+    "vol_ratio_72h",
+    "candle_body",
+    "macd_divergence",
+    "cross_eth_btc_mom_24h",
+    "vw_rsi_14",
+    "hour_cos",
+    "close_vs_s1"
+  ],
+  "v3_features_in_final": [
+    "cross_altcoin_breadth_24h",
+    "cross_eth_btc_mom_24h"
+  ],
+  "val_auc": 0.5594241424539349,
+  "test_auc": 0.5411743537214189,
+  "baseline_val_auc": 0.5555,
+  "baseline_test_auc": 0.5395,
+  "best_iteration": 86
+}

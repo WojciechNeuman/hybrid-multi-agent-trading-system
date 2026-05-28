@@ -1,0 +1,38 @@
+{
+  "pipeline": {
+    "stage0_pool": 195,
+    "stage1_filter": 105,
+    "stage2_mi_rank": 50,
+    "stage3_stability": 33,
+    "stage4_prune": 10
+  },
+  "final_features": [
+    "close_vs_sma_7",
+    "ret_1h",
+    "stoch_k_14",
+    "ret_2h",
+    "ret_3h",
+    "vol_ratio_72h",
+    "macd_divergence",
+    "candle_body",
+    "vw_rsi_14",
+    "bear_streak"
+  ],
+  "val_auc": 0.5555450810761017,
+  "test_auc": 0.5395058941995521,
+  "best_iteration": 79,
+  "lgb_params": {
+    "n_estimators": 1000,
+    "learning_rate": 0.02,
+    "num_leaves": 31,
+    "max_depth": 6,
+    "min_child_samples": 50,
+    "subsample": 0.8,
+    "colsample_bytree": 0.7,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0,
+    "verbose": -1,
+    "random_state": 42,
+    "n_jobs": -1
+  }
+}

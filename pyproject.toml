@@ -16,40 +16,34 @@ dependencies = [
     "numpy>=1.26",
     "pandas>=2.2",
     "scipy>=1.13",
-
     # Financial data (Binance REST API via requests)
-
     # Deep learning (forecasting agents)
     "torch>=2.3",
-
     # NLP / sentiment
     "transformers>=4.40",
     "datasets>=2.19",
-
     # Reinforcement learning
     "gymnasium>=0.29",
     "stable-baselines3>=2.3",
-
     # Evolutionary algorithms
     "deap>=1.4",
     "neat-python>=0.92",
     "requests>=2.31",
-
     # Visualization
     "matplotlib>=3.8",
-
+    "seaborn>=0.13",
     # Parquet support
     "pyarrow>=16.0",
-
     "lightgbm>=4.3",
     "scikit-learn>=1.4",
-
     # Utilities
     "pydantic>=2.7",
     "loguru>=0.7",
     "python-dotenv>=1.0",
     "tqdm>=4.66",
     "typer>=0.12",
+    "matplotlib-inline>=0.2.1",
+    "ipython>=9.13.0",
 ]
 
 [project.optional-dependencies]

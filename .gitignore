@@ -221,7 +221,11 @@ __marimo__/
 .DS_Store
 
 # Project data files
-data/
+# Large/generated files — not tracked
+data/raw/
+data/features/*.parquet
+data/cache/
+# Legacy cache dir name (may still be created by old notebooks)
 data_cache/
 
 # Model artifacts (keep .gitkeep)

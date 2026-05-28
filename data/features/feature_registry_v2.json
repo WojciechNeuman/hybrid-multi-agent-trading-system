@@ -1,0 +1,250 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-05-28T22:52:48Z",
+  "description": "Advanced structural features for BTCUSDT 5m, grouped for LightGBM ablation testing.",
+  "source_assets": [
+    "BTCUSDT"
+  ],
+  "source_timeframes": [
+    "5m",
+    "1h",
+    "4h"
+  ],
+  "output_parquet": "/Users/wojciech.neuman/Documents/hybrid-multi-agent-trading-system/data/features/BTCUSDT_5m_structural.parquet",
+  "burn_in_bars": 2500,
+  "total_features": 39,
+  "row_count": 920748,
+  "date_range": {
+    "start": "2017-08-25T20:20:00+00:00",
+    "end": "2026-05-27T21:15:00+00:00"
+  },
+  "feature_groups": {
+    "A_structure": {
+      "description": "Micro-structural price action: confirmed swing extrema anchors and wick-rejection vectors. Distance features are signed % of close.",
+      "prefix": "struct_",
+      "parameters": {
+        "swing_order_minor": 12,
+        "swing_order_major": 48,
+        "near_threshold": 0.003
+      },
+      "features": [
+        "struct_body_ratio",
+        "struct_dist_swing_high_l",
+        "struct_dist_swing_high_s",
+        "struct_dist_swing_low_l",
+        "struct_dist_swing_low_s",
+        "struct_lower_wick_ratio",
+        "struct_near_swing_high_s",
+        "struct_near_swing_low_s",
+        "struct_swing_high_age_s",
+        "struct_swing_low_age_s",
+        "struct_upper_wick_ratio"
+      ]
+    },
+    "B_liquidity": {
+      "description": "Liquidity and order flow proxies: anchored VWAP deviations (daily, weekly, rolling), rolling Volume-Profile POC distance, and volume-exhaustion spike indicators.",
+      "prefix": "liq_",
+      "parameters": {
+        "voc_window_short": 72,
+        "voc_window_long": 288,
+        "poc_bins": 30
+      },
+      "features": [
+        "liq_exhaustion_bear",
+        "liq_exhaustion_bull",
+        "liq_poc_dist_288bar",
+        "liq_poc_dist_72bar",
+        "liq_vol_z_288bar",
+        "liq_vol_z_72bar",
+        "liq_vwap_dev_288bar",
+        "liq_vwap_dev_72bar",
+        "liq_vwap_dev_daily",
+        "liq_vwap_dev_weekly"
+      ]
+    },
+    "C_volatility": {
+      "description": "Volatility squeeze and regime vectors: Bollinger-Keltner squeeze ratio, Garman-Klass historical volatility estimator (annualized), ATR-normalized regime width.",
+      "prefix": "volat_",
+      "parameters": {
+        "bb_window": 20,
+        "atr_window_s": 20,
+        "atr_window_l": 72
+      },
+      "features": [
+        "volat_atr_20_pct",
+        "volat_atr_72_pct",
+        "volat_bb_position_20",
+        "volat_bb_width_20",
+        "volat_bk_squeeze",
+        "volat_gk_20",
+        "volat_gk_72",
+        "volat_squeeze_on"
+      ]
+    },
+    "D_mtf": {
+      "description": "Macro context and multi-timeframe alignment: normalized 1h and 4h EMA-spread signals mapped to 5m via ffill, RSI, composite alignment score, and UTC session cyclical encodings.",
+      "prefix": "mtf_",
+      "parameters": {
+        "ema_fast": 20,
+        "ema_slow": 50,
+        "rsi_period": 14
+      },
+      "features": [
+        "mtf_alignment",
+        "mtf_h1_above_ema50",
+        "mtf_h1_ema_signal",
+        "mtf_h1_rsi",
+        "mtf_h4_ema_signal",
+        "mtf_h4_rsi",
+        "mtf_session_dow_cos",
+        "mtf_session_dow_sin",
+        "mtf_session_hour_cos",
+        "mtf_session_hour_sin"
+      ]
+    }
+  },
+  "ablation_subsets": {
+    "all": [
+      "struct_dist_swing_high_s",
+      "struct_dist_swing_low_s",
+      "struct_dist_swing_high_l",
+      "struct_dist_swing_low_l",
+      "struct_near_swing_high_s",
+      "struct_near_swing_low_s",
+      "struct_swing_high_age_s",
+      "struct_swing_low_age_s",
+      "struct_lower_wick_ratio",
+      "struct_upper_wick_ratio",
+      "struct_body_ratio",
+      "liq_vwap_dev_daily",
+      "liq_vwap_dev_weekly",
+      "liq_vwap_dev_72bar",
+      "liq_vwap_dev_288bar",
+      "liq_poc_dist_72bar",
+      "liq_poc_dist_288bar",
+      "liq_vol_z_72bar",
+      "liq_vol_z_288bar",
+      "liq_exhaustion_bull",
+      "liq_exhaustion_bear",
+      "volat_atr_20_pct",
+      "volat_atr_72_pct",
+      "volat_bb_width_20",
+      "volat_bb_position_20",
+      "volat_bk_squeeze",
+      "volat_squeeze_on",
+      "volat_gk_20",
+      "volat_gk_72",
+      "mtf_h1_ema_signal",
+      "mtf_h1_rsi",
+      "mtf_h1_above_ema50",
+      "mtf_h4_ema_signal",
+      "mtf_h4_rsi",
+      "mtf_alignment",
+      "mtf_session_hour_sin",
+      "mtf_session_hour_cos",
+      "mtf_session_dow_sin",
+      "mtf_session_dow_cos"
+    ],
+    "structure_only": [
+      "struct_body_ratio",
+      "struct_dist_swing_high_l",
+      "struct_dist_swing_high_s",
+      "struct_dist_swing_low_l",
+      "struct_dist_swing_low_s",
+      "struct_lower_wick_ratio",
+      "struct_near_swing_high_s",
+      "struct_near_swing_low_s",
+      "struct_swing_high_age_s",
+      "struct_swing_low_age_s",
+      "struct_upper_wick_ratio"
+    ],
+    "liquidity_only": [
+      "liq_exhaustion_bear",
+      "liq_exhaustion_bull",
+      "liq_poc_dist_288bar",
+      "liq_poc_dist_72bar",
+      "liq_vol_z_288bar",
+      "liq_vol_z_72bar",
+      "liq_vwap_dev_288bar",
+      "liq_vwap_dev_72bar",
+      "liq_vwap_dev_daily",
+      "liq_vwap_dev_weekly"
+    ],
+    "volatility_only": [
+      "volat_atr_20_pct",
+      "volat_atr_72_pct",
+      "volat_bb_position_20",
+      "volat_bb_width_20",
+      "volat_bk_squeeze",
+      "volat_gk_20",
+      "volat_gk_72",
+      "volat_squeeze_on"
+    ],
+    "mtf_only": [
+      "mtf_alignment",
+      "mtf_h1_above_ema50",
+      "mtf_h1_ema_signal",
+      "mtf_h1_rsi",
+      "mtf_h4_ema_signal",
+      "mtf_h4_rsi",
+      "mtf_session_dow_cos",
+      "mtf_session_dow_sin",
+      "mtf_session_hour_cos",
+      "mtf_session_hour_sin"
+    ],
+    "no_mtf": [
+      "struct_body_ratio",
+      "struct_dist_swing_high_l",
+      "struct_dist_swing_high_s",
+      "struct_dist_swing_low_l",
+      "struct_dist_swing_low_s",
+      "struct_lower_wick_ratio",
+      "struct_near_swing_high_s",
+      "struct_near_swing_low_s",
+      "struct_swing_high_age_s",
+      "struct_swing_low_age_s",
+      "struct_upper_wick_ratio",
+      "liq_exhaustion_bear",
+      "liq_exhaustion_bull",
+      "liq_poc_dist_288bar",
+      "liq_poc_dist_72bar",
+      "liq_vol_z_288bar",
+      "liq_vol_z_72bar",
+      "liq_vwap_dev_288bar",
+      "liq_vwap_dev_72bar",
+      "liq_vwap_dev_daily",
+      "liq_vwap_dev_weekly",
+      "volat_atr_20_pct",
+      "volat_atr_72_pct",
+      "volat_bb_position_20",
+      "volat_bb_width_20",
+      "volat_bk_squeeze",
+      "volat_gk_20",
+      "volat_gk_72",
+      "volat_squeeze_on"
+    ],
+    "market_structure": [
+      "struct_body_ratio",
+      "struct_dist_swing_high_l",
+      "struct_dist_swing_high_s",
+      "struct_dist_swing_low_l",
+      "struct_dist_swing_low_s",
+      "struct_lower_wick_ratio",
+      "struct_near_swing_high_s",
+      "struct_near_swing_low_s",
+      "struct_swing_high_age_s",
+      "struct_swing_low_age_s",
+      "struct_upper_wick_ratio",
+      "liq_exhaustion_bear",
+      "liq_exhaustion_bull",
+      "liq_poc_dist_288bar",
+      "liq_poc_dist_72bar",
+      "liq_vol_z_288bar",
+      "liq_vol_z_72bar",
+      "liq_vwap_dev_288bar",
+      "liq_vwap_dev_72bar",
+      "liq_vwap_dev_daily",
+      "liq_vwap_dev_weekly"
+    ]
+  }
+}

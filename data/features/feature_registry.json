@@ -1,0 +1,1106 @@
+{
+  "generated_at": "2026-05-16T20:08:17.412306",
+  "source_data": "BTCUSDT_1h.parquet",
+  "output_parquet": "BTCUSDT_1h_features.parquet",
+  "total_features": 196,
+  "backtest_only_cols": [
+    "close",
+    "sma_200",
+    "atr_14_pct"
+  ],
+  "label_col": "label",
+  "groups": {
+    "bollinger": {
+      "count": 4,
+      "features": [
+        "bb_width_20",
+        "bb_position_20",
+        "bb_width_50",
+        "bb_position_50"
+      ]
+    },
+    "calendar": {
+      "count": 11,
+      "features": [
+        "hour_sin",
+        "hour_cos",
+        "dow_sin",
+        "dow_cos",
+        "halving_cycle_sin",
+        "halving_cycle_cos",
+        "halving_cycle_pos",
+        "dom_sin",
+        "dom_cos",
+        "quarter_sin",
+        "quarter_cos"
+      ]
+    },
+    "candle_structure": {
+      "count": 4,
+      "features": [
+        "candle_body",
+        "upper_wick",
+        "lower_wick",
+        "is_bullish"
+      ]
+    },
+    "candlestick_patterns": {
+      "count": 8,
+      "features": [
+        "bull_engulf",
+        "bear_engulf",
+        "doji",
+        "hammer",
+        "shooting_star",
+        "bull_streak",
+        "bear_streak",
+        "marubozu"
+      ]
+    },
+    "composite": {
+      "count": 7,
+      "features": [
+        "trend_score",
+        "rsi_vol_confirm",
+        "mom_coherence",
+        "sharpe_ratio_24h",
+        "sharpe_ratio_72h",
+        "sharpe_ratio_168h",
+        "regime_composite"
+      ]
+    },
+    "divergences": {
+      "count": 5,
+      "features": [
+        "rsi_divergence",
+        "macd_divergence",
+        "obv_divergence",
+        "vol_price_div_12h",
+        "vol_price_div_24h"
+      ]
+    },
+    "fibonacci": {
+      "count": 10,
+      "features": [
+        "fib_position_48h",
+        "fib_nearest_dist_48h",
+        "fib_nearest_level_48h",
+        "fib_dist_618_48h",
+        "fib_below_618_48h",
+        "fib_position_168h",
+        "fib_nearest_dist_168h",
+        "fib_nearest_level_168h",
+        "fib_dist_618_168h",
+        "fib_below_618_168h"
+      ]
+    },
+    "ichimoku": {
+      "count": 10,
+      "features": [
+        "tk_ratio",
+        "tk_cross_bull",
+        "tk_cross_bear",
+        "close_vs_cloud_top",
+        "close_vs_cloud_bottom",
+        "inside_cloud",
+        "cloud_thickness",
+        "cloud_bullish",
+        "cloud_flip_recency",
+        "close_vs_kijun"
+      ]
+    },
+    "long_cycle_ma": {
+      "count": 11,
+      "features": [
+        "close_vs_sma_336",
+        "close_vs_ema_336",
+        "close_vs_sma_504",
+        "close_vs_ema_504",
+        "close_vs_sma_720",
+        "close_vs_ema_720",
+        "close_vs_sma_2160",
+        "close_vs_ema_2160",
+        "close_vs_sma_4320",
+        "close_vs_ema_4320",
+        "weekly_mom_accel"
+      ]
+    },
+    "ma_crosses": {
+      "count": 9,
+      "features": [
+        "sma50_vs_sma200",
+        "sma20_vs_sma50",
+        "sma50_vs_sma100",
+        "sma100_vs_sma200",
+        "golden_cross",
+        "candles_since_cross",
+        "cross_recency",
+        "ma_bull_score",
+        "ma_ribbon_width"
+      ]
+    },
+    "ma_ratios": {
+      "count": 12,
+      "features": [
+        "close_vs_sma_7",
+        "close_vs_ema_7",
+        "close_vs_sma_14",
+        "close_vs_ema_14",
+        "close_vs_sma_20",
+        "close_vs_ema_20",
+        "close_vs_sma_50",
+        "close_vs_ema_50",
+        "close_vs_sma_100",
+        "close_vs_ema_100",
+        "close_vs_sma_200",
+        "close_vs_ema_200"
+      ]
+    },
+    "macd": {
+      "count": 4,
+      "features": [
+        "macd_12_26",
+        "macd_hist_12_26",
+        "macd_5_13",
+        "macd_hist_5_13"
+      ]
+    },
+    "oscillators": {
+      "count": 6,
+      "features": [
+        "rsi_7",
+        "rsi_14",
+        "rsi_21",
+        "stoch_k_14",
+        "stoch_k_21",
+        "williams_r"
+      ]
+    },
+    "price_position": {
+      "count": 3,
+      "features": [
+        "hl_position_24h",
+        "hl_position_48h",
+        "hl_position_168h"
+      ]
+    },
+    "returns": {
+      "count": 18,
+      "features": [
+        "ret_1h",
+        "log_ret_1h",
+        "ret_2h",
+        "log_ret_2h",
+        "ret_3h",
+        "log_ret_3h",
+        "ret_6h",
+        "log_ret_6h",
+        "ret_12h",
+        "log_ret_12h",
+        "ret_24h",
+        "log_ret_24h",
+        "ret_48h",
+        "log_ret_48h",
+        "ret_72h",
+        "log_ret_72h",
+        "ret_168h",
+        "log_ret_168h"
+      ]
+    },
+    "statistical": {
+      "count": 13,
+      "features": [
+        "hurst_168h",
+        "skew_24h",
+        "kurt_24h",
+        "skew_72h",
+        "kurt_72h",
+        "skew_168h",
+        "kurt_168h",
+        "autocorr_ret_1h",
+        "autocorr_ret_6h",
+        "autocorr_ret_12h",
+        "autocorr_ret_24h",
+        "var_ratio_6h",
+        "var_ratio_24h"
+      ]
+    },
+    "supertrend": {
+      "count": 8,
+      "features": [
+        "supertrend_dir_15",
+        "supertrend_dist_15",
+        "supertrend_dir_20",
+        "supertrend_dist_20",
+        "supertrend_dir_30",
+        "supertrend_dist_30",
+        "supertrend_consensus",
+        "supertrend_flip_recency"
+      ]
+    },
+    "support_resistance": {
+      "count": 13,
+      "features": [
+        "close_vs_pivot",
+        "close_vs_r1",
+        "close_vs_s1",
+        "close_vs_r2",
+        "close_vs_s2",
+        "dist_round_1000",
+        "dist_round_10000",
+        "breakout_up_24h",
+        "breakout_down_24h",
+        "breakout_up_48h",
+        "breakout_down_48h",
+        "breakout_up_168h",
+        "breakout_down_168h"
+      ]
+    },
+    "volatility": {
+      "count": 10,
+      "features": [
+        "vol_6h",
+        "vol_12h",
+        "vol_24h",
+        "vol_48h",
+        "vol_72h",
+        "vol_168h",
+        "atr_14",
+        "atr_14_pct",
+        "atr_24",
+        "atr_24_pct"
+      ]
+    },
+    "volatility_regime": {
+      "count": 11,
+      "features": [
+        "gk_vol_24h",
+        "gk_vol_72h",
+        "gk_vol_168h",
+        "park_vol_24h",
+        "park_vol_72h",
+        "vol_of_vol_72h",
+        "atr_14_pct_rank",
+        "atr_24_pct_rank",
+        "bb_squeeze_20",
+        "bb_squeeze_50",
+        "range_vs_atr"
+      ]
+    },
+    "volume": {
+      "count": 9,
+      "features": [
+        "vol_z_12h",
+        "vol_ratio_12h",
+        "vol_z_24h",
+        "vol_ratio_24h",
+        "vol_z_72h",
+        "vol_ratio_72h",
+        "vol_z_168h",
+        "vol_ratio_168h",
+        "obv_z_72"
+      ]
+    },
+    "volume_profile": {
+      "count": 10,
+      "features": [
+        "close_vs_vwap_24h",
+        "close_vs_vwap_168h",
+        "mfi_14",
+        "mfi_21",
+        "cmf_20",
+        "ad_z_48h",
+        "ad_z_168h",
+        "vol_spike_2x",
+        "vol_spike_3x",
+        "vw_rsi_14"
+      ]
+    }
+  },
+  "features": {
+    "ret_1h": {
+      "group": "returns",
+      "description": "Return over 1h window"
+    },
+    "log_ret_1h": {
+      "group": "returns",
+      "description": "Return over 1h window"
+    },
+    "ret_2h": {
+      "group": "returns",
+      "description": "Return over 2h window"
+    },
+    "log_ret_2h": {
+      "group": "returns",
+      "description": "Return over 2h window"
+    },
+    "ret_3h": {
+      "group": "returns",
+      "description": "Return over 3h window"
+    },
+    "log_ret_3h": {
+      "group": "returns",
+      "description": "Return over 3h window"
+    },
+    "ret_6h": {
+      "group": "returns",
+      "description": "Return over 6h window"
+    },
+    "log_ret_6h": {
+      "group": "returns",
+      "description": "Return over 6h window"
+    },
+    "ret_12h": {
+      "group": "returns",
+      "description": "Return over 12h window"
+    },
+    "log_ret_12h": {
+      "group": "returns",
+      "description": "Return over 12h window"
+    },
+    "ret_24h": {
+      "group": "returns",
+      "description": "Return over 24h window"
+    },
+    "log_ret_24h": {
+      "group": "returns",
+      "description": "Return over 24h window"
+    },
+    "ret_48h": {
+      "group": "returns",
+      "description": "Return over 48h window"
+    },
+    "log_ret_48h": {
+      "group": "returns",
+      "description": "Return over 48h window"
+    },
+    "ret_72h": {
+      "group": "returns",
+      "description": "Return over 72h window"
+    },
+    "log_ret_72h": {
+      "group": "returns",
+      "description": "Return over 72h window"
+    },
+    "ret_168h": {
+      "group": "returns",
+      "description": "Return over 168h window"
+    },
+    "log_ret_168h": {
+      "group": "returns",
+      "description": "Return over 168h window"
+    },
+    "vol_6h": {
+      "group": "volatility",
+      "description": "Rolling log-return std over 6h"
+    },
+    "vol_12h": {
+      "group": "volatility",
+      "description": "Rolling log-return std over 12h"
+    },
+    "vol_24h": {
+      "group": "volatility",
+      "description": "Rolling log-return std over 24h"
+    },
+    "vol_48h": {
+      "group": "volatility",
+      "description": "Rolling log-return std over 48h"
+    },
+    "vol_72h": {
+      "group": "volatility",
+      "description": "Rolling log-return std over 72h"
+    },
+    "vol_168h": {
+      "group": "volatility",
+      "description": "Rolling log-return std over 168h"
+    },
+    "atr_14": {
+      "group": "volatility",
+      "description": "ATR 14-period (raw and pct of close)"
+    },
+    "atr_14_pct": {
+      "group": "volatility",
+      "description": "ATR 14-period (raw and pct of close)"
+    },
+    "atr_24": {
+      "group": "volatility",
+      "description": "ATR 24-period (raw and pct of close)"
+    },
+    "atr_24_pct": {
+      "group": "volatility",
+      "description": "ATR 24-period (raw and pct of close)"
+    },
+    "close_vs_sma_7": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 7 (pct)"
+    },
+    "close_vs_ema_7": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 7 (pct)"
+    },
+    "close_vs_sma_14": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 14 (pct)"
+    },
+    "close_vs_ema_14": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 14 (pct)"
+    },
+    "close_vs_sma_20": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 20 (pct)"
+    },
+    "close_vs_ema_20": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 20 (pct)"
+    },
+    "close_vs_sma_50": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 50 (pct)"
+    },
+    "close_vs_ema_50": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 50 (pct)"
+    },
+    "close_vs_sma_100": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 100 (pct)"
+    },
+    "close_vs_ema_100": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 100 (pct)"
+    },
+    "close_vs_sma_200": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 200 (pct)"
+    },
+    "close_vs_ema_200": {
+      "group": "ma_ratios",
+      "description": "Close vs SMA/EMA 200 (pct)"
+    },
+    "bb_width_20": {
+      "group": "bollinger",
+      "description": "Bollinger Band width/position 20"
+    },
+    "bb_position_20": {
+      "group": "bollinger",
+      "description": "Bollinger Band width/position 20"
+    },
+    "bb_width_50": {
+      "group": "bollinger",
+      "description": "Bollinger Band width/position 50"
+    },
+    "bb_position_50": {
+      "group": "bollinger",
+      "description": "Bollinger Band width/position 50"
+    },
+    "macd_12_26": {
+      "group": "macd",
+      "description": "MACD (12,26) normalized"
+    },
+    "macd_hist_12_26": {
+      "group": "macd",
+      "description": "MACD (12,26) normalized"
+    },
+    "macd_5_13": {
+      "group": "macd",
+      "description": "MACD (5,13) normalized"
+    },
+    "macd_hist_5_13": {
+      "group": "macd",
+      "description": "MACD (5,13) normalized"
+    },
+    "rsi_7": {
+      "group": "oscillators",
+      "description": "RSI 7-period (0-1 scaled)"
+    },
+    "rsi_14": {
+      "group": "oscillators",
+      "description": "RSI 14-period (0-1 scaled)"
+    },
+    "rsi_21": {
+      "group": "oscillators",
+      "description": "RSI 21-period (0-1 scaled)"
+    },
+    "stoch_k_14": {
+      "group": "oscillators",
+      "description": "Stochastic %K 14-period"
+    },
+    "stoch_k_21": {
+      "group": "oscillators",
+      "description": "Stochastic %K 21-period"
+    },
+    "williams_r": {
+      "group": "oscillators",
+      "description": "Williams %R 14-period"
+    },
+    "vol_z_12h": {
+      "group": "volume",
+      "description": "Volume z-score/ratio 12h"
+    },
+    "vol_ratio_12h": {
+      "group": "volume",
+      "description": "Volume z-score/ratio 12h"
+    },
+    "vol_z_24h": {
+      "group": "volume",
+      "description": "Volume z-score/ratio 24h"
+    },
+    "vol_ratio_24h": {
+      "group": "volume",
+      "description": "Volume z-score/ratio 24h"
+    },
+    "vol_z_72h": {
+      "group": "volume",
+      "description": "Volume z-score/ratio 72h"
+    },
+    "vol_ratio_72h": {
+      "group": "volume",
+      "description": "Volume z-score/ratio 72h"
+    },
+    "vol_z_168h": {
+      "group": "volume",
+      "description": "Volume z-score/ratio 168h"
+    },
+    "vol_ratio_168h": {
+      "group": "volume",
+      "description": "Volume z-score/ratio 168h"
+    },
+    "obv_z_72": {
+      "group": "volume",
+      "description": "OBV z-score 72h"
+    },
+    "candle_body": {
+      "group": "candle_structure",
+      "description": "Candle body/wick structure"
+    },
+    "upper_wick": {
+      "group": "candle_structure",
+      "description": "Candle body/wick structure"
+    },
+    "lower_wick": {
+      "group": "candle_structure",
+      "description": "Candle body/wick structure"
+    },
+    "is_bullish": {
+      "group": "candle_structure",
+      "description": "Candle body/wick structure"
+    },
+    "hl_position_24h": {
+      "group": "price_position",
+      "description": "High/low position 24h"
+    },
+    "hl_position_48h": {
+      "group": "price_position",
+      "description": "High/low position 48h"
+    },
+    "hl_position_168h": {
+      "group": "price_position",
+      "description": "High/low position 168h"
+    },
+    "hour_sin": {
+      "group": "calendar",
+      "description": "Hour/weekday sine-cosine encoding"
+    },
+    "hour_cos": {
+      "group": "calendar",
+      "description": "Hour/weekday sine-cosine encoding"
+    },
+    "dow_sin": {
+      "group": "calendar",
+      "description": "Hour/weekday sine-cosine encoding"
+    },
+    "dow_cos": {
+      "group": "calendar",
+      "description": "Hour/weekday sine-cosine encoding"
+    },
+    "sma50_vs_sma200": {
+      "group": "ma_crosses",
+      "description": "Normalized SMA pair distance (golden/death cross)"
+    },
+    "sma20_vs_sma50": {
+      "group": "ma_crosses",
+      "description": "Normalized SMA pair distance (golden/death cross)"
+    },
+    "sma50_vs_sma100": {
+      "group": "ma_crosses",
+      "description": "Normalized SMA pair distance (golden/death cross)"
+    },
+    "sma100_vs_sma200": {
+      "group": "ma_crosses",
+      "description": "Normalized SMA pair distance (golden/death cross)"
+    },
+    "golden_cross": {
+      "group": "ma_crosses",
+      "description": "MA cross signals: binary flag, recency, bull alignment score, ribbon width"
+    },
+    "candles_since_cross": {
+      "group": "ma_crosses",
+      "description": "MA cross signals: binary flag, recency, bull alignment score, ribbon width"
+    },
+    "cross_recency": {
+      "group": "ma_crosses",
+      "description": "MA cross signals: binary flag, recency, bull alignment score, ribbon width"
+    },
+    "ma_bull_score": {
+      "group": "ma_crosses",
+      "description": "MA cross signals: binary flag, recency, bull alignment score, ribbon width"
+    },
+    "ma_ribbon_width": {
+      "group": "ma_crosses",
+      "description": "MA cross signals: binary flag, recency, bull alignment score, ribbon width"
+    },
+    "tk_ratio": {
+      "group": "ichimoku",
+      "description": "Ichimoku TK cross signals"
+    },
+    "tk_cross_bull": {
+      "group": "ichimoku",
+      "description": "Ichimoku TK cross signals"
+    },
+    "tk_cross_bear": {
+      "group": "ichimoku",
+      "description": "Ichimoku TK cross signals"
+    },
+    "close_vs_cloud_top": {
+      "group": "ichimoku",
+      "description": "Ichimoku cloud position and structure features"
+    },
+    "close_vs_cloud_bottom": {
+      "group": "ichimoku",
+      "description": "Ichimoku cloud position and structure features"
+    },
+    "inside_cloud": {
+      "group": "ichimoku",
+      "description": "Ichimoku cloud position and structure features"
+    },
+    "cloud_thickness": {
+      "group": "ichimoku",
+      "description": "Ichimoku cloud position and structure features"
+    },
+    "cloud_bullish": {
+      "group": "ichimoku",
+      "description": "Ichimoku cloud position and structure features"
+    },
+    "cloud_flip_recency": {
+      "group": "ichimoku",
+      "description": "Ichimoku cloud position and structure features"
+    },
+    "close_vs_kijun": {
+      "group": "ichimoku",
+      "description": "Ichimoku cloud position and structure features"
+    },
+    "supertrend_dir_15": {
+      "group": "supertrend",
+      "description": "SuperTrend direction/distance (mult=1.5)"
+    },
+    "supertrend_dist_15": {
+      "group": "supertrend",
+      "description": "SuperTrend direction/distance (mult=1.5)"
+    },
+    "supertrend_dir_20": {
+      "group": "supertrend",
+      "description": "SuperTrend direction/distance (mult=2.0)"
+    },
+    "supertrend_dist_20": {
+      "group": "supertrend",
+      "description": "SuperTrend direction/distance (mult=2.0)"
+    },
+    "supertrend_dir_30": {
+      "group": "supertrend",
+      "description": "SuperTrend direction/distance (mult=3.0)"
+    },
+    "supertrend_dist_30": {
+      "group": "supertrend",
+      "description": "SuperTrend direction/distance (mult=3.0)"
+    },
+    "supertrend_consensus": {
+      "group": "supertrend",
+      "description": "SuperTrend consensus across multipliers + flip recency"
+    },
+    "supertrend_flip_recency": {
+      "group": "supertrend",
+      "description": "SuperTrend consensus across multipliers + flip recency"
+    },
+    "fib_position_48h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=48h)"
+    },
+    "fib_nearest_dist_48h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=48h)"
+    },
+    "fib_nearest_level_48h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=48h)"
+    },
+    "fib_dist_618_48h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=48h)"
+    },
+    "fib_below_618_48h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=48h)"
+    },
+    "fib_position_168h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=168h)"
+    },
+    "fib_nearest_dist_168h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=168h)"
+    },
+    "fib_nearest_level_168h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=168h)"
+    },
+    "fib_dist_618_168h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=168h)"
+    },
+    "fib_below_618_168h": {
+      "group": "fibonacci",
+      "description": "Fibonacci retracement grid position (lookback=168h)"
+    },
+    "close_vs_sma_336": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 336h (2wk)"
+    },
+    "close_vs_ema_336": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 336h (2wk)"
+    },
+    "close_vs_sma_504": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 504h (3wk)"
+    },
+    "close_vs_ema_504": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 504h (3wk)"
+    },
+    "close_vs_sma_720": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 720h (1mo)"
+    },
+    "close_vs_ema_720": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 720h (1mo)"
+    },
+    "close_vs_sma_2160": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 2160h (3mo)"
+    },
+    "close_vs_ema_2160": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 2160h (3mo)"
+    },
+    "close_vs_sma_4320": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 4320h (6mo)"
+    },
+    "close_vs_ema_4320": {
+      "group": "long_cycle_ma",
+      "description": "Close vs SMA/EMA 4320h (6mo)"
+    },
+    "weekly_mom_accel": {
+      "group": "long_cycle_ma",
+      "description": "Weekly momentum acceleration (change in 168h return)"
+    },
+    "halving_cycle_sin": {
+      "group": "calendar",
+      "description": "BTC 4-year halving cycle encoding (sin/cos/linear position)"
+    },
+    "halving_cycle_cos": {
+      "group": "calendar",
+      "description": "BTC 4-year halving cycle encoding (sin/cos/linear position)"
+    },
+    "halving_cycle_pos": {
+      "group": "calendar",
+      "description": "BTC 4-year halving cycle encoding (sin/cos/linear position)"
+    },
+    "dom_sin": {
+      "group": "calendar",
+      "description": "Day-of-month and quarter sine-cosine encoding"
+    },
+    "dom_cos": {
+      "group": "calendar",
+      "description": "Day-of-month and quarter sine-cosine encoding"
+    },
+    "quarter_sin": {
+      "group": "calendar",
+      "description": "Day-of-month and quarter sine-cosine encoding"
+    },
+    "quarter_cos": {
+      "group": "calendar",
+      "description": "Day-of-month and quarter sine-cosine encoding"
+    },
+    "rsi_divergence": {
+      "group": "divergences",
+      "description": "Price vs indicator divergence (+1 bullish, -1 bearish, 0 none)"
+    },
+    "macd_divergence": {
+      "group": "divergences",
+      "description": "Price vs indicator divergence (+1 bullish, -1 bearish, 0 none)"
+    },
+    "obv_divergence": {
+      "group": "divergences",
+      "description": "Price vs indicator divergence (+1 bullish, -1 bearish, 0 none)"
+    },
+    "vol_price_div_12h": {
+      "group": "divergences",
+      "description": "Volume-price divergence 12h"
+    },
+    "vol_price_div_24h": {
+      "group": "divergences",
+      "description": "Volume-price divergence 24h"
+    },
+    "bull_engulf": {
+      "group": "candlestick_patterns",
+      "description": "Multi-bar reversal/continuation pattern encoding"
+    },
+    "bear_engulf": {
+      "group": "candlestick_patterns",
+      "description": "Multi-bar reversal/continuation pattern encoding"
+    },
+    "doji": {
+      "group": "candlestick_patterns",
+      "description": "Multi-bar reversal/continuation pattern encoding"
+    },
+    "hammer": {
+      "group": "candlestick_patterns",
+      "description": "Multi-bar reversal/continuation pattern encoding"
+    },
+    "shooting_star": {
+      "group": "candlestick_patterns",
+      "description": "Multi-bar reversal/continuation pattern encoding"
+    },
+    "bull_streak": {
+      "group": "candlestick_patterns",
+      "description": "Multi-bar reversal/continuation pattern encoding"
+    },
+    "bear_streak": {
+      "group": "candlestick_patterns",
+      "description": "Multi-bar reversal/continuation pattern encoding"
+    },
+    "marubozu": {
+      "group": "candlestick_patterns",
+      "description": "Multi-bar reversal/continuation pattern encoding"
+    },
+    "close_vs_vwap_24h": {
+      "group": "volume_profile",
+      "description": "Close vs VWAP 24h"
+    },
+    "close_vs_vwap_168h": {
+      "group": "volume_profile",
+      "description": "Close vs VWAP 168h"
+    },
+    "mfi_14": {
+      "group": "volume_profile",
+      "description": "Money Flow Index (14,21) and Chaikin MF (20)"
+    },
+    "mfi_21": {
+      "group": "volume_profile",
+      "description": "Money Flow Index (14,21) and Chaikin MF (20)"
+    },
+    "cmf_20": {
+      "group": "volume_profile",
+      "description": "Money Flow Index (14,21) and Chaikin MF (20)"
+    },
+    "ad_z_48h": {
+      "group": "volume_profile",
+      "description": "Accumulation/Distribution z-score 48h"
+    },
+    "ad_z_168h": {
+      "group": "volume_profile",
+      "description": "Accumulation/Distribution z-score 168h"
+    },
+    "vol_spike_2x": {
+      "group": "volume_profile",
+      "description": "Volume spike flag (>2\u00d7 24h mean)"
+    },
+    "vol_spike_3x": {
+      "group": "volume_profile",
+      "description": "Volume spike flag (>3\u00d7 24h mean)"
+    },
+    "vw_rsi_14": {
+      "group": "volume_profile",
+      "description": "Volume-weighted RSI 14-period"
+    },
+    "close_vs_pivot": {
+      "group": "support_resistance",
+      "description": "Classic daily pivot points (P, R1/R2, S1/S2)"
+    },
+    "close_vs_r1": {
+      "group": "support_resistance",
+      "description": "Classic daily pivot points (P, R1/R2, S1/S2)"
+    },
+    "close_vs_s1": {
+      "group": "support_resistance",
+      "description": "Classic daily pivot points (P, R1/R2, S1/S2)"
+    },
+    "close_vs_r2": {
+      "group": "support_resistance",
+      "description": "Classic daily pivot points (P, R1/R2, S1/S2)"
+    },
+    "close_vs_s2": {
+      "group": "support_resistance",
+      "description": "Classic daily pivot points (P, R1/R2, S1/S2)"
+    },
+    "dist_round_1000": {
+      "group": "support_resistance",
+      "description": "Distance to round BTC price levels"
+    },
+    "dist_round_10000": {
+      "group": "support_resistance",
+      "description": "Distance to round BTC price levels"
+    },
+    "breakout_up_24h": {
+      "group": "support_resistance",
+      "description": "Breakout magnitude above/below 24h range"
+    },
+    "breakout_down_24h": {
+      "group": "support_resistance",
+      "description": "Breakout magnitude above/below 24h range"
+    },
+    "breakout_up_48h": {
+      "group": "support_resistance",
+      "description": "Breakout magnitude above/below 48h range"
+    },
+    "breakout_down_48h": {
+      "group": "support_resistance",
+      "description": "Breakout magnitude above/below 48h range"
+    },
+    "breakout_up_168h": {
+      "group": "support_resistance",
+      "description": "Breakout magnitude above/below 168h range"
+    },
+    "breakout_down_168h": {
+      "group": "support_resistance",
+      "description": "Breakout magnitude above/below 168h range"
+    },
+    "gk_vol_24h": {
+      "group": "volatility_regime",
+      "description": "Garman-Klass volatility 24h"
+    },
+    "gk_vol_72h": {
+      "group": "volatility_regime",
+      "description": "Garman-Klass volatility 72h"
+    },
+    "gk_vol_168h": {
+      "group": "volatility_regime",
+      "description": "Garman-Klass volatility 168h"
+    },
+    "park_vol_24h": {
+      "group": "volatility_regime",
+      "description": "Parkinson volatility 24h"
+    },
+    "park_vol_72h": {
+      "group": "volatility_regime",
+      "description": "Parkinson volatility 72h"
+    },
+    "vol_of_vol_72h": {
+      "group": "volatility_regime",
+      "description": "Volatility of volatility (72h)"
+    },
+    "atr_14_pct_rank": {
+      "group": "volatility_regime",
+      "description": "ATR 14 percentile rank vs 720h history"
+    },
+    "atr_24_pct_rank": {
+      "group": "volatility_regime",
+      "description": "ATR 24 percentile rank vs 720h history"
+    },
+    "bb_squeeze_20": {
+      "group": "volatility_regime",
+      "description": "BB squeeze percentile rank (168h) for band 20"
+    },
+    "bb_squeeze_50": {
+      "group": "volatility_regime",
+      "description": "BB squeeze percentile rank (168h) for band 50"
+    },
+    "range_vs_atr": {
+      "group": "volatility_regime",
+      "description": "Current range vs ATR14 (< 0.5 = inside bar / compression)"
+    },
+    "hurst_168h": {
+      "group": "statistical",
+      "description": "Rolling Hurst exponent 168h (>0.5 trending, <0.5 mean-reverting)"
+    },
+    "skew_24h": {
+      "group": "statistical",
+      "description": "Return skewness/kurtosis 24h"
+    },
+    "kurt_24h": {
+      "group": "statistical",
+      "description": "Return skewness/kurtosis 24h"
+    },
+    "skew_72h": {
+      "group": "statistical",
+      "description": "Return skewness/kurtosis 72h"
+    },
+    "kurt_72h": {
+      "group": "statistical",
+      "description": "Return skewness/kurtosis 72h"
+    },
+    "skew_168h": {
+      "group": "statistical",
+      "description": "Return skewness/kurtosis 168h"
+    },
+    "kurt_168h": {
+      "group": "statistical",
+      "description": "Return skewness/kurtosis 168h"
+    },
+    "autocorr_ret_1h": {
+      "group": "statistical",
+      "description": "Rolling autocorrelation of returns lag=1h (72h window)"
+    },
+    "autocorr_ret_6h": {
+      "group": "statistical",
+      "description": "Rolling autocorrelation of returns lag=6h (72h window)"
+    },
+    "autocorr_ret_12h": {
+      "group": "statistical",
+      "description": "Rolling autocorrelation of returns lag=12h (72h window)"
+    },
+    "autocorr_ret_24h": {
+      "group": "statistical",
+      "description": "Rolling autocorrelation of returns lag=24h (72h window)"
+    },
+    "var_ratio_6h": {
+      "group": "statistical",
+      "description": "Variance ratio test q=6h (Lo-MacKinlay, 336h window)"
+    },
+    "var_ratio_24h": {
+      "group": "statistical",
+      "description": "Variance ratio test q=24h (Lo-MacKinlay, 336h window)"
+    },
+    "trend_score": {
+      "group": "composite",
+      "description": "Trend alignment score (0-5 bullish signals)"
+    },
+    "rsi_vol_confirm": {
+      "group": "composite",
+      "description": "RSI \u00d7 volume confirmation (conviction-weighted RSI)"
+    },
+    "mom_coherence": {
+      "group": "composite",
+      "description": "Short/long momentum coherence (+1 aligned, -1 diverging)"
+    },
+    "sharpe_ratio_24h": {
+      "group": "composite",
+      "description": "Realized Sharpe ratio 24h"
+    },
+    "sharpe_ratio_72h": {
+      "group": "composite",
+      "description": "Realized Sharpe ratio 72h"
+    },
+    "sharpe_ratio_168h": {
+      "group": "composite",
+      "description": "Realized Sharpe ratio 168h"
+    },
+    "regime_composite": {
+      "group": "composite",
+      "description": "Regime composite: Hurst + BB squeeze + ATR rank (0-1)"
+    }
+  }
+}
