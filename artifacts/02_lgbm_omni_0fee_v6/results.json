@@ -1,0 +1,116 @@
+{
+  "notebook": "02_lgbm_omni_0fee_v6",
+  "version": "v6",
+  "created": "2026-05-30T22:16:09.243476",
+  "ath_start": "2024-11-10",
+  "ath_price": 79111.92,
+  "v6_window": {
+    "start": "2024-11-10",
+    "end": "2026-05-16",
+    "bars": 13245
+  },
+  "fee_model": {
+    "futures_maker_fee": 0.0002,
+    "futures_taker_fee": 0.0005,
+    "note": "fees applied on notional = equity * leverage"
+  },
+  "leverage_model": {
+    "min_lev": 1.0,
+    "max_lev": 20.0,
+    "prob_high": 0.9,
+    "safety_cap": true,
+    "max_loss_frac": 0.9
+  },
+  "feature_selection": {
+    "stage0_pool": 216,
+    "stage4_prune": 20
+  },
+  "selected_features": [
+    "stoch_k_14",
+    "cross_altcoin_breadth_24h",
+    "ret_2h",
+    "ad_z_48h",
+    "macd_hist_5_13",
+    "bear_streak",
+    "ret_1h",
+    "close_vs_sma_7",
+    "ret_3h",
+    "rsi_divergence",
+    "hour_cos",
+    "candle_body",
+    "close_vs_sma_720",
+    "vw_rsi_14",
+    "atr_14_pct_rank",
+    "macd_divergence",
+    "hl_position_48h",
+    "vol_ratio_72h",
+    "close_vs_s1",
+    "skew_24h"
+  ],
+  "best_scheme": "EXP",
+  "best_params": {
+    "num_leaves": 31,
+    "max_depth": 8,
+    "learning_rate": 0.03,
+    "colsample_bytree": 0.5,
+    "min_child_samples": 50,
+    "subsample": 0.7,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0,
+    "n_estimators": 500
+  },
+  "backtest_lev_055": {
+    "threshold": 0.55,
+    "max_lev": 20.0,
+    "n_trades": 649,
+    "win_rate": 0.4530046224961479,
+    "total_ret": -0.6297300344174062,
+    "sharpe": -0.8504583708066884,
+    "maxdd": -0.7846535914837334,
+    "avg_lev": 2.4304416656329213
+  },
+  "backtest_lev_060": {
+    "threshold": 0.6,
+    "max_lev": 20.0,
+    "n_trades": 255,
+    "win_rate": 0.47843137254901963,
+    "total_ret": 0.30752011987167327,
+    "sharpe": 0.41421157663706365,
+    "maxdd": -0.3132752749948617,
+    "avg_lev": 2.055756196118617
+  },
+  "leverage_sensitivity": {
+    "1": {
+      "return": -0.28531551284657575,
+      "sharpe": -0.8033883660352417,
+      "maxdd": -0.4362203240446517,
+      "win_rate": 0.4530046224961479,
+      "n_trades": 649,
+      "avg_lev": 1.0
+    },
+    "5": {
+      "return": -0.3531672875317933,
+      "sharpe": -0.7761155821931942,
+      "maxdd": -0.5310668642201244,
+      "win_rate": 0.4530046224961479,
+      "n_trades": 649,
+      "avg_lev": 1.3011456138174573
+    },
+    "10": {
+      "return": -0.44537465615308747,
+      "sharpe": -0.7789021667772088,
+      "maxdd": -0.6326126277042983,
+      "win_rate": 0.4530046224961479,
+      "n_trades": 649,
+      "avg_lev": 1.6775776310892785
+    },
+    "20": {
+      "return": -0.6297300344174062,
+      "sharpe": -0.8504583708066884,
+      "maxdd": -0.7846535914837334,
+      "win_rate": 0.4530046224961479,
+      "n_trades": 649,
+      "avg_lev": 2.4304416656329213
+    }
+  }
+}

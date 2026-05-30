@@ -1,0 +1,5 @@
+scheme_id,scheme_name,auc,sharpe,total_ret,maxdd,n_signals
+EXP,Expanding (All History),0.54839,0.6083,0.5252,-0.2339,5297
+L2Y,2-Year Sliding,0.54373,0.242,0.1757,-0.24,4243
+M1Y,1-Year Sliding,0.54038,0.3222,0.2163,-0.2602,3406
+S3M,3-Month Sliding,0.52729,1.1511,0.8449,-0.1613,2700

@@ -1,0 +1,114 @@
+{
+  "notebook": "02_lgbm_omni_0fee_v5",
+  "version": "v5",
+  "created": "2026-05-29T02:15:39.921187",
+  "feature_selection": {
+    "stage0_pool": 216,
+    "stage0_v1": 195,
+    "stage0_v3": 21,
+    "stage1_filter": 119,
+    "stage2_mi_rank": 60,
+    "stage3_stability": 41,
+    "stage4_prune": 20,
+    "v3_in_final": 1
+  },
+  "selected_features": [
+    "stoch_k_14",
+    "cross_altcoin_breadth_24h",
+    "ret_2h",
+    "ad_z_48h",
+    "macd_hist_5_13",
+    "bear_streak",
+    "ret_1h",
+    "close_vs_sma_7",
+    "ret_3h",
+    "rsi_divergence",
+    "hour_cos",
+    "candle_body",
+    "close_vs_sma_720",
+    "vw_rsi_14",
+    "atr_14_pct_rank",
+    "macd_divergence",
+    "hl_position_48h",
+    "vol_ratio_72h",
+    "close_vs_s1",
+    "skew_24h"
+  ],
+  "v3_in_final": [
+    "cross_altcoin_breadth_24h"
+  ],
+  "wfo_schemes": {
+    "EXP": {
+      "auc": 0.5483857529906988,
+      "sharpe": 0.6083025185118898,
+      "total_ret": 0.5252127563134701,
+      "maxdd": -0.23390042892222748
+    },
+    "L2Y": {
+      "auc": 0.5437333001593709,
+      "sharpe": 0.24201817252894314,
+      "total_ret": 0.17573150088227796,
+      "maxdd": -0.2399851687358213
+    },
+    "M1Y": {
+      "auc": 0.5403822104589733,
+      "sharpe": 0.3222017033022649,
+      "total_ret": 0.21631387918067824,
+      "maxdd": -0.26015219867879463
+    },
+    "S3M": {
+      "auc": 0.5272928487275279,
+      "sharpe": 1.151144553668594,
+      "total_ret": 0.8448682996096071,
+      "maxdd": -0.16125057807456228
+    }
+  },
+  "best_scheme": "EXP",
+  "best_params": {
+    "num_leaves": 31,
+    "max_depth": 8,
+    "learning_rate": 0.03,
+    "colsample_bytree": 0.5,
+    "min_child_samples": 50,
+    "subsample": 0.7,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0,
+    "n_estimators": 500
+  },
+  "fee_model": {
+    "maker_fee": 0.0002,
+    "taker_fee": 0.0005
+  },
+  "backtest_0fee_055": {
+    "threshold": 0.55,
+    "n_trades": 1021,
+    "win_rate": 0.4524975514201763,
+    "total_ret": 0.5455440185175302,
+    "sharpe": 0.6317163452229317,
+    "maxdd": -0.23949365007756165
+  },
+  "backtest_0fee_060": {
+    "threshold": 0.6,
+    "n_trades": 507,
+    "win_rate": 0.47337278106508873,
+    "total_ret": 0.7004492244478138,
+    "sharpe": 1.1121633528878867,
+    "maxdd": -0.17613469054692596
+  },
+  "backtest_wfees_055": {
+    "threshold": 0.55,
+    "n_trades": 1021,
+    "win_rate": 0.4505386875612145,
+    "total_ret": -0.25139841722737954,
+    "sharpe": -0.4158253802039392,
+    "maxdd": -0.4372727520896118
+  },
+  "backtest_wfees_060": {
+    "threshold": 0.6,
+    "n_trades": 507,
+    "win_rate": 0.46745562130177515,
+    "total_ret": 0.19444355692190252,
+    "sharpe": 0.3685307459858968,
+    "maxdd": -0.22801987845946137
+  }
+}
