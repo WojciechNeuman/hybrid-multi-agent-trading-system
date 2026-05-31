@@ -1,0 +1,88 @@
+{
+  "notebook": "02_lgbm_omni_0fee_v12",
+  "version": "v12",
+  "created": "2026-05-31T19:09:30.591711",
+  "scheme": "M1Y (1-year sliding)",
+  "direction": "long+short (conservative short_threshold)",
+  "grid_type": "exhaustive",
+  "oos_period": "2024-01-01 \u2192 2026-05-16",
+  "ath_window": "2024-11-10 \u2192 2026-05-16",
+  "grid_val_window": "2022-01-01 \u2192 2023-12-31",
+  "n_grid_combos": 5184,
+  "n_valid_combos": 5184,
+  "oos_auc": 0.537,
+  "grid_val_auc": 0.5644,
+  "selected_features": [
+    "close_vs_true_vwap",
+    "stoch_k_14",
+    "ret_2h",
+    "rsi_divergence",
+    "close_vs_sma_7",
+    "bear_streak",
+    "close_vs_s1",
+    "macd_hist_5_13",
+    "hurst_24h",
+    "ad_z_48h",
+    "ret_3h"
+  ],
+  "best_params": {
+    "long_threshold": 0.55,
+    "short_threshold": 0.3,
+    "entry_atr_mult": 0.3,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 2.5,
+    "min_sl": 0.01,
+    "min_hold": 8,
+    "max_hold": 48,
+    "cooldown": 3
+  },
+  "val_sharpe": 1.1347,
+  "fees": {
+    "maker": 0.0,
+    "spot_taker": 0.0005,
+    "futures_taker": 0.0005,
+    "buffer": 0.0005,
+    "short_funding_h": 7.7e-06
+  },
+  "backtest_wfees": {
+    "label": "w_fees",
+    "n_trades": 416,
+    "n_long": 408,
+    "n_short": 8,
+    "win_rate": 0.4423,
+    "total_ret": 0.5914,
+    "sharpe": 0.6247,
+    "maxdd": -0.2546,
+    "ath_total_ret": 0.329,
+    "ath_sharpe": 0.6745,
+    "ath_maxdd": -0.1924
+  },
+  "backtest_0fee": {
+    "label": "0_fee",
+    "n_trades": 416,
+    "n_long": 408,
+    "n_short": 8,
+    "win_rate": 0.4495,
+    "total_ret": 1.0542,
+    "sharpe": 0.9709,
+    "maxdd": -0.2263,
+    "ath_total_ret": 0.5382,
+    "ath_sharpe": 1.0243,
+    "ath_maxdd": -0.1705
+  },
+  "monthly_returns": {
+    "mean_pct": 2.064,
+    "median_pct": 1.36,
+    "std_pct": 6.947,
+    "positive_months": 16,
+    "total_months": 29,
+    "best_month": {
+      "date": "2024-11-30",
+      "ret": 16.795
+    },
+    "worst_month": {
+      "date": "2024-04-30",
+      "ret": -12.353
+    }
+  }
+}

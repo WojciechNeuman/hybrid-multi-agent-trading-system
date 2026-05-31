@@ -1,0 +1,157 @@
+{
+  "notebook": "06_tcn_omni_0fee_v1",
+  "created": "2026-05-31T22:34:30.939675",
+  "symbol": "BTCUSDT",
+  "interval": "1h",
+  "train_period": "start \u2192 2024-01-01",
+  "val_period": "2024-01-01 \u2192 2024-11-10",
+  "test_period": "2024-11-10 \u2192 2026-05-15",
+  "architecture": {
+    "model": "TCNMultiTask",
+    "channels": [
+      64,
+      64,
+      64,
+      64
+    ],
+    "kernel": 3,
+    "dropout": 0.2,
+    "seq_len": 48,
+    "n_features": 32,
+    "n_params": 98788,
+    "receptive_field": 61
+  },
+  "labels": {
+    "type": "TBM",
+    "mult": 2.0,
+    "vol_window": 24,
+    "vert_h": 24
+  },
+  "training": {
+    "epochs": 100,
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "batch_size": 256,
+    "lambda_vol": 0.5,
+    "best_epoch": 5,
+    "best_val_loss": 1.12498
+  },
+  "classification": {
+    "acc3": 0.43833953100098655,
+    "acc_bin": 0.4682553048164365,
+    "auc": 0.552338828164651
+  },
+  "fees": {
+    "maker": 0.0,
+    "spot_taker": 0.0005,
+    "futures_taker": 0.0005,
+    "buffer": 0.0005,
+    "short_funding_h": 7.7e-06,
+    "long_fee_model": "symmetric limit-entry (maker 0% if filled, spot_taker fallback), maker TP",
+    "short_fee_model": "symmetric limit-entry (maker 0% if filled, futures_taker fallback), maker TP",
+    "v1_change": "symmetric limit-entry for longs (was all-taker in v0)"
+  },
+  "regime_filter": true,
+  "min_long_ratio": 0.1,
+  "grid": {
+    "total_combos": 6912,
+    "valid_combos": 3669,
+    "best_params": {
+      "long_threshold": 0.36,
+      "short_threshold": 0.48,
+      "entry_atr_mult": 0.0,
+      "sl_atr_mult": 2.5,
+      "tp_atr_mult": 2.5,
+      "min_hold": 6,
+      "max_hold": 48,
+      "cooldown": 3,
+      "regime_filter": true
+    }
+  },
+  "backtest_wfees": {
+    "n_trades": 298,
+    "n_long": 205,
+    "n_short": 93,
+    "win_rate": 0.4933,
+    "long_ratio": 0.6879,
+    "total_ret": -0.1197,
+    "sharpe": -0.2455,
+    "maxdd": -0.3663
+  },
+  "backtest_0fee": {
+    "n_trades": 298,
+    "n_long": 205,
+    "n_short": 93,
+    "win_rate": 0.5,
+    "long_ratio": 0.6879,
+    "total_ret": -0.0257,
+    "sharpe": -0.0503,
+    "maxdd": -0.3548
+  },
+  "bh_return": -0.0838,
+  "alpha_vs_bh": -0.0358,
+  "monthly": {
+    "positive_months": 10,
+    "total_months": 19,
+    "mean_pct": -0.669,
+    "median_pct": 0.069,
+    "std_pct": 7.42
+  },
+  "features": [
+    "stoch_k_14",
+    "ret_2h",
+    "rsi_divergence",
+    "close_vs_sma_7",
+    "bear_streak",
+    "close_vs_s1",
+    "macd_hist_5_13",
+    "ad_z_48h",
+    "ret_3h",
+    "ret_1h",
+    "rsi_14",
+    "vol_ratio_24h",
+    "bb_position_20",
+    "hour_sin",
+    "hour_cos",
+    "atr_14_pct",
+    "hurst_168h",
+    "trend_score",
+    "close_vs_sma_50",
+    "ma_bull_score",
+    "close_vs_true_vwap",
+    "hurst_24h",
+    "hurst_72h",
+    "tfi_pct",
+    "tfi_z_24h",
+    "bb_width_pct",
+    "sideways_flag",
+    "liq_vwap_dev_24h",
+    "volat_atr_20_pct",
+    "mtf_alignment",
+    "mtf_h4_rsi",
+    "fracdiff_close"
+  ],
+  "comparison": {
+    "lgbm_v12": {
+      "sharpe": 0.675,
+      "total_ret": 0.329,
+      "maxdd": -0.1924,
+      "n_trades": 416
+    },
+    "tcn_v0": {
+      "sharpe": 0.457,
+      "n_long": 53,
+      "n_short": 542
+    },
+    "tcn_v1": {
+      "n_trades": 298,
+      "n_long": 205,
+      "n_short": 93,
+      "win_rate": 0.4933,
+      "long_ratio": 0.6879,
+      "total_ret": -0.1197,
+      "sharpe": -0.2455,
+      "maxdd": -0.3663
+    }
+  }
+}

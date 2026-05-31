@@ -1,0 +1,72 @@
+{
+  "notebook": "02_lgbm_omni_0fee_v8",
+  "version": "v8",
+  "created": "2026-05-31T04:10:46.073079",
+  "ath_start": "2024-11-10",
+  "feature_pool": {
+    "v1": 195,
+    "v4": 25,
+    "total": 220,
+    "note": "V3 external features removed"
+  },
+  "selected_features": [
+    "close_vs_true_vwap",
+    "stoch_k_14",
+    "ret_2h",
+    "rsi_divergence",
+    "close_vs_sma_7",
+    "bear_streak",
+    "close_vs_s1",
+    "macd_hist_5_13",
+    "hurst_24h",
+    "ad_z_48h",
+    "ret_3h"
+  ],
+  "v4_survived": [
+    "close_vs_true_vwap",
+    "hurst_24h"
+  ],
+  "best_scheme": "EXP",
+  "best_params": {
+    "num_leaves": 31,
+    "max_depth": 6,
+    "learning_rate": 0.05,
+    "colsample_bytree": 0.5,
+    "min_child_samples": 50,
+    "subsample": 0.7,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0,
+    "n_estimators": 500
+  },
+  "lgbm_wfo_055": {
+    "label": "lgbm_wfo_p055",
+    "n_trades": 1038,
+    "win_rate": 0.4508670520231214,
+    "total_ret": 0.03114274092141245,
+    "sharpe": 0.04350726260880609,
+    "maxdd": -0.3746144184883775
+  },
+  "lgbm_wfo_060": {
+    "label": "lgbm_wfo_p060",
+    "n_trades": 461,
+    "win_rate": 0.4772234273318872,
+    "total_ret": 0.5236105242458102,
+    "sharpe": 0.908702063511168,
+    "maxdd": -0.1833744698417719
+  },
+  "meta_labeling": {
+    "label": "meta_thr0.6",
+    "n_trades": 0,
+    "win_rate": 0.0,
+    "total_ret": 0.0,
+    "sharpe": 0.0,
+    "maxdd": 0.0
+  },
+  "meta_config": {
+    "fast_ema": 12,
+    "slow_ema": 48,
+    "threshold": 0.6,
+    "sl_mult": 1.5,
+    "tp_mult": 2.0
+  }
+}

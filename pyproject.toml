@@ -44,6 +44,8 @@ dependencies = [
     "typer>=0.12",
     "matplotlib-inline>=0.2.1",
     "ipython>=9.13.0",
+    "statsmodels>=0.14.6",
+    "yfinance>=1.4.1",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,81 @@
+{
+  "notebook": "02_lgbm_omni_0fee_v11",
+  "version": "v11",
+  "created": "2026-05-31T19:07:09.765566",
+  "scheme": "M1Y (1-year sliding)",
+  "direction": "long-only",
+  "grid_type": "exhaustive",
+  "oos_period": "2024-01-01 \u2192 2026-05-16",
+  "ath_window": "2024-11-10 \u2192 2026-05-16",
+  "grid_val_window": "2022-01-01 \u2192 2023-12-31",
+  "n_grid_combos": 1728,
+  "n_valid_combos": 1728,
+  "oos_auc": 0.537,
+  "grid_val_auc": 0.5644,
+  "selected_features": [
+    "close_vs_true_vwap",
+    "stoch_k_14",
+    "ret_2h",
+    "rsi_divergence",
+    "close_vs_sma_7",
+    "bear_streak",
+    "close_vs_s1",
+    "macd_hist_5_13",
+    "hurst_24h",
+    "ad_z_48h",
+    "ret_3h"
+  ],
+  "best_params": {
+    "long_threshold": 0.55,
+    "entry_atr_mult": 0.3,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 2.5,
+    "min_sl": 0.01,
+    "min_hold": 8,
+    "max_hold": 48,
+    "cooldown": 3
+  },
+  "val_sharpe": 1.1347,
+  "fees": {
+    "maker": 0.0,
+    "spot_taker": 0.0005,
+    "buffer": 0.0005
+  },
+  "backtest_wfees": {
+    "label": "w_fees",
+    "n_trades": 415,
+    "win_rate": 0.4482,
+    "total_ret": 0.556,
+    "sharpe": 0.595,
+    "maxdd": -0.2417,
+    "ath_total_ret": 0.3099,
+    "ath_sharpe": 0.6405,
+    "ath_maxdd": -0.2188
+  },
+  "backtest_0fee": {
+    "label": "0_fee",
+    "n_trades": 415,
+    "win_rate": 0.4554,
+    "total_ret": 1.0066,
+    "sharpe": 0.94,
+    "maxdd": -0.2137,
+    "ath_total_ret": 0.5169,
+    "ath_sharpe": 0.9914,
+    "ath_maxdd": -0.185
+  },
+  "monthly_returns": {
+    "mean_pct": 1.953,
+    "median_pct": 1.36,
+    "std_pct": 6.439,
+    "positive_months": 16,
+    "total_months": 29,
+    "best_month": {
+      "date": "2024-11-30",
+      "ret": 16.795
+    },
+    "worst_month": {
+      "date": "2025-02-28",
+      "ret": -9.781
+    }
+  }
+}

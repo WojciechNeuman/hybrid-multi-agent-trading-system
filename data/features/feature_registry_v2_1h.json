@@ -1,0 +1,89 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-05-30T20:27:31Z",
+  "description": "Structural features for BTCUSDT 1h \u2014 adapted from 5m pipeline.",
+  "source_timeframe": "1h",
+  "source_assets": [
+    "BTCUSDT"
+  ],
+  "output_parquet": "/Users/wojciech.neuman/Documents/hybrid-multi-agent-trading-system/data/features/BTCUSDT_1h_structural.parquet",
+  "burn_in_bars": 200,
+  "total_features": 39,
+  "row_count": 76582,
+  "date_range": {
+    "start": "2017-09-01 00:00:00+00:00",
+    "end": "2026-05-27 21:00:00+00:00"
+  },
+  "window_params": {
+    "swing_order_minor": 12,
+    "swing_order_major": 48,
+    "near_threshold": 0.003,
+    "voc_window_short": 24,
+    "voc_window_long": 168,
+    "poc_bins": 30,
+    "bb_window": 20,
+    "atr_win_s": 20,
+    "atr_win_l": 72
+  },
+  "feature_groups": {
+    "A_structure": {
+      "features": [
+        "struct_dist_swing_high_s",
+        "struct_dist_swing_low_s",
+        "struct_dist_swing_high_l",
+        "struct_dist_swing_low_l",
+        "struct_near_swing_high_s",
+        "struct_near_swing_low_s",
+        "struct_swing_high_age_s",
+        "struct_swing_low_age_s",
+        "struct_lower_wick_ratio",
+        "struct_upper_wick_ratio",
+        "struct_body_ratio"
+      ],
+      "count": 11
+    },
+    "B_liquidity": {
+      "features": [
+        "liq_vwap_dev_daily",
+        "liq_vwap_dev_weekly",
+        "liq_vwap_dev_24h",
+        "liq_vwap_dev_168h",
+        "liq_poc_dist_24h",
+        "liq_poc_dist_168h",
+        "liq_vol_z_24h",
+        "liq_vol_z_168h",
+        "liq_exhaustion_bull",
+        "liq_exhaustion_bear"
+      ],
+      "count": 10
+    },
+    "C_volatility": {
+      "features": [
+        "volat_atr_20_pct",
+        "volat_atr_72_pct",
+        "volat_bb_width_20",
+        "volat_bb_position_20",
+        "volat_bk_squeeze",
+        "volat_squeeze_on",
+        "volat_gk_20",
+        "volat_gk_72"
+      ],
+      "count": 8
+    },
+    "D_mtf": {
+      "features": [
+        "mtf_h4_ema_signal",
+        "mtf_h4_rsi",
+        "mtf_h4_above_ema50",
+        "mtf_h1d_ema_signal",
+        "mtf_h1d_rsi",
+        "mtf_alignment",
+        "mtf_session_hour_sin",
+        "mtf_session_hour_cos",
+        "mtf_session_dow_sin",
+        "mtf_session_dow_cos"
+      ],
+      "count": 10
+    }
+  }
+}

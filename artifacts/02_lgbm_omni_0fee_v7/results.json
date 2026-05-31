@@ -1,0 +1,110 @@
+{
+  "notebook": "02_lgbm_omni_0fee_v6",
+  "version": "v6",
+  "created": "2026-05-30T22:41:15.274542",
+  "ath_start": "2024-11-10",
+  "ath_price": 79111.92,
+  "v6_window": {
+    "start": "2024-11-10",
+    "end": "2026-05-16",
+    "bars": 13245
+  },
+  "fee_model": {
+    "futures_maker_fee": 0.0002,
+    "futures_taker_fee": 0.0005,
+    "note": "fees applied on notional = equity * leverage"
+  },
+  "leverage_model": {
+    "min_lev": 1.0,
+    "max_lev": 20.0,
+    "prob_high": 0.9,
+    "safety_cap": true,
+    "max_loss_frac": 0.9
+  },
+  "feature_selection": {
+    "stage0_pool": 255,
+    "stage4_prune": 14
+  },
+  "selected_features": [
+    "stoch_k_14",
+    "cross_altcoin_breadth_24h",
+    "struct_upper_wick_ratio",
+    "ret_1h",
+    "ret_2h",
+    "close_vs_sma_7",
+    "ret_3h",
+    "rsi_divergence",
+    "bear_streak",
+    "macd_hist_5_13",
+    "ad_z_48h",
+    "close_vs_s1",
+    "vw_rsi_14",
+    "struct_dist_swing_high_l"
+  ],
+  "best_scheme": "EXP",
+  "best_params": {
+    "num_leaves": 31,
+    "max_depth": 8,
+    "learning_rate": 0.03,
+    "colsample_bytree": 0.7,
+    "min_child_samples": 50,
+    "subsample": 0.7,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0,
+    "n_estimators": 500
+  },
+  "backtest_lev_055": {
+    "threshold": 0.55,
+    "max_lev": 20.0,
+    "n_trades": 650,
+    "win_rate": 0.4369230769230769,
+    "total_ret": -0.643265546391091,
+    "sharpe": -1.0840513673650929,
+    "maxdd": -0.7911843638485371,
+    "avg_lev": 2.1086392897713564
+  },
+  "backtest_lev_060": {
+    "threshold": 0.6,
+    "max_lev": 20.0,
+    "n_trades": 213,
+    "win_rate": 0.4272300469483568,
+    "total_ret": -0.3833738275322197,
+    "sharpe": -1.0006333610768718,
+    "maxdd": -0.4200675174476289,
+    "avg_lev": 1.9022678019163368
+  },
+  "leverage_sensitivity": {
+    "1": {
+      "return": -0.36413942804494503,
+      "sharpe": -1.1113687972464377,
+      "maxdd": -0.5009600158913832,
+      "win_rate": 0.4369230769230769,
+      "n_trades": 650,
+      "avg_lev": 1.0
+    },
+    "5": {
+      "return": -0.4252399260163533,
+      "sharpe": -1.0827061646774676,
+      "maxdd": -0.5787151500606738,
+      "win_rate": 0.4369230769230769,
+      "n_trades": 650,
+      "avg_lev": 1.2333977452150224
+    },
+    "10": {
+      "return": -0.5011962437568298,
+      "sharpe": -1.0659804642084219,
+      "maxdd": -0.662596488939379,
+      "win_rate": 0.4369230769230769,
+      "n_trades": 650,
+      "avg_lev": 1.5251449267338006
+    },
+    "20": {
+      "return": -0.643265546391091,
+      "sharpe": -1.0840513673650929,
+      "maxdd": -0.7911843638485371,
+      "win_rate": 0.4369230769230769,
+      "n_trades": 650,
+      "avg_lev": 2.1086392897713564
+    }
+  }
+}

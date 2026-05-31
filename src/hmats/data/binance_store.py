@@ -19,6 +19,12 @@ BINANCE_BASE_URL = "https://api.binance.com"
 KLINES_ENDPOINT = "/api/v3/klines"
 
 _OHLCV_COLS = ["open", "high", "low", "close", "volume"]
+_EXTENDED_COLS = [
+    "quote_volume",
+    "num_trades",
+    "taker_buy_base_volume",
+    "taker_buy_quote_volume",
+]
 
 
 def _to_millis(ts: str) -> int:
@@ -68,8 +74,12 @@ def _fetch_pages(
     return rows
 
 
-def _rows_to_df(rows: list[list]) -> pd.DataFrame:
-    """Convert raw Binance kline rows to a clean OHLCV DataFrame."""
+def _rows_to_df(rows: list[list], extended: bool = False) -> pd.DataFrame:
+    """Convert raw Binance kline rows to a clean OHLCV DataFrame.
+
+    When *extended* is True the four microstructure columns are included:
+    quote_volume, num_trades, taker_buy_base_volume, taker_buy_quote_volume.
+    """
     df = pd.DataFrame(
         rows,
         columns=[
@@ -80,19 +90,20 @@ def _rows_to_df(rows: list[list]) -> pd.DataFrame:
             "close",
             "volume",
             "close_time",
-            "quote_asset_volume",
+            "quote_volume",
             "num_trades",
-            "taker_buy_base",
-            "taker_buy_quote",
+            "taker_buy_base_volume",
+            "taker_buy_quote_volume",
             "ignore",
         ],
     )
     df["open_time"] = pd.to_datetime(df["open_time"], unit="ms", utc=True)
-    for c in _OHLCV_COLS:
+    keep_cols = _OHLCV_COLS + (_EXTENDED_COLS if extended else [])
+    for c in keep_cols:
         df[c] = df[c].astype(np.float64)
 
     return (
-        df[["open_time", *_OHLCV_COLS]]
+        df[["open_time", *keep_cols]]
         .set_index("open_time")
         .sort_index()
     )
@@ -106,12 +117,16 @@ def fetch_and_store(
     store_dir: str = "data/raw",
     limit: int = 1000,
     sleep_s: float = 0.15,
+    extended: bool = False,
 ) -> pd.DataFrame:
     """Fetch Binance klines and write/append to a Parquet file.
 
     If the Parquet file already exists, only rows newer than the last
     stored timestamp are downloaded (incremental update).  Deduplication
     is applied on the ``open_time`` index.
+
+    Set *extended=True* to also persist quote_volume, num_trades,
+    taker_buy_base_volume, and taker_buy_quote_volume.
 
     Returns the full stored DataFrame.
     """
@@ -137,7 +152,7 @@ def fetch_and_store(
     rows = _fetch_pages(symbol, interval, fetch_start_ms, end_ms, limit, sleep_s)
 
     if rows:
-        new_df = _rows_to_df(rows)
+        new_df = _rows_to_df(rows, extended=extended)
         if existing is not None:
             combined = pd.concat([existing, new_df])
             combined = combined[~combined.index.duplicated(keep="last")].sort_index()
@@ -146,7 +161,8 @@ def fetch_and_store(
     elif existing is not None:
         combined = existing
     else:
-        combined = pd.DataFrame(columns=_OHLCV_COLS)
+        all_cols = _OHLCV_COLS + (_EXTENDED_COLS if extended else [])
+        combined = pd.DataFrame(columns=all_cols)
         combined.index.name = "open_time"
 
     combined.to_parquet(path)

@@ -1,0 +1,31 @@
+{
+  "features": [
+    "close_vs_true_vwap",
+    "ret_2h",
+    "close_vs_ema_7",
+    "stoch_k_14",
+    "rsi_vol_confirm",
+    "hour_sin",
+    "range_vs_atr",
+    "candles_since_cross",
+    "ret_3h",
+    "close_vs_s1",
+    "bull_streak",
+    "vw_rsi_14",
+    "candle_body",
+    "macd_hist_5_13",
+    "hl_position_24h",
+    "ad_z_168h",
+    "hurst_168h",
+    "bb_squeeze_50",
+    "ret_24h",
+    "macd_divergence"
+  ],
+  "stage_counts": [
+    220,
+    126,
+    60,
+    60,
+    20
+  ]
+}
