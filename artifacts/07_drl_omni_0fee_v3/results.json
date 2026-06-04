@@ -1,0 +1,64 @@
+{
+  "notebook": "07_drl_omni_0fee_v3",
+  "version": "v3",
+  "created": "2026-06-03T02:59:49.898048",
+  "algorithm": "PPO (Stable-Baselines3)",
+  "scheme": "M1Y (1-year sliding)",
+  "direction": "long+short",
+  "v3_fixes": {
+    "min_hold": 6,
+    "step_penalty": 0.0,
+    "churn_penalty": 0.001,
+    "ent_coef": 0.02,
+    "total_timesteps": 500000,
+    "episode_len": 1000,
+    "randomised_reset": true
+  },
+  "oos_period": "2024-01-01 \u2192 2026-05-16",
+  "ath_window": "2024-11-10 \u2192 2026-05-16",
+  "n_features": 19,
+  "window_size": 24,
+  "total_timesteps_per_fold": 500000,
+  "fees": {
+    "taker": 0.0005,
+    "funding_h": 7.7e-06
+  },
+  "action_dist": {
+    "-1": 6700,
+    "0": 7009,
+    "1": 7076
+  },
+  "backtest_wfees": {
+    "label": "w_fees",
+    "n_trades": 2484,
+    "n_long": 1291,
+    "n_short": 1193,
+    "win_rate": 0.4416,
+    "total_ret": -0.9296,
+    "sharpe": -3.1209,
+    "maxdd": -0.9439,
+    "ath_total_ret": -0.8322,
+    "ath_sharpe": -3.4951,
+    "ath_maxdd": -0.8616
+  },
+  "backtest_0fee": {
+    "label": "0_fee",
+    "n_trades": 2484,
+    "n_long": 1291,
+    "n_short": 1193,
+    "win_rate": 0.4992,
+    "total_ret": -0.1718,
+    "sharpe": -0.2229,
+    "maxdd": -0.508,
+    "ath_total_ret": -0.2045,
+    "ath_sharpe": -0.4504,
+    "ath_maxdd": -0.462
+  },
+  "monthly_returns": {
+    "mean_pct": -8.653,
+    "median_pct": -8.897,
+    "std_pct": 6.631,
+    "positive_months": 2,
+    "total_months": 29
+  }
+}

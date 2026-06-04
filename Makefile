@@ -26,7 +26,7 @@ install: ## Install production dependencies with uv
 	uv sync --no-dev
 
 install-dev: ## Install all dependencies including dev tools
-	uv sync
+	uv sync --extra dev
 
 sync: ## Re-sync environment after pyproject.toml changes
 	uv sync

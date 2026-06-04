@@ -1,0 +1,606 @@
+{
+  "schema_version": 3,
+  "created_utc": "2026-06-02T00:00:00Z",
+  "description": "Full feature registry for HMATS as of 2026-06-02. Covers all feature parquets across 1h and 5m timeframes.",
+  "asset": "BTCUSDT",
+  "timeframes": ["1h", "5m"],
+
+  "files": {
+    "BTCUSDT_1h_features.parquet": {
+      "description": "Main V1 1h feature set — returns, technical indicators, candlestick patterns, regime composites, label",
+      "rows": 74366,
+      "cols": 199,
+      "date_range": { "start": "2017-11-15", "end": "2026-05-16" },
+      "total_features": 198,
+      "includes_label": true
+    },
+    "BTCUSDT_1h_v3_features.parquet": {
+      "description": "V3 external/cross-asset features — cross-asset signals, market structure, sentiment (Fear&Greed), microstructure proxies",
+      "rows": 76938,
+      "cols": 21,
+      "date_range": { "start": "2017-08-17", "end": "2026-05-27" },
+      "total_features": 21
+    },
+    "BTCUSDT_1h_v4_features.parquet": {
+      "description": "V4 microstructure + regime features — TFI, VWAP, taker price, fractional differentiation, Hurst, ADF, BB-squeeze, VoV",
+      "rows": 74366,
+      "cols": 25,
+      "date_range": { "start": "2017-11-15", "end": "2026-05-16" },
+      "total_features": 25
+    },
+    "BTCUSDT_1h_structural.parquet": {
+      "description": "V2-1h structural features — swing structure, VWAP/POC liquidity, BB-Keltner squeeze, Garman-Klass vol, 4h+daily MTF alignment",
+      "rows": 76582,
+      "cols": 39,
+      "date_range": { "start": "2017-09-01", "end": "2026-05-27" },
+      "total_features": 39
+    },
+    "BTCUSDT_5m_features_5m.parquet": {
+      "description": "5m feature set — microstructure (TFI, trade size, VWAP), fractal diff, technical indicators, Hurst, ADF, TBM/FH labels",
+      "rows": 924145,
+      "cols": 30,
+      "date_range": { "start": "2017-08-17", "end": "2026-05-31" },
+      "total_features": 28,
+      "includes_label": true,
+      "label_cols": ["tbm_label", "fh_label"]
+    },
+    "BTCUSDT_5m_structural.parquet": {
+      "description": "5m structural features — swing structure, VWAP/POC liquidity, squeeze, GK vol, 1h+4h MTF alignment",
+      "rows": 920748,
+      "cols": 39,
+      "date_range": { "start": "2017-08-25", "end": "2026-05-27" },
+      "total_features": 39
+    },
+    "BTCUSDT_5m_structural_clean.parquet": {
+      "description": "Clean copy of BTCUSDT_5m_structural (same columns, NaN-forward-filled or clipped)",
+      "rows": 920748,
+      "cols": 39,
+      "date_range": { "start": "2017-08-25", "end": "2026-05-27" },
+      "total_features": 39,
+      "note": "Identical columns to 5m_structural — prefer this for training"
+    }
+  },
+
+  "feature_groups": {
+
+    "1h_v1_returns": {
+      "description": "Multi-horizon log and simple returns from BTC 1h close prices",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "ret_1h", "log_ret_1h",
+        "ret_2h", "log_ret_2h",
+        "ret_3h", "log_ret_3h",
+        "ret_6h", "log_ret_6h",
+        "ret_12h", "log_ret_12h",
+        "ret_24h", "log_ret_24h",
+        "ret_48h", "log_ret_48h",
+        "ret_72h", "log_ret_72h",
+        "ret_168h", "log_ret_168h"
+      ]
+    },
+
+    "1h_v1_volatility": {
+      "description": "Realised volatility and ATR across multiple lookback windows",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "vol_6h", "vol_12h", "vol_24h", "vol_48h", "vol_72h", "vol_168h",
+        "atr_14", "atr_14_pct", "atr_24", "atr_24_pct"
+      ]
+    },
+
+    "1h_v1_moving_averages": {
+      "description": "Close vs SMA/EMA signals across 7–4320h windows; bull score and ribbon width",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "sma_200",
+        "close_vs_sma_7", "close_vs_ema_7",
+        "close_vs_sma_14", "close_vs_ema_14",
+        "close_vs_sma_20", "close_vs_ema_20",
+        "close_vs_sma_50", "close_vs_ema_50",
+        "close_vs_sma_100", "close_vs_ema_100",
+        "close_vs_sma_200", "close_vs_ema_200",
+        "close_vs_sma_336", "close_vs_ema_336",
+        "close_vs_sma_504", "close_vs_ema_504",
+        "close_vs_sma_720", "close_vs_ema_720",
+        "close_vs_sma_2160", "close_vs_ema_2160",
+        "close_vs_sma_4320", "close_vs_ema_4320",
+        "sma50_vs_sma200", "sma20_vs_sma50", "sma50_vs_sma100", "sma100_vs_sma200",
+        "golden_cross", "candles_since_cross", "cross_recency",
+        "ma_bull_score", "ma_ribbon_width"
+      ]
+    },
+
+    "1h_v1_bollinger": {
+      "description": "Bollinger Band width and position (20h and 50h), squeeze flags",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "bb_width_20", "bb_position_20",
+        "bb_width_50", "bb_position_50",
+        "bb_squeeze_20", "bb_squeeze_50"
+      ]
+    },
+
+    "1h_v1_macd": {
+      "description": "MACD signal and histogram for 12-26 and 5-13 parameter pairs",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "macd_12_26", "macd_hist_12_26",
+        "macd_5_13", "macd_hist_5_13"
+      ]
+    },
+
+    "1h_v1_oscillators": {
+      "description": "Momentum oscillators: RSI, Stochastic, Williams %R",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "rsi_7", "rsi_14", "rsi_21",
+        "stoch_k_14", "stoch_k_21",
+        "williams_r"
+      ]
+    },
+
+    "1h_v1_volume": {
+      "description": "Volume z-scores, ratios, OBV, MFI, CMF, A/D, VWAP deviation, volume spikes",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "vol_z_12h", "vol_ratio_12h",
+        "vol_z_24h", "vol_ratio_24h",
+        "vol_z_72h", "vol_ratio_72h",
+        "vol_z_168h", "vol_ratio_168h",
+        "obv_z_72",
+        "close_vs_vwap_24h", "close_vs_vwap_168h",
+        "mfi_14", "mfi_21", "cmf_20",
+        "ad_z_48h", "ad_z_168h",
+        "vol_spike_2x", "vol_spike_3x",
+        "vw_rsi_14"
+      ]
+    },
+
+    "1h_v1_candlestick_basic": {
+      "description": "Bar geometry and streak features",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "candle_body", "upper_wick", "lower_wick", "is_bullish",
+        "hl_position_24h", "hl_position_48h", "hl_position_168h",
+        "range_vs_atr"
+      ]
+    },
+
+    "1h_v1_candlestick_patterns": {
+      "description": "Named candlestick pattern flags and streak counters",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "bull_engulf", "bear_engulf",
+        "doji", "hammer", "shooting_star",
+        "bull_streak", "bear_streak", "marubozu"
+      ]
+    },
+
+    "1h_v1_ichimoku": {
+      "description": "Ichimoku cloud signals: TK ratio, cloud position/thickness, cloud flip",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "tk_ratio", "tk_cross_bull", "tk_cross_bear",
+        "close_vs_cloud_top", "close_vs_cloud_bottom",
+        "inside_cloud", "cloud_thickness", "cloud_bullish", "cloud_flip_recency",
+        "close_vs_kijun"
+      ]
+    },
+
+    "1h_v1_supertrend": {
+      "description": "Supertrend direction and distance for three ATR multiplier settings; consensus and flip recency",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "supertrend_dir_15", "supertrend_dist_15",
+        "supertrend_dir_20", "supertrend_dist_20",
+        "supertrend_dir_30", "supertrend_dist_30",
+        "supertrend_consensus", "supertrend_flip_recency"
+      ]
+    },
+
+    "1h_v1_fibonacci": {
+      "description": "Fibonacci retracement position and proximity to key levels (48h and 168h ranges)",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "fib_position_48h", "fib_nearest_dist_48h", "fib_nearest_level_48h",
+        "fib_dist_618_48h", "fib_below_618_48h",
+        "fib_position_168h", "fib_nearest_dist_168h", "fib_nearest_level_168h",
+        "fib_dist_618_168h", "fib_below_618_168h"
+      ]
+    },
+
+    "1h_v1_pivot_round": {
+      "description": "Classic pivot points (daily R1/R2/S1/S2) and proximity to round-number price levels",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "close_vs_pivot", "close_vs_r1", "close_vs_s1", "close_vs_r2", "close_vs_s2",
+        "dist_round_1000", "dist_round_10000"
+      ]
+    },
+
+    "1h_v1_breakout": {
+      "description": "Breakout flags above/below N-bar high/low (24h, 48h, 168h windows)",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "breakout_up_24h", "breakout_down_24h",
+        "breakout_up_48h", "breakout_down_48h",
+        "breakout_up_168h", "breakout_down_168h"
+      ]
+    },
+
+    "1h_v1_historical_vol": {
+      "description": "Garman-Klass and Parkinson historical volatility estimators; ATR rank percentile",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "gk_vol_24h", "gk_vol_72h", "gk_vol_168h",
+        "park_vol_24h", "park_vol_72h",
+        "vol_of_vol_72h",
+        "atr_14_pct_rank", "atr_24_pct_rank"
+      ]
+    },
+
+    "1h_v1_distribution": {
+      "description": "Return distribution moments (skew, kurtosis) and autocorrelation over 24-168h windows",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "skew_24h", "kurt_24h",
+        "skew_72h", "kurt_72h",
+        "skew_168h", "kurt_168h",
+        "autocorr_ret_1h", "autocorr_ret_6h",
+        "autocorr_ret_12h", "autocorr_ret_24h",
+        "var_ratio_6h", "var_ratio_24h"
+      ]
+    },
+
+    "1h_v1_regime": {
+      "description": "Hurst exponent (168h), divergence signals, and composite regime/momentum scores",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "hurst_168h",
+        "rsi_divergence", "macd_divergence", "obv_divergence",
+        "vol_price_div_12h", "vol_price_div_24h",
+        "trend_score", "rsi_vol_confirm", "mom_coherence",
+        "sharpe_ratio_24h", "sharpe_ratio_72h", "sharpe_ratio_168h",
+        "regime_composite"
+      ]
+    },
+
+    "1h_v1_time": {
+      "description": "Cyclical time encodings (hour, day-of-week, day-of-month, quarter) and Bitcoin halving cycle",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_features.parquet",
+      "features": [
+        "hour_sin", "hour_cos",
+        "dow_sin", "dow_cos",
+        "dom_sin", "dom_cos",
+        "quarter_sin", "quarter_cos",
+        "weekly_mom_accel",
+        "halving_cycle_sin", "halving_cycle_cos", "halving_cycle_pos"
+      ]
+    },
+
+    "1h_v3_cross_asset": {
+      "description": "Cross-asset signals: ETH/BTC ratio, momentum, altcoin breadth, BTC relative strength, ETH/BTC correlation",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v3_features.parquet",
+      "features": [
+        "cross_eth_btc_ratio",
+        "cross_eth_btc_mom_24h", "cross_eth_btc_mom_72h",
+        "cross_altcoin_breadth_24h",
+        "cross_btc_relative_strength",
+        "cross_alt_correlation_24h"
+      ]
+    },
+
+    "1h_v3_market_structure": {
+      "description": "Market cap dominance and total market changes from CoinGecko + circulating supply proxy",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v3_features.parquet",
+      "features": [
+        "mkt_btc_dominance", "mkt_btc_dominance_chg_7d",
+        "mkt_eth_dominance",
+        "mkt_total_mcap_chg_24h",
+        "mkt_stablecoin_pct"
+      ]
+    },
+
+    "1h_v3_sentiment": {
+      "description": "Fear & Greed Index (alternative.me) with 7d MA and change",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v3_features.parquet",
+      "features": [
+        "sent_fear_greed", "sent_fear_greed_ma7", "sent_fear_greed_chg_7d"
+      ]
+    },
+
+    "1h_v3_microstructure_proxy": {
+      "description": "Market microstructure proxies from OHLCV: Amihud illiquidity, Kyle lambda, Roll spread, volume clock",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v3_features.parquet",
+      "features": [
+        "micro_amihud_illiq", "micro_kyle_lambda",
+        "micro_roll_spread", "micro_volume_clock"
+      ]
+    },
+
+    "1h_v3_momentum_ext": {
+      "description": "Normalized momentum features over 24h and 72h from V3 pipeline",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v3_features.parquet",
+      "features": [
+        "mom_normalized_24h", "mom_normalized_72h",
+        "vol_term_structure"
+      ]
+    },
+
+    "1h_v4_tfi": {
+      "description": "Trade Flow Imbalance from Binance taker buy/sell volume; z-scores and EMAs",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v4_features.parquet",
+      "features": [
+        "tfi_pct", "tfi_z_24h", "tfi_z_72h", "tfi_z_168h",
+        "tfi_ema_12", "tfi_ema_24"
+      ]
+    },
+
+    "1h_v4_trade_size": {
+      "description": "Average trade size and its z-score (institutional block-order proxy)",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v4_features.parquet",
+      "features": [
+        "avg_trade_size", "avg_trade_size_z24"
+      ]
+    },
+
+    "1h_v4_vwap": {
+      "description": "True VWAP from taker volume; close deviation and taker bid/ask premium",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v4_features.parquet",
+      "features": [
+        "true_vwap", "close_vs_true_vwap",
+        "taker_buy_price", "taker_sell_price", "taker_price_premium"
+      ]
+    },
+
+    "1h_v4_fractal": {
+      "description": "Fractional differentiation (min stationary d via ADF sweep), Hurst exponent, ADF test statistics",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v4_features.parquet",
+      "features": [
+        "fracdiff_close_d0.2",
+        "hurst_24h", "hurst_72h",
+        "adf_tstat_168h", "adf_pval_168h",
+        "adf_tstat_336h", "adf_pval_336h",
+        "adf_tstat_720h", "adf_pval_720h"
+      ]
+    },
+
+    "1h_v4_regime": {
+      "description": "Regime classification: BB width percentile, volatility-of-volatility, sideways flag",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_v4_features.parquet",
+      "features": [
+        "bb_width_pct", "vov_72h_pct", "sideways_flag"
+      ]
+    },
+
+    "1h_struct_structure": {
+      "description": "Confirmed swing high/low anchors (12h minor, 48h major), proximity flags, wick/body ratios",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_structural.parquet",
+      "prefix": "struct_",
+      "features": [
+        "struct_dist_swing_high_s", "struct_dist_swing_low_s",
+        "struct_dist_swing_high_l", "struct_dist_swing_low_l",
+        "struct_near_swing_high_s", "struct_near_swing_low_s",
+        "struct_swing_high_age_s", "struct_swing_low_age_s",
+        "struct_lower_wick_ratio", "struct_upper_wick_ratio", "struct_body_ratio"
+      ]
+    },
+
+    "1h_struct_liquidity": {
+      "description": "Anchored VWAP deviations (daily, weekly, 24h, 168h), rolling VP POC distance, volume z-scores, exhaustion spikes",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_structural.parquet",
+      "prefix": "liq_",
+      "features": [
+        "liq_vwap_dev_daily", "liq_vwap_dev_weekly",
+        "liq_vwap_dev_24h", "liq_vwap_dev_168h",
+        "liq_poc_dist_24h", "liq_poc_dist_168h",
+        "liq_vol_z_24h", "liq_vol_z_168h",
+        "liq_exhaustion_bull", "liq_exhaustion_bear"
+      ]
+    },
+
+    "1h_struct_volatility": {
+      "description": "Bollinger-Keltner squeeze, Garman-Klass HV (20h, 72h), ATR-normalised width, BB position",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_structural.parquet",
+      "prefix": "volat_",
+      "features": [
+        "volat_atr_20_pct", "volat_atr_72_pct",
+        "volat_bb_width_20", "volat_bb_position_20",
+        "volat_bk_squeeze", "volat_squeeze_on",
+        "volat_gk_20", "volat_gk_72"
+      ]
+    },
+
+    "1h_struct_mtf": {
+      "description": "Multi-timeframe context: 4h and daily EMA signals, RSI, alignment score; UTC session cyclical encodings",
+      "timeframe": "1h",
+      "file": "BTCUSDT_1h_structural.parquet",
+      "prefix": "mtf_",
+      "features": [
+        "mtf_h4_ema_signal", "mtf_h4_rsi", "mtf_h4_above_ema50",
+        "mtf_h1d_ema_signal", "mtf_h1d_rsi",
+        "mtf_alignment",
+        "mtf_session_hour_sin", "mtf_session_hour_cos",
+        "mtf_session_dow_sin", "mtf_session_dow_cos"
+      ]
+    },
+
+    "5m_microstructure": {
+      "description": "5m microstructure: TFI, average trade size, VWAP deviation, taker slippage urgency",
+      "timeframe": "5m",
+      "file": "BTCUSDT_5m_features_5m.parquet",
+      "features": [
+        "tfi_5m", "avg_trade_size_5m",
+        "true_vwap_dev_5m", "taker_slippage_urgency_5m"
+      ]
+    },
+
+    "5m_fractal": {
+      "description": "5m fractional differentiation (close), Hurst exponent over 24h/72h/168h, ADF on ETH/BTC ratio",
+      "timeframe": "5m",
+      "file": "BTCUSDT_5m_features_5m.parquet",
+      "features": [
+        "frac_diff_close_5m", "frac_diff_d_star",
+        "hurst_24h_5m", "hurst_72h_5m", "hurst_168h_5m",
+        "eth_btc_adf_pval_24h_5m", "eth_btc_adf_pval_72h_5m", "eth_btc_adf_pval_168h_5m"
+      ]
+    },
+
+    "5m_technical": {
+      "description": "5m technical indicators: ATR%, RSI, MACD, BB width, log return",
+      "timeframe": "5m",
+      "file": "BTCUSDT_5m_features_5m.parquet",
+      "features": [
+        "atr_pct_5m", "rsi_5m",
+        "macd_5m", "macd_signal_5m", "macd_hist_5m",
+        "bb_width_5m", "bb_width_pct_5m",
+        "log_ret_5m"
+      ]
+    },
+
+    "5m_candlestick": {
+      "description": "5m bar geometry: body ratio, upper/lower wick, bullish flag",
+      "timeframe": "5m",
+      "file": "BTCUSDT_5m_features_5m.parquet",
+      "features": [
+        "body_ratio_5m", "upper_wick_5m", "lower_wick_5m", "bullish_5m"
+      ]
+    },
+
+    "5m_struct_structure": {
+      "description": "5m swing high/low anchors (12-bar minor, 48-bar major ~4h), proximity flags, wick/body ratios",
+      "timeframe": "5m",
+      "file": "BTCUSDT_5m_structural.parquet",
+      "prefix": "struct_",
+      "features": [
+        "struct_dist_swing_high_s", "struct_dist_swing_low_s",
+        "struct_dist_swing_high_l", "struct_dist_swing_low_l",
+        "struct_near_swing_high_s", "struct_near_swing_low_s",
+        "struct_swing_high_age_s", "struct_swing_low_age_s",
+        "struct_lower_wick_ratio", "struct_upper_wick_ratio", "struct_body_ratio"
+      ]
+    },
+
+    "5m_struct_liquidity": {
+      "description": "5m liquidity: VWAP deviations (daily/weekly/72bar/288bar), VP POC distance, volume z-scores, exhaustion spikes",
+      "timeframe": "5m",
+      "file": "BTCUSDT_5m_structural.parquet",
+      "prefix": "liq_",
+      "features": [
+        "liq_vwap_dev_daily", "liq_vwap_dev_weekly",
+        "liq_vwap_dev_72bar", "liq_vwap_dev_288bar",
+        "liq_poc_dist_72bar", "liq_poc_dist_288bar",
+        "liq_vol_z_72bar", "liq_vol_z_288bar",
+        "liq_exhaustion_bull", "liq_exhaustion_bear"
+      ]
+    },
+
+    "5m_struct_volatility": {
+      "description": "5m Bollinger-Keltner squeeze, GK historical volatility (20-bar, 72-bar), ATR%, BB position",
+      "timeframe": "5m",
+      "file": "BTCUSDT_5m_structural.parquet",
+      "prefix": "volat_",
+      "features": [
+        "volat_atr_20_pct", "volat_atr_72_pct",
+        "volat_bb_width_20", "volat_bb_position_20",
+        "volat_bk_squeeze", "volat_squeeze_on",
+        "volat_gk_20", "volat_gk_72"
+      ]
+    },
+
+    "5m_struct_mtf": {
+      "description": "5m multi-timeframe context: 1h and 4h EMA signals, RSI, 1h above EMA50, alignment score; UTC session encodings",
+      "timeframe": "5m",
+      "file": "BTCUSDT_5m_structural.parquet",
+      "prefix": "mtf_",
+      "features": [
+        "mtf_h1_ema_signal", "mtf_h1_rsi", "mtf_h1_above_ema50",
+        "mtf_h4_ema_signal", "mtf_h4_rsi",
+        "mtf_alignment",
+        "mtf_session_hour_sin", "mtf_session_hour_cos",
+        "mtf_session_dow_sin", "mtf_session_dow_cos"
+      ]
+    }
+  },
+
+  "labels": {
+    "1h_label": {
+      "description": "Ternary classification label (buy=1, hold=0, sell=-1) for 1h features",
+      "file": "BTCUSDT_1h_features.parquet",
+      "col": "label"
+    },
+    "5m_tbm_label": {
+      "description": "Triple-Barrier Method label for 5m bars",
+      "file": "BTCUSDT_5m_features_5m.parquet",
+      "col": "tbm_label"
+    },
+    "5m_fh_label": {
+      "description": "Fixed-horizon label for 5m bars",
+      "file": "BTCUSDT_5m_features_5m.parquet",
+      "col": "fh_label"
+    }
+  },
+
+  "known_issues": {
+    "5m_microstructure_all_nan": {
+      "affected_cols": ["tfi_5m", "avg_trade_size_5m", "true_vwap_dev_5m", "taker_slippage_urgency_5m"],
+      "file": "BTCUSDT_5m_features_5m.parquet",
+      "note": "Columns exist in the parquet but are 100% NaN — taker volume data for 5m was not fetched/built. Re-run Phase F of 00_data_ingestion_v3.ipynb at 5m resolution to populate."
+    },
+    "mkt_stablecoin_pct_sparse": {
+      "affected_cols": ["mkt_stablecoin_pct"],
+      "file": "BTCUSDT_1h_v3_features.parquet",
+      "nan_rate": 0.886,
+      "note": "Stablecoin market-cap data only available from ~2020 onwards via CoinGecko. Forward-fill or drop before training."
+    }
+  },
+
+  "summary": {
+    "merged_1h_shape": "74,366 rows × 284 cols (includes close price + label)",
+    "merged_5m_shape": "920,748 rows × 69 cols (includes open/high/low/close + 2 label cols)",
+    "total_feature_columns_1h": 282,
+    "breakdown_1h": {
+      "v1_technical_plus_price": 199,
+      "v3_external": 21,
+      "v4_microstructure_regime": 25,
+      "structural": 39
+    },
+    "total_feature_columns_5m": 67,
+    "breakdown_5m": {
+      "features_5m": 28,
+      "structural": 39
+    },
+    "note": "Files have non-overlapping column sets within same timeframe. Use data/load_features.py to merge. See known_issues for NaN-heavy columns."
+  }
+}

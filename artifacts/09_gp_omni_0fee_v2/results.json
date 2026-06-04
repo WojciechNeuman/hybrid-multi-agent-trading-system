@@ -1,0 +1,633 @@
+{
+  "agent": "GPTradingAgent v1",
+  "notebook": "09_gp_omni_0fee_v2",
+  "created": "2026-06-03T00:47:34.330350",
+  "oos_start": "2024-01-01",
+  "oos_end": "2026-05-16",
+  "oos_bars": 20785,
+  "gp_config": {
+    "population_size": 400,
+    "generations": 40,
+    "parsimony_alpha": 0.002,
+    "flat_threshold": 0.5,
+    "cx_prob": 0.4,
+    "mut_prob": 0.4,
+    "train_window_h": 8760,
+    "step_size": 336,
+    "n_features": 12,
+    "features": [
+      "rsi_7",
+      "rsi_21",
+      "stoch_k_21",
+      "bb_position_50",
+      "bb_squeeze_20",
+      "mfi_14",
+      "williams_r",
+      "cmf_20",
+      "macd_hist_12_26",
+      "hl_position_24h",
+      "obv_z_72",
+      "vol_z_24h"
+    ],
+    "unique_rules": 192,
+    "total_folds": 196,
+    "afml_defences": [
+      "Ch.2 feature stationarity \u2014 bounded oscillators only",
+      "Ch.7 purged fitness \u2014 last 12 bars excluded each fold",
+      "Ch.14 parsimony pressure \u2014 Fitness = Sharpe - \u03b1\u00d7n_nodes"
+    ],
+    "v1_fixes": [
+      "flat_threshold=\u00b10.5 \u2014 replaces np.sign(), forces Flat state",
+      "parsimony_alpha 0.010 \u2192 0.002 \u2014 allows richer trees",
+      "cx_prob 0.70 \u2192 0.4, mut_prob 0.25 \u2192 0.4 \u2014 more diversity",
+      "pop 300 \u2192 400, gen 30 \u2192 40 \u2014 more search"
+    ]
+  },
+  "backtest_with_fees": {
+    "label": "with_fees",
+    "n_trades": 2151,
+    "n_long": 1147,
+    "n_short": 1004,
+    "win_rate": 0.3384,
+    "avg_hold_h": 5.6,
+    "total_return": -0.9649,
+    "sharpe": -3.8226,
+    "max_drawdown": -0.9678
+  },
+  "backtest_zero_fee": {
+    "label": "zero_fee",
+    "n_trades": 2151,
+    "n_long": 1147,
+    "n_short": 1004,
+    "win_rate": 0.3938,
+    "avg_hold_h": 5.6,
+    "total_return": -0.7111,
+    "sharpe": -1.444,
+    "max_drawdown": -0.7611
+  },
+  "action_dist": {
+    "-1": 6890,
+    "0": 6283,
+    "1": 7612
+  },
+  "fold_winners": [
+    {
+      "fold": 135,
+      "oos_start": "2024-01-09",
+      "oos_end": "2024-01-23",
+      "n_nodes": 15,
+      "height": 5,
+      "fitness": 34.3372,
+      "tree": "Sub(IfPos(LT(rsi_7, bb_squeeze_20), Not(GT(GT(mfi_14, rsi_7), bb_squeeze_20)), rsi_7), GT(rsi_21, rsi_7))"
+    },
+    {
+      "fold": 136,
+      "oos_start": "2024-01-23",
+      "oos_end": "2024-02-06",
+      "n_nodes": 27,
+      "height": 5,
+      "fitness": 36.3186,
+      "tree": "Sub(IfPos(Sub(rsi_7, Sub(mfi_14, rsi_7)), Sub(rsi_7, Sub(mfi_14, rsi_7)), Sub(GT(hl_position_24h, mfi_14), bb_position_50)), GT(rsi_21, IfPos(rsi_7, Sub(rsi_7, Sub(mfi_14, rsi_7)), rsi_21)))"
+    },
+    {
+      "fold": 137,
+      "oos_start": "2024-02-06",
+      "oos_end": "2024-02-20",
+      "n_nodes": 43,
+      "height": 8,
+      "fitness": 35.6661,
+      "tree": "Sub(IfPos(GT(Sub(IfPos(macd_hist_12_26, Or(GT(Sub(macd_hist_12_26, cmf_20), rsi_7), GT(rsi_7, mfi_14)), obv_z_72), IfPos(cmf_20, williams_r, cmf_20)), rsi_7), rsi_7, And(Or(GT(Sub(macd_hist_12_26, cmf_20), rsi_7), GT(rsi_7, mfi_14)), Not(GT(GT(macd_hist_12_26, GT(mfi_14, rsi_7)), rsi_21)))), GT(rsi_21, rsi_7))"
+    },
+    {
+      "fold": 138,
+      "oos_start": "2024-02-20",
+      "oos_end": "2024-03-05",
+      "n_nodes": 40,
+      "height": 8,
+      "fitness": 35.258,
+      "tree": "Sub(GT(rsi_21, GT(mfi_14, rsi_7)), Or(GT(LT(rsi_7, GT(Or(GT(williams_r, LT(rsi_21, rsi_7)), GT(Not(williams_r), And(obv_z_72, rsi_7))), LT(macd_hist_12_26, IfPos(LT(williams_r, rsi_7), Sub(bb_position_50, bb_position_50), macd_hist_12_26)))), bb_squeeze_20), GT(Not(rsi_7), And(mfi_14, mfi_14))))"
+    },
+    {
+      "fold": 139,
+      "oos_start": "2024-03-05",
+      "oos_end": "2024-03-19",
+      "n_nodes": 31,
+      "height": 7,
+      "fitness": 35.2106,
+      "tree": "IfPos(LT(Not(Not(hl_position_24h)), bb_squeeze_20), stoch_k_21, Sub(LT(rsi_21, LT(rsi_21, rsi_7)), Not(IfPos(Or(GT(stoch_k_21, Sub(rsi_21, mfi_14)), bb_position_50), GT(rsi_7, mfi_14), And(Not(And(macd_hist_12_26, rsi_21)), macd_hist_12_26)))))"
+    },
+    {
+      "fold": 140,
+      "oos_start": "2024-03-19",
+      "oos_end": "2024-04-02",
+      "n_nodes": 32,
+      "height": 8,
+      "fitness": 37.3371,
+      "tree": "Sub(Sub(Sub(rsi_7, Sub(GT(Sub(Or(macd_hist_12_26, rsi_7), GT(LT(williams_r, stoch_k_21), Sub(macd_hist_12_26, mfi_14))), rsi_21), Not(And(Or(macd_hist_12_26, macd_hist_12_26), Sub(mfi_14, cmf_20))))), LT(rsi_7, mfi_14)), LT(rsi_7, rsi_21))"
+    },
+    {
+      "fold": 141,
+      "oos_start": "2024-04-02",
+      "oos_end": "2024-04-16",
+      "n_nodes": 30,
+      "height": 7,
+      "fitness": 36.1518,
+      "tree": "Sub(LT(Not(Sub(rsi_7, rsi_21)), rsi_7), LT(LT(mfi_14, rsi_7), And(hl_position_24h, Sub(LT(Not(GT(bb_squeeze_20, hl_position_24h)), Or(And(macd_hist_12_26, rsi_21), macd_hist_12_26)), Sub(mfi_14, Not(Sub(rsi_7, rsi_21)))))))"
+    },
+    {
+      "fold": 142,
+      "oos_start": "2024-04-16",
+      "oos_end": "2024-04-30",
+      "n_nodes": 17,
+      "height": 4,
+      "fitness": 35.7587,
+      "tree": "Sub(LT(rsi_21, rsi_7), LT(LT(mfi_14, LT(mfi_14, rsi_7)), Sub(LT(rsi_7, rsi_21), Sub(bb_squeeze_20, williams_r))))"
+    },
+    {
+      "fold": 143,
+      "oos_start": "2024-04-30",
+      "oos_end": "2024-05-14",
+      "n_nodes": 54,
+      "height": 6,
+      "fitness": 37.6745,
+      "tree": "Sub(LT(Or(LT(rsi_7, mfi_14), GT(And(LT(rsi_7, rsi_21), And(macd_hist_12_26, rsi_21)), rsi_7)), Or(williams_r, stoch_k_21)), IfPos(Or(And(rsi_7, rsi_7), LT(cmf_20, Or(LT(rsi_7, rsi_7), macd_hist_12_26))), IfPos(LT(rsi_7, rsi_21), And(rsi_7, GT(IfPos(stoch_k_21, williams_r, hl_position_24h), Sub(bb_squeeze_20, mfi_14))), Sub(williams_r, stoch_k_21)), GT(GT(vol_z_24h, rsi_7), GT(cmf_20, williams_r))))"
+    },
+    {
+      "fold": 144,
+      "oos_start": "2024-05-14",
+      "oos_end": "2024-05-28",
+      "n_nodes": 22,
+      "height": 8,
+      "fitness": 36.853,
+      "tree": "Sub(GT(rsi_7, mfi_14), LT(rsi_7, GT(IfPos(stoch_k_21, rsi_21, bb_position_50), Sub(Sub(Sub(Sub(Sub(rsi_7, macd_hist_12_26), macd_hist_12_26), macd_hist_12_26), macd_hist_12_26), macd_hist_12_26))))"
+    },
+    {
+      "fold": 145,
+      "oos_start": "2024-05-28",
+      "oos_end": "2024-06-11",
+      "n_nodes": 9,
+      "height": 3,
+      "fitness": 36.0587,
+      "tree": "Sub(LT(mfi_14, LT(rsi_21, rsi_7)), LT(rsi_7, mfi_14))"
+    },
+    {
+      "fold": 146,
+      "oos_start": "2024-06-11",
+      "oos_end": "2024-06-25",
+      "n_nodes": 25,
+      "height": 6,
+      "fitness": 38.2568,
+      "tree": "Sub(Sub(hl_position_24h, williams_r), Sub(LT(Not(GT(rsi_21, rsi_7)), rsi_7), Or(Or(Not(LT(rsi_7, mfi_14)), Sub(Sub(hl_position_24h, mfi_14), mfi_14)), Sub(rsi_7, mfi_14))))"
+    },
+    {
+      "fold": 147,
+      "oos_start": "2024-06-25",
+      "oos_end": "2024-07-09",
+      "n_nodes": 63,
+      "height": 7,
+      "fitness": 37.7251,
+      "tree": "Sub(LT(IfPos(LT(rsi_21, rsi_7), Sub(Sub(Sub(macd_hist_12_26, williams_r), hl_position_24h), LT(Sub(stoch_k_21, mfi_14), Sub(cmf_20, cmf_20))), Not(mfi_14)), Not(And(stoch_k_21, rsi_7))), Or(Sub(GT(mfi_14, rsi_7), LT(GT(IfPos(hl_position_24h, stoch_k_21, obv_z_72), Not(hl_position_24h)), Sub(Not(stoch_k_21), Sub(macd_hist_12_26, bb_position_50)))), IfPos(LT(macd_hist_12_26, rsi_7), Sub(Sub(williams_r, LT(LT(williams_r, williams_r), rsi_7)), Sub(stoch_k_21, IfPos(bb_squeeze_20, rsi_21, rsi_21))), mfi_14)))"
+    },
+    {
+      "fold": 148,
+      "oos_start": "2024-07-09",
+      "oos_end": "2024-07-23",
+      "n_nodes": 22,
+      "height": 4,
+      "fitness": 36.3696,
+      "tree": "IfPos(Not(Not(GT(bb_squeeze_20, williams_r))), Sub(LT(mfi_14, rsi_7), LT(rsi_7, rsi_21)), Sub(LT(LT(rsi_7, rsi_21), rsi_7), LT(rsi_7, rsi_21)))"
+    },
+    {
+      "fold": 149,
+      "oos_start": "2024-07-23",
+      "oos_end": "2024-08-06",
+      "n_nodes": 9,
+      "height": 3,
+      "fitness": 35.9016,
+      "tree": "Sub(rsi_7, LT(LT(mfi_14, rsi_7), Sub(williams_r, cmf_20)))"
+    },
+    {
+      "fold": 150,
+      "oos_start": "2024-08-06",
+      "oos_end": "2024-08-20",
+      "n_nodes": 16,
+      "height": 3,
+      "fitness": 38.0866,
+      "tree": "Sub(IfPos(GT(rsi_7, rsi_21), Or(rsi_7, mfi_14), Sub(rsi_7, williams_r)), And(Sub(mfi_14, rsi_7), williams_r))"
+    },
+    {
+      "fold": 151,
+      "oos_start": "2024-08-20",
+      "oos_end": "2024-09-03",
+      "n_nodes": 21,
+      "height": 7,
+      "fitness": 37.6742,
+      "tree": "Sub(GT(rsi_7, rsi_21), Not(LT(IfPos(IfPos(Not(LT(bb_squeeze_20, vol_z_24h)), LT(cmf_20, bb_position_50), GT(stoch_k_21, bb_position_50)), mfi_14, rsi_21), rsi_7)))"
+    },
+    {
+      "fold": 152,
+      "oos_start": "2024-09-03",
+      "oos_end": "2024-09-17",
+      "n_nodes": 40,
+      "height": 8,
+      "fitness": 41.5959,
+      "tree": "Sub(Sub(Sub(And(And(rsi_7, stoch_k_21), GT(rsi_7, rsi_21)), LT(Sub(Sub(And(And(mfi_14, rsi_7), GT(rsi_7, williams_r)), LT(GT(rsi_7, mfi_14), stoch_k_21)), Sub(macd_hist_12_26, mfi_14)), IfPos(IfPos(Not(rsi_7), macd_hist_12_26, macd_hist_12_26), mfi_14, mfi_14))), Sub(macd_hist_12_26, rsi_7)), williams_r)"
+    },
+    {
+      "fold": 153,
+      "oos_start": "2024-09-17",
+      "oos_end": "2024-10-01",
+      "n_nodes": 16,
+      "height": 5,
+      "fitness": 39.2216,
+      "tree": "Sub(And(LT(mfi_14, rsi_7), GT(rsi_7, Sub(williams_r, IfPos(macd_hist_12_26, bb_position_50, rsi_7)))), LT(rsi_7, rsi_21))"
+    },
+    {
+      "fold": 154,
+      "oos_start": "2024-10-01",
+      "oos_end": "2024-10-15",
+      "n_nodes": 22,
+      "height": 6,
+      "fitness": 39.6586,
+      "tree": "Sub(LT(GT(mfi_14, rsi_7), GT(LT(rsi_21, rsi_7), macd_hist_12_26)), Sub(Or(IfPos(Not(LT(rsi_21, rsi_7)), williams_r, macd_hist_12_26), Not(hl_position_24h)), rsi_7))"
+    },
+    {
+      "fold": 155,
+      "oos_start": "2024-10-15",
+      "oos_end": "2024-10-29",
+      "n_nodes": 41,
+      "height": 8,
+      "fitness": 39.2674,
+      "tree": "Sub(Not(And(Or(macd_hist_12_26, And(And(mfi_14, rsi_7), Sub(rsi_21, rsi_7))), And(Or(LT(GT(GT(obv_z_72, rsi_7), GT(bb_squeeze_20, obv_z_72)), And(rsi_7, Not(obv_z_72))), And(And(mfi_14, rsi_7), Sub(rsi_21, rsi_7))), Sub(mfi_14, rsi_7)))), And(williams_r, Sub(rsi_21, rsi_7)))"
+    },
+    {
+      "fold": 156,
+      "oos_start": "2024-10-29",
+      "oos_end": "2024-11-12",
+      "n_nodes": 26,
+      "height": 5,
+      "fitness": 38.4295,
+      "tree": "Sub(LT(mfi_14, rsi_7), IfPos(GT(Not(LT(rsi_7, rsi_21)), rsi_7), LT(stoch_k_21, IfPos(LT(stoch_k_21, stoch_k_21), GT(stoch_k_21, rsi_7), Sub(mfi_14, hl_position_24h))), Or(rsi_21, rsi_21)))"
+    },
+    {
+      "fold": 157,
+      "oos_start": "2024-11-12",
+      "oos_end": "2024-11-26",
+      "n_nodes": 64,
+      "height": 8,
+      "fitness": 39.8785,
+      "tree": "Sub(rsi_7, Sub(And(Or(IfPos(Not(mfi_14), GT(rsi_21, williams_r), LT(rsi_7, mfi_14)), IfPos(GT(GT(Sub(vol_z_24h, rsi_7), IfPos(mfi_14, bb_position_50, cmf_20)), And(Or(macd_hist_12_26, bb_position_50), And(bb_squeeze_20, macd_hist_12_26))), IfPos(Sub(IfPos(stoch_k_21, hl_position_24h, williams_r), Sub(vol_z_24h, bb_position_50)), Not(vol_z_24h), GT(mfi_14, hl_position_24h)), LT(Not(And(hl_position_24h, macd_hist_12_26)), And(rsi_21, mfi_14)))), williams_r), Not(LT(rsi_7, IfPos(Not(LT(rsi_7, cmf_20)), rsi_21, williams_r)))))"
+    },
+    {
+      "fold": 158,
+      "oos_start": "2024-11-26",
+      "oos_end": "2024-12-10",
+      "n_nodes": 29,
+      "height": 8,
+      "fitness": 40.1337,
+      "tree": "Sub(GT(Sub(Sub(Sub(Sub(Sub(Sub(rsi_7, rsi_21), macd_hist_12_26), macd_hist_12_26), macd_hist_12_26), macd_hist_12_26), macd_hist_12_26), macd_hist_12_26), GT(Or(LT(hl_position_24h, mfi_14), macd_hist_12_26), GT(Sub(Sub(rsi_7, rsi_21), macd_hist_12_26), macd_hist_12_26)))"
+    },
+    {
+      "fold": 159,
+      "oos_start": "2024-12-10",
+      "oos_end": "2024-12-24",
+      "n_nodes": 7,
+      "height": 2,
+      "fitness": 38.5109,
+      "tree": "Sub(LT(mfi_14, rsi_7), GT(rsi_21, rsi_7))"
+    },
+    {
+      "fold": 160,
+      "oos_start": "2024-12-24",
+      "oos_end": "2025-01-07",
+      "n_nodes": 16,
+      "height": 4,
+      "fitness": 41.3036,
+      "tree": "Sub(GT(rsi_7, Sub(LT(rsi_7, mfi_14), Sub(rsi_7, williams_r))), Or(Not(rsi_7), Sub(rsi_21, rsi_7)))"
+    },
+    {
+      "fold": 161,
+      "oos_start": "2025-01-07",
+      "oos_end": "2025-01-21",
+      "n_nodes": 19,
+      "height": 6,
+      "fitness": 38.2859,
+      "tree": "Sub(rsi_7, Or(LT(mfi_14, mfi_14), And(Or(LT(rsi_7, mfi_14), And(macd_hist_12_26, LT(rsi_7, rsi_21))), LT(rsi_7, rsi_21))))"
+    },
+    {
+      "fold": 162,
+      "oos_start": "2025-01-21",
+      "oos_end": "2025-02-04",
+      "n_nodes": 61,
+      "height": 8,
+      "fitness": 42.4569,
+      "tree": "Sub(Not(Or(LT(mfi_14, cmf_20), Sub(rsi_21, rsi_7))), GT(And(LT(IfPos(williams_r, rsi_7, williams_r), mfi_14), Or(Not(Sub(rsi_21, bb_position_50)), Sub(IfPos(Or(And(stoch_k_21, cmf_20), mfi_14), Not(LT(rsi_21, cmf_20)), mfi_14), vol_z_24h))), Sub(Sub(IfPos(bb_squeeze_20, hl_position_24h, Not(Or(LT(mfi_14, cmf_20), Sub(rsi_21, rsi_7)))), LT(Not(Or(LT(mfi_14, cmf_20), Sub(rsi_21, rsi_7))), macd_hist_12_26)), Sub(rsi_21, stoch_k_21))))"
+    },
+    {
+      "fold": 163,
+      "oos_start": "2025-02-04",
+      "oos_end": "2025-02-18",
+      "n_nodes": 13,
+      "height": 4,
+      "fitness": 38.3007,
+      "tree": "Sub(And(Not(Sub(mfi_14, stoch_k_21)), Not(Sub(macd_hist_12_26, macd_hist_12_26))), LT(rsi_7, rsi_21))"
+    },
+    {
+      "fold": 164,
+      "oos_start": "2025-02-18",
+      "oos_end": "2025-03-04",
+      "n_nodes": 26,
+      "height": 5,
+      "fitness": 39.446,
+      "tree": "IfPos(And(GT(And(GT(mfi_14, rsi_7), And(mfi_14, rsi_7)), macd_hist_12_26), mfi_14), Sub(GT(rsi_7, rsi_21), GT(And(GT(mfi_14, rsi_7), And(rsi_7, rsi_7)), bb_position_50)), rsi_7)"
+    },
+    {
+      "fold": 165,
+      "oos_start": "2025-03-04",
+      "oos_end": "2025-03-18",
+      "n_nodes": 63,
+      "height": 8,
+      "fitness": 40.1298,
+      "tree": "Sub(IfPos(And(LT(Not(bb_position_50), Or(mfi_14, cmf_20)), stoch_k_21), GT(rsi_7, rsi_21), rsi_7), IfPos(IfPos(Or(IfPos(GT(Or(GT(obv_z_72, vol_z_24h), Or(stoch_k_21, stoch_k_21)), Sub(LT(bb_position_50, bb_squeeze_20), Or(cmf_20, obv_z_72))), mfi_14, obv_z_72), IfPos(Or(hl_position_24h, Not(bb_position_50)), Not(bb_position_50), Not(vol_z_24h))), GT(IfPos(bb_position_50, williams_r, bb_position_50), IfPos(macd_hist_12_26, cmf_20, stoch_k_21)), Sub(Not(bb_position_50), macd_hist_12_26)), LT(mfi_14, GT(mfi_14, rsi_7)), williams_r))"
+    },
+    {
+      "fold": 166,
+      "oos_start": "2025-03-18",
+      "oos_end": "2025-04-01",
+      "n_nodes": 52,
+      "height": 8,
+      "fitness": 39.9821,
+      "tree": "Sub(And(Sub(rsi_7, mfi_14), Or(And(LT(Sub(Sub(IfPos(cmf_20, rsi_21, obv_z_72), Sub(rsi_21, williams_r)), obv_z_72), rsi_7), rsi_7), IfPos(IfPos(williams_r, GT(IfPos(cmf_20, rsi_21, obv_z_72), Not(LT(rsi_21, rsi_7))), Not(vol_z_24h)), Or(LT(macd_hist_12_26, mfi_14), Or(macd_hist_12_26, rsi_21)), LT(LT(stoch_k_21, mfi_14), Or(williams_r, mfi_14))))), Not(LT(rsi_21, rsi_7)))"
+    },
+    {
+      "fold": 167,
+      "oos_start": "2025-04-01",
+      "oos_end": "2025-04-15",
+      "n_nodes": 17,
+      "height": 4,
+      "fitness": 41.9819,
+      "tree": "IfPos(Not(mfi_14), rsi_7, Sub(And(Sub(rsi_7, mfi_14), mfi_14), Sub(GT(rsi_21, rsi_7), Sub(rsi_7, williams_r))))"
+    },
+    {
+      "fold": 168,
+      "oos_start": "2025-04-15",
+      "oos_end": "2025-04-29",
+      "n_nodes": 26,
+      "height": 6,
+      "fitness": 38.3028,
+      "tree": "IfPos(LT(rsi_21, rsi_7), LT(cmf_20, rsi_7), Sub(LT(rsi_21, rsi_7), Or(macd_hist_12_26, Or(And(rsi_7, GT(cmf_20, mfi_14)), Sub(And(rsi_21, hl_position_24h), Sub(obv_z_72, rsi_7))))))"
+    },
+    {
+      "fold": 169,
+      "oos_start": "2025-04-29",
+      "oos_end": "2025-05-13",
+      "n_nodes": 26,
+      "height": 5,
+      "fitness": 39.1583,
+      "tree": "IfPos(Or(macd_hist_12_26, LT(rsi_7, rsi_21)), Sub(Sub(rsi_7, LT(Sub(rsi_7, macd_hist_12_26), rsi_21)), LT(Sub(rsi_7, macd_hist_12_26), rsi_21)), Or(GT(cmf_20, stoch_k_21), Or(vol_z_24h, rsi_21)))"
+    },
+    {
+      "fold": 170,
+      "oos_start": "2025-05-13",
+      "oos_end": "2025-05-27",
+      "n_nodes": 33,
+      "height": 8,
+      "fitness": 40.6674,
+      "tree": "Sub(Not(LT(rsi_7, rsi_21)), And(Or(GT(macd_hist_12_26, And(GT(Not(LT(rsi_7, rsi_21)), rsi_7), Sub(hl_position_24h, mfi_14))), And(rsi_21, LT(rsi_7, Sub(williams_r, rsi_7)))), LT(rsi_7, Or(obv_z_72, LT(rsi_7, rsi_21)))))"
+    },
+    {
+      "fold": 171,
+      "oos_start": "2025-05-27",
+      "oos_end": "2025-06-10",
+      "n_nodes": 13,
+      "height": 4,
+      "fitness": 38.9967,
+      "tree": "Sub(GT(rsi_7, rsi_21), LT(GT(Sub(rsi_7, macd_hist_12_26), rsi_21), LT(rsi_7, mfi_14)))"
+    },
+    {
+      "fold": 172,
+      "oos_start": "2025-06-10",
+      "oos_end": "2025-06-24",
+      "n_nodes": 53,
+      "height": 8,
+      "fitness": 40.241,
+      "tree": "Sub(And(And(Sub(obv_z_72, bb_squeeze_20), Sub(rsi_7, rsi_21)), IfPos(GT(Sub(And(hl_position_24h, macd_hist_12_26), And(hl_position_24h, obv_z_72)), GT(Not(rsi_21), LT(rsi_21, bb_squeeze_20))), Sub(vol_z_24h, hl_position_24h), LT(mfi_14, stoch_k_21))), Sub(And(mfi_14, LT(rsi_7, rsi_21)), And(And(rsi_21, stoch_k_21), LT(mfi_14, LT(Not(And(Sub(rsi_7, mfi_14), IfPos(cmf_20, cmf_20, bb_position_50))), rsi_7)))))"
+    },
+    {
+      "fold": 173,
+      "oos_start": "2025-06-24",
+      "oos_end": "2025-07-08",
+      "n_nodes": 24,
+      "height": 8,
+      "fitness": 40.8273,
+      "tree": "Sub(GT(rsi_7, mfi_14), Sub(Not(Or(GT(rsi_7, GT(rsi_21, Sub(Sub(stoch_k_21, williams_r), williams_r))), GT(williams_r, williams_r))), GT(hl_position_24h, GT(rsi_21, rsi_7))))"
+    },
+    {
+      "fold": 174,
+      "oos_start": "2025-07-08",
+      "oos_end": "2025-07-22",
+      "n_nodes": 22,
+      "height": 7,
+      "fitness": 40.5286,
+      "tree": "Sub(LT(rsi_21, rsi_7), GT(LT(Sub(Or(mfi_14, Sub(Or(vol_z_24h, rsi_7), mfi_14)), mfi_14), williams_r), IfPos(macd_hist_12_26, rsi_7, LT(rsi_21, rsi_7))))"
+    },
+    {
+      "fold": 175,
+      "oos_start": "2025-07-22",
+      "oos_end": "2025-08-05",
+      "n_nodes": 50,
+      "height": 8,
+      "fitness": 40.6867,
+      "tree": "IfPos(Sub(Or(mfi_14, rsi_21), LT(cmf_20, williams_r)), IfPos(IfPos(Not(macd_hist_12_26), cmf_20, bb_position_50), And(cmf_20, bb_squeeze_20), Not(Sub(rsi_7, rsi_21))), Sub(Sub(LT(Sub(macd_hist_12_26, Sub(Not(stoch_k_21), Not(stoch_k_21))), Sub(LT(Sub(Sub(williams_r, rsi_21), bb_position_50), GT(rsi_7, vol_z_24h)), GT(rsi_21, rsi_7))), GT(rsi_21, rsi_7)), GT(mfi_14, rsi_7)))"
+    },
+    {
+      "fold": 176,
+      "oos_start": "2025-08-05",
+      "oos_end": "2025-08-19",
+      "n_nodes": 50,
+      "height": 8,
+      "fitness": 38.3905,
+      "tree": "Sub(rsi_7, And(And(IfPos(Not(macd_hist_12_26), And(Sub(IfPos(LT(mfi_14, rsi_7), GT(williams_r, bb_squeeze_20), rsi_7), GT(GT(cmf_20, stoch_k_21), Not(obv_z_72))), mfi_14), stoch_k_21), Sub(rsi_21, rsi_7)), IfPos(Not(macd_hist_12_26), And(Sub(IfPos(LT(mfi_14, rsi_7), Not(obv_z_72), rsi_7), GT(GT(cmf_20, stoch_k_21), Not(obv_z_72))), mfi_14), Sub(stoch_k_21, cmf_20))))"
+    },
+    {
+      "fold": 177,
+      "oos_start": "2025-08-19",
+      "oos_end": "2025-09-02",
+      "n_nodes": 7,
+      "height": 2,
+      "fitness": 38.705,
+      "tree": "Sub(GT(rsi_7, mfi_14), GT(rsi_21, rsi_7))"
+    },
+    {
+      "fold": 178,
+      "oos_start": "2025-09-02",
+      "oos_end": "2025-09-16",
+      "n_nodes": 23,
+      "height": 6,
+      "fitness": 40.0905,
+      "tree": "Sub(GT(GT(LT(Sub(Sub(vol_z_24h, vol_z_24h), hl_position_24h), Sub(hl_position_24h, mfi_14)), GT(mfi_14, rsi_7)), GT(mfi_14, rsi_7)), GT(rsi_21, GT(rsi_7, rsi_21)))"
+    },
+    {
+      "fold": 179,
+      "oos_start": "2025-09-16",
+      "oos_end": "2025-09-30",
+      "n_nodes": 15,
+      "height": 4,
+      "fitness": 42.391,
+      "tree": "Sub(Not(GT(rsi_21, rsi_7)), Sub(IfPos(rsi_7, GT(mfi_14, rsi_7), rsi_21), Sub(rsi_7, williams_r)))"
+    },
+    {
+      "fold": 180,
+      "oos_start": "2025-09-30",
+      "oos_end": "2025-10-14",
+      "n_nodes": 10,
+      "height": 3,
+      "fitness": 38.1103,
+      "tree": "Sub(LT(Not(stoch_k_21), LT(mfi_14, rsi_7)), LT(rsi_7, rsi_21))"
+    },
+    {
+      "fold": 181,
+      "oos_start": "2025-10-14",
+      "oos_end": "2025-10-28",
+      "n_nodes": 17,
+      "height": 5,
+      "fitness": 39.5829,
+      "tree": "Sub(LT(rsi_21, rsi_7), Not(LT(GT(GT(williams_r, cmf_20), LT(mfi_14, rsi_7)), IfPos(vol_z_24h, hl_position_24h, bb_position_50))))"
+    },
+    {
+      "fold": 182,
+      "oos_start": "2025-10-28",
+      "oos_end": "2025-11-11",
+      "n_nodes": 23,
+      "height": 8,
+      "fitness": 39.9197,
+      "tree": "Sub(Not(And(And(And(Sub(mfi_14, rsi_7), Sub(LT(Sub(stoch_k_21, rsi_7), IfPos(hl_position_24h, williams_r, macd_hist_12_26)), rsi_7)), rsi_21), rsi_21)), GT(rsi_21, rsi_7))"
+    },
+    {
+      "fold": 183,
+      "oos_start": "2025-11-11",
+      "oos_end": "2025-11-25",
+      "n_nodes": 7,
+      "height": 2,
+      "fitness": 38.1646,
+      "tree": "Sub(GT(rsi_7, rsi_21), LT(rsi_7, mfi_14))"
+    },
+    {
+      "fold": 184,
+      "oos_start": "2025-11-25",
+      "oos_end": "2025-12-09",
+      "n_nodes": 31,
+      "height": 8,
+      "fitness": 40.1118,
+      "tree": "Sub(GT(Sub(stoch_k_21, IfPos(rsi_21, rsi_7, bb_position_50)), williams_r), Sub(And(LT(rsi_21, LT(williams_r, Sub(GT(GT(mfi_14, rsi_7), Sub(stoch_k_21, cmf_20)), Not(rsi_21)))), rsi_21), LT(rsi_21, LT(rsi_21, rsi_7))))"
+    },
+    {
+      "fold": 185,
+      "oos_start": "2025-12-09",
+      "oos_end": "2025-12-23",
+      "n_nodes": 36,
+      "height": 8,
+      "fitness": 40.2343,
+      "tree": "Sub(GT(rsi_7, GT(rsi_21, rsi_7)), GT(IfPos(GT(Not(macd_hist_12_26), And(LT(williams_r, obv_z_72), GT(rsi_21, rsi_7))), GT(GT(rsi_21, rsi_7), Or(GT(GT(stoch_k_21, mfi_14), Not(Sub(rsi_7, mfi_14))), GT(obv_z_72, williams_r))), mfi_14), rsi_7))"
+    },
+    {
+      "fold": 186,
+      "oos_start": "2025-12-23",
+      "oos_end": "2026-01-06",
+      "n_nodes": 32,
+      "height": 7,
+      "fitness": 39.6796,
+      "tree": "Sub(Or(GT(GT(rsi_7, williams_r), And(macd_hist_12_26, GT(rsi_21, LT(bb_squeeze_20, bb_squeeze_20)))), GT(Or(Sub(rsi_7, mfi_14), And(GT(Not(bb_squeeze_20), Sub(bb_squeeze_20, hl_position_24h)), rsi_21)), LT(rsi_7, rsi_21))), GT(rsi_21, rsi_7))"
+    },
+    {
+      "fold": 187,
+      "oos_start": "2026-01-06",
+      "oos_end": "2026-01-20",
+      "n_nodes": 31,
+      "height": 7,
+      "fitness": 39.2428,
+      "tree": "Sub(GT(GT(rsi_7, rsi_21), hl_position_24h), GT(IfPos(williams_r, IfPos(macd_hist_12_26, Sub(Or(hl_position_24h, obv_z_72), Sub(Sub(hl_position_24h, williams_r), williams_r)), LT(hl_position_24h, williams_r)), Or(rsi_21, Or(rsi_7, mfi_14))), GT(rsi_7, rsi_21)))"
+    },
+    {
+      "fold": 188,
+      "oos_start": "2026-01-20",
+      "oos_end": "2026-02-03",
+      "n_nodes": 19,
+      "height": 5,
+      "fitness": 38.8886,
+      "tree": "Sub(LT(rsi_21, rsi_7), GT(IfPos(Or(obv_z_72, LT(rsi_21, rsi_7)), GT(mfi_14, rsi_7), Or(rsi_7, Not(bb_position_50))), bb_position_50))"
+    },
+    {
+      "fold": 189,
+      "oos_start": "2026-02-03",
+      "oos_end": "2026-02-17",
+      "n_nodes": 30,
+      "height": 7,
+      "fitness": 38.8665,
+      "tree": "Sub(LT(GT(rsi_21, Sub(Sub(rsi_7, macd_hist_12_26), macd_hist_12_26)), Or(stoch_k_21, Sub(rsi_7, cmf_20))), Not(IfPos(rsi_7, GT(bb_position_50, Or(Not(bb_position_50), Sub(williams_r, GT(rsi_7, mfi_14)))), And(macd_hist_12_26, hl_position_24h))))"
+    },
+    {
+      "fold": 190,
+      "oos_start": "2026-02-17",
+      "oos_end": "2026-03-03",
+      "n_nodes": 49,
+      "height": 8,
+      "fitness": 40.8067,
+      "tree": "Sub(Sub(Or(GT(IfPos(IfPos(mfi_14, rsi_21, hl_position_24h), IfPos(williams_r, stoch_k_21, williams_r), IfPos(bb_position_50, rsi_21, williams_r)), mfi_14), Sub(Sub(rsi_7, mfi_14), LT(LT(rsi_21, rsi_7), williams_r))), LT(LT(rsi_21, rsi_7), williams_r)), And(macd_hist_12_26, And(bb_position_50, GT(Sub(GT(rsi_21, rsi_7), Sub(rsi_7, Or(And(hl_position_24h, rsi_7), williams_r))), rsi_7))))"
+    },
+    {
+      "fold": 191,
+      "oos_start": "2026-03-03",
+      "oos_end": "2026-03-17",
+      "n_nodes": 26,
+      "height": 7,
+      "fitness": 38.8234,
+      "tree": "Sub(IfPos(bb_position_50, LT(rsi_21, rsi_7), rsi_21), IfPos(Not(LT(Not(LT(Sub(stoch_k_21, rsi_21), Sub(cmf_20, hl_position_24h))), IfPos(williams_r, bb_position_50, bb_position_50))), LT(rsi_7, mfi_14), williams_r))"
+    },
+    {
+      "fold": 192,
+      "oos_start": "2026-03-17",
+      "oos_end": "2026-03-31",
+      "n_nodes": 32,
+      "height": 7,
+      "fitness": 42.5341,
+      "tree": "Sub(rsi_7, Sub(GT(Sub(IfPos(rsi_21, GT(GT(rsi_21, rsi_7), Not(hl_position_24h)), vol_z_24h), And(LT(williams_r, rsi_7), IfPos(obv_z_72, williams_r, macd_hist_12_26))), Sub(Sub(stoch_k_21, macd_hist_12_26), stoch_k_21)), Sub(stoch_k_21, LT(rsi_7, mfi_14))))"
+    },
+    {
+      "fold": 193,
+      "oos_start": "2026-03-31",
+      "oos_end": "2026-04-14",
+      "n_nodes": 29,
+      "height": 6,
+      "fitness": 39.8879,
+      "tree": "Sub(GT(GT(GT(IfPos(rsi_21, Sub(bb_position_50, williams_r), rsi_7), Not(LT(mfi_14, rsi_7))), macd_hist_12_26), Not(IfPos(vol_z_24h, LT(rsi_21, rsi_7), And(GT(rsi_7, rsi_21), bb_position_50)))), GT(rsi_21, rsi_7))"
+    },
+    {
+      "fold": 194,
+      "oos_start": "2026-04-14",
+      "oos_end": "2026-04-28",
+      "n_nodes": 28,
+      "height": 7,
+      "fitness": 39.759,
+      "tree": "Sub(GT(GT(rsi_7, mfi_14), GT(Or(Sub(mfi_14, rsi_7), GT(mfi_14, stoch_k_21)), IfPos(cmf_20, stoch_k_21, GT(GT(GT(rsi_7, mfi_14), GT(rsi_21, rsi_7)), rsi_7)))), GT(rsi_21, rsi_7))"
+    },
+    {
+      "fold": 195,
+      "oos_start": "2026-04-28",
+      "oos_end": "2026-05-12",
+      "n_nodes": 39,
+      "height": 8,
+      "fitness": 39.9422,
+      "tree": "Sub(rsi_7, IfPos(IfPos(And(GT(IfPos(Not(bb_position_50), stoch_k_21, bb_position_50), rsi_21), Or(Not(cmf_20), rsi_21)), Or(GT(IfPos(bb_squeeze_20, stoch_k_21, macd_hist_12_26), rsi_7), bb_position_50), Or(macd_hist_12_26, And(GT(IfPos(Not(bb_position_50), macd_hist_12_26, rsi_7), rsi_21), rsi_7))), GT(rsi_21, rsi_7), williams_r))"
+    },
+    {
+      "fold": 196,
+      "oos_start": "2026-05-12",
+      "oos_end": "2026-05-16",
+      "n_nodes": 20,
+      "height": 5,
+      "fitness": 38.9347,
+      "tree": "Sub(GT(rsi_7, rsi_21), LT(IfPos(GT(stoch_k_21, mfi_14), LT(Not(rsi_7), Sub(rsi_7, mfi_14)), rsi_7), Not(GT(rsi_7, rsi_7))))"
+    }
+  ]
+}
