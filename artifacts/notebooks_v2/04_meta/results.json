@@ -1,0 +1,87 @@
+{
+  "notebook": "04_meta_learning_v1",
+  "created": "2026-06-07T20:31:11.797003",
+  "base_models": [
+    "lgbm",
+    "mamba",
+    "tcn"
+  ],
+  "ensemble_thresholds": {
+    "long": 0.56,
+    "short": 0.44
+  },
+  "meta_config": {
+    "threshold": 0.55,
+    "sl_mult": 1.5,
+    "tp_mult": 2.5,
+    "max_hold": 48,
+    "step_months": 3,
+    "embargo_h": 48
+  },
+  "oos_period": "2024-05-31\u21922026-05-16",
+  "meta_auc_oos": 0.4684,
+  "meta_agent": {
+    "total_ret": -0.2208,
+    "sharpe": -0.8803,
+    "maxdd": -0.2405,
+    "n_trades": 104,
+    "win_rate": 0.3846
+  },
+  "wfo_folds": [
+    {
+      "fold": 12,
+      "train_bars": 683,
+      "oos": "2025-04-01\u21922025-07-01",
+      "oos_bars": 119
+    },
+    {
+      "fold": 13,
+      "train_bars": 803,
+      "oos": "2025-07-01\u21922025-10-01",
+      "oos_bars": 174
+    },
+    {
+      "fold": 14,
+      "train_bars": 977,
+      "oos": "2025-10-01\u21922026-01-01",
+      "oos_bars": 168
+    },
+    {
+      "fold": 15,
+      "train_bars": 1142,
+      "oos": "2026-01-01\u21922026-04-01",
+      "oos_bars": 361
+    },
+    {
+      "fold": 16,
+      "train_bars": 1497,
+      "oos": "2026-04-01\u21922026-07-01",
+      "oos_bars": 172
+    }
+  ],
+  "feature_importance": {
+    "halving_cycle_pos": 334,
+    "hurst_168h": 157,
+    "atr_14_pct": 138,
+    "rsi_14": 116,
+    "tcn_p_up": 115,
+    "bb_width_pct": 110,
+    "tfi_z_24h": 108,
+    "vol_ratio_24h": 105,
+    "ensemble_p_up": 103,
+    "ret_24h": 95,
+    "mamba_p_up": 88,
+    "ret_1h": 80,
+    "lgbm_p_up": 77,
+    "hurst_24h": 69,
+    "hour_sin": 57,
+    "hour_cos": 45,
+    "trend_score": 36,
+    "sideways_flag": 1
+  },
+  "monthly": {
+    "mean_pct": -0.973,
+    "positive_months": 3,
+    "total_months": 25
+  }
+}

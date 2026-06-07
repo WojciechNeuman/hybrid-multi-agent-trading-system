@@ -1,14 +1,7 @@
 {
   "notebook": "01_lgbm_v1",
-  "created": "2026-06-06T20:44:41.167104",
+  "created": "2026-06-07T22:02:33.364050",
   "model": "LightGBM binary (directional label)",
-  "feature_selection": {
-    "method": "4-stage Boruta against directional label, pre-OOS",
-    "n_candidates": 284,
-    "n_selected": 11,
-    "includes_v3_external": true,
-    "cache": "/Users/wojciech.neuman/Documents/hybrid-multi-agent-trading-system/artifacts/notebooks_v2/01_lgbm/selected_features.json"
-  },
   "wfo": {
     "train_window_h": 8760,
     "step_size": 720,
@@ -16,71 +9,57 @@
   },
   "grid_val_window": "2022-01-01\u21922023-12-31",
   "oos_period": "2024-01-01\u21922026-05-16",
-  "oos_auc": 0.5875,
+  "oos_auc": 0.537,
   "selected_features": [
-    "bb_position_20",
-    "close_vs_ema_7",
-    "close_vs_kijun",
     "close_vs_true_vwap",
-    "cross_btc_relative_strength",
-    "hour_sin",
-    "liq_vwap_dev_daily",
-    "log_ret_2h",
-    "lower_wick",
-    "mkt_total_mcap_chg_24h",
-    "rsi_vol_confirm"
+    "stoch_k_14",
+    "ret_2h",
+    "rsi_divergence",
+    "close_vs_sma_7",
+    "bear_streak",
+    "close_vs_s1",
+    "macd_hist_5_13",
+    "hurst_24h",
+    "ad_z_48h",
+    "ret_3h"
   ],
   "best_params": {
-    "long_threshold": 0.6,
-    "short_threshold": 0.4,
-    "entry_atr_mult": 0.6,
-    "sl_atr_mult": 2.5,
+    "long_threshold": 0.55,
+    "short_threshold": 0.3,
+    "entry_atr_mult": 0.3,
+    "sl_atr_mult": 1.5,
     "tp_atr_mult": 2.5,
     "min_sl": 0.01,
-    "min_hold": 4,
-    "max_hold": 24,
-    "cooldown": 2
+    "min_hold": 8,
+    "max_hold": 48,
+    "cooldown": 3
   },
   "backtest_wfees": {
-    "n_trades": 492,
-    "n_long": 290,
-    "n_short": 202,
-    "win_rate": 0.6951,
-    "total_ret": 49.7263,
-    "sharpe": 5.466,
-    "maxdd": -0.1141
+    "n_trades": 416,
+    "n_long": 408,
+    "n_short": 8,
+    "win_rate": 0.4423,
+    "total_ret": 0.5914,
+    "sharpe": 0.6247,
+    "maxdd": -0.2546
   },
   "backtest_0fee": {
-    "n_trades": 492,
-    "n_long": 290,
-    "n_short": 202,
-    "win_rate": 0.7215,
-    "total_ret": 71.164,
-    "sharpe": 5.9594,
-    "maxdd": -0.1118
+    "n_trades": 416,
+    "n_long": 408,
+    "n_short": 8,
+    "win_rate": 0.4495,
+    "total_ret": 1.0542,
+    "sharpe": 0.9709,
+    "maxdd": -0.2263
   },
   "monthly": {
-    "mean_pct": 14.481,
-    "positive_months": 24,
+    "mean_pct": 2.064,
+    "positive_months": 16,
     "total_months": 29
-  },
-  "permutation_importance": {
-    "bb_position_20": 0.012493925942378303,
-    "close_vs_ema_7": 0.0,
-    "close_vs_kijun": 0.0,
-    "close_vs_true_vwap": 0.007641153626038603,
-    "cross_btc_relative_strength": 0.0,
-    "hour_sin": 0.001491541766141265,
-    "liq_vwap_dev_daily": 0.031616510505165195,
-    "log_ret_2h": 0.005917544189855424,
-    "lower_wick": 0.0015807821856839894,
-    "mkt_total_mcap_chg_24h": 0.06681910031301812,
-    "rsi_vol_confirm": 0.0013442762825516263
   },
   "artifacts": {
     "oos_probs": "oos_probs.npy",
     "oos_index": "oos_index.npy",
-    "model": "model.txt",
-    "selection_cache": "selected_features.json"
+    "model": "model.txt"
   }
 }
