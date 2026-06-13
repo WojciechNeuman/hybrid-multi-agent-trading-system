@@ -1,0 +1,109 @@
+{
+  "notebook": "05_patchtst_v1",
+  "created": "2026-06-10T22:37:19.132721",
+  "model": "PatchTST (patch transformer, direction + forward-vol, temp-scaled)",
+  "splits": {
+    "train_end": "2022-12-31",
+    "grid_val_end": "2024-05-30",
+    "oos_start": "2024-05-31"
+  },
+  "tbm": {
+    "mult": 2.0,
+    "vol_window": 24,
+    "vert_h": 24
+  },
+  "architecture": {
+    "patch_len": 8,
+    "stride": 4,
+    "n_patches": 11,
+    "d_model": 64,
+    "n_heads": 4,
+    "n_layers": 2,
+    "d_ff": 128,
+    "dropout": 0.2,
+    "seq_len": 48,
+    "n_features": 32,
+    "n_params": 84547,
+    "temperature": 1.7723
+  },
+  "training": {
+    "epochs": 80,
+    "best_epoch": 13,
+    "best_val_loss": 0.69295
+  },
+  "oos_auc_tbm": 0.5091,
+  "all_features": [
+    "stoch_k_14",
+    "ret_2h",
+    "rsi_divergence",
+    "close_vs_sma_7",
+    "bear_streak",
+    "close_vs_s1",
+    "macd_hist_5_13",
+    "ad_z_48h",
+    "ret_3h",
+    "ret_1h",
+    "rsi_14",
+    "vol_ratio_24h",
+    "bb_position_20",
+    "hour_sin",
+    "hour_cos",
+    "atr_14_pct",
+    "hurst_168h",
+    "trend_score",
+    "close_vs_sma_50",
+    "ma_bull_score",
+    "close_vs_true_vwap",
+    "hurst_24h",
+    "hurst_72h",
+    "tfi_pct",
+    "tfi_z_24h",
+    "bb_width_pct",
+    "sideways_flag",
+    "liq_vwap_dev_24h",
+    "volat_atr_20_pct",
+    "mtf_alignment",
+    "mtf_h4_rsi",
+    "ffd_log_price"
+  ],
+  "best_params": {
+    "long_threshold": 0.58,
+    "short_threshold": 0.58,
+    "entry_atr_mult": 0.6,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 3.0,
+    "min_hold": 12,
+    "max_hold": 24,
+    "cooldown": 2
+  },
+  "backtest_wfees": {
+    "n_trades": 129,
+    "n_long": 0,
+    "n_short": 129,
+    "win_rate": 0.4496,
+    "total_ret": 0.3607,
+    "sharpe": 0.8743,
+    "maxdd": -0.1069
+  },
+  "backtest_0fee": {
+    "n_trades": 129,
+    "n_long": 0,
+    "n_short": 129,
+    "win_rate": 0.4806,
+    "total_ret": 0.5175,
+    "sharpe": 1.1833,
+    "maxdd": -0.0996
+  },
+  "monthly": {
+    "mean_pct": 1.29,
+    "positive_months": 15,
+    "total_months": 25
+  },
+  "artifacts": {
+    "oos_probs": "oos_probs.npy",
+    "oos_index": "oos_index.npy (int64 ns)",
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_index": "wfo_index.npy (int64 ns)",
+    "model": "model.pt"
+  }
+}
