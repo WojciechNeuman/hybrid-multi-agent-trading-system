@@ -434,32 +434,32 @@
   ],
   "best_params": {
     "long_threshold": 0.58,
-    "short_threshold": 0.42,
+    "short_threshold": 0.4,
     "entry_atr_mult": 0.3,
-    "sl_atr_mult": 1.5,
-    "tp_atr_mult": 2.0,
-    "min_sl": 0.015,
+    "sl_atr_mult": 2.0,
+    "tp_atr_mult": 3.0,
+    "min_sl": 0.01,
     "min_hold": 8,
-    "max_hold": 48,
-    "cooldown": 3
+    "max_hold": 24,
+    "cooldown": 2
   },
   "backtest_wfees": {
-    "n_trades": 314,
-    "n_long": 70,
-    "n_short": 244,
-    "win_rate": 0.4554,
-    "total_ret": -0.2697,
-    "sharpe": -0.5184,
-    "maxdd": -0.4741
+    "n_trades": 288,
+    "n_long": 79,
+    "n_short": 209,
+    "win_rate": 0.4792,
+    "total_ret": 0.0456,
+    "sharpe": 0.0915,
+    "maxdd": -0.2934
   },
   "backtest_0fee": {
-    "n_trades": 314,
-    "n_long": 70,
-    "n_short": 244,
-    "win_rate": 0.4682,
-    "total_ret": -0.078,
-    "sharpe": -0.1344,
-    "maxdd": -0.4161
+    "n_trades": 288,
+    "n_long": 79,
+    "n_short": 209,
+    "win_rate": 0.4896,
+    "total_ret": 0.2888,
+    "sharpe": 0.5221,
+    "maxdd": -0.2453
   },
   "monthly": {
     "mean_pct": -0.965,
@@ -470,5 +470,7 @@
     "oos_probs": "oos_probs.npy",
     "oos_index": "oos_index.npy (int64 ns)",
     "model": "model_lastfold.pt"
-  }
+  },
+  "selection": "leak-free: trading grid chosen on grid-val 2022-06->2024-05 (min 80 trades), applied to OOS",
+  "note": "Trading grid re-selected leak-free (prior run was OOS-overfit). Model wfo_probs unchanged."
 }
