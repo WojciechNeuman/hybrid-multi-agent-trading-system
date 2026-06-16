@@ -1,6 +1,6 @@
 {
   "notebook": "02_mamba_v1",
-  "created": "2026-06-10T22:04:34.477881",
+  "created": "2026-06-15T22:58:17.305475",
   "model": "Mamba SSM (pure-PyTorch, chunked scan)",
   "wfo": {
     "type": "expanding_window",
@@ -9,127 +9,127 @@
     "folds": [
       {
         "fold": 0,
-        "val_auc": 0.5557,
-        "ep": 8,
+        "val_auc": 0.5581,
+        "ep": 7,
         "train": "2019-01-01\u21922021-12-31",
         "oos": "2022-01-01\u21922022-04-01"
       },
       {
         "fold": 1,
-        "val_auc": 0.5717,
-        "ep": 11,
+        "val_auc": 0.5563,
+        "ep": 12,
         "train": "2019-01-01\u21922022-03-31",
         "oos": "2022-04-01\u21922022-07-01"
       },
       {
         "fold": 2,
-        "val_auc": 0.5533,
-        "ep": 9,
+        "val_auc": 0.5536,
+        "ep": 14,
         "train": "2019-01-01\u21922022-06-30",
         "oos": "2022-07-01\u21922022-10-01"
       },
       {
         "fold": 3,
-        "val_auc": 0.546,
-        "ep": 7,
+        "val_auc": 0.5525,
+        "ep": 9,
         "train": "2019-01-01\u21922022-09-30",
         "oos": "2022-10-01\u21922023-01-01"
       },
       {
         "fold": 4,
-        "val_auc": 0.554,
-        "ep": 22,
+        "val_auc": 0.5552,
+        "ep": 10,
         "train": "2019-01-01\u21922022-12-31",
         "oos": "2023-01-01\u21922023-04-01"
       },
       {
         "fold": 5,
-        "val_auc": 0.5397,
+        "val_auc": 0.5572,
         "ep": 10,
         "train": "2019-01-01\u21922023-03-31",
         "oos": "2023-04-01\u21922023-07-01"
       },
       {
         "fold": 6,
-        "val_auc": 0.5614,
+        "val_auc": 0.5644,
         "ep": 8,
         "train": "2019-01-01\u21922023-06-30",
         "oos": "2023-07-01\u21922023-10-01"
       },
       {
         "fold": 7,
-        "val_auc": 0.5559,
-        "ep": 12,
+        "val_auc": 0.5604,
+        "ep": 8,
         "train": "2019-01-01\u21922023-09-30",
         "oos": "2023-10-01\u21922024-01-01"
       },
       {
         "fold": 8,
-        "val_auc": 0.5572,
-        "ep": 13,
+        "val_auc": 0.5555,
+        "ep": 12,
         "train": "2019-01-01\u21922023-12-31",
         "oos": "2024-01-01\u21922024-04-01"
       },
       {
         "fold": 9,
-        "val_auc": 0.5553,
+        "val_auc": 0.5603,
         "ep": 12,
         "train": "2019-01-01\u21922024-03-31",
         "oos": "2024-04-01\u21922024-07-01"
       },
       {
         "fold": 10,
-        "val_auc": 0.5572,
-        "ep": 10,
+        "val_auc": 0.561,
+        "ep": 8,
         "train": "2019-01-01\u21922024-06-30",
         "oos": "2024-07-01\u21922024-10-01"
       },
       {
         "fold": 11,
-        "val_auc": 0.5656,
+        "val_auc": 0.5547,
         "ep": 9,
         "train": "2019-01-01\u21922024-09-30",
         "oos": "2024-10-01\u21922025-01-01"
       },
       {
         "fold": 12,
-        "val_auc": 0.5534,
-        "ep": 15,
+        "val_auc": 0.5588,
+        "ep": 10,
         "train": "2019-01-01\u21922024-12-31",
         "oos": "2025-01-01\u21922025-04-01"
       },
       {
         "fold": 13,
-        "val_auc": 0.5411,
+        "val_auc": 0.5531,
         "ep": 8,
         "train": "2019-01-01\u21922025-03-31",
         "oos": "2025-04-01\u21922025-07-01"
       },
       {
         "fold": 14,
-        "val_auc": 0.5442,
-        "ep": 9,
+        "val_auc": 0.5446,
+        "ep": 18,
         "train": "2019-01-01\u21922025-06-30",
         "oos": "2025-07-01\u21922025-10-01"
       },
       {
         "fold": 15,
-        "val_auc": 0.5421,
-        "ep": 7,
+        "val_auc": 0.5458,
+        "ep": 10,
         "train": "2019-01-01\u21922025-09-30",
         "oos": "2025-10-01\u21922026-01-01"
       },
       {
         "fold": 16,
-        "val_auc": 0.5444,
-        "ep": 7,
+        "val_auc": 0.5384,
+        "ep": 6,
         "train": "2019-01-01\u21922025-12-31",
         "oos": "2026-01-01\u21922026-04-01"
       },
       {
         "fold": 17,
-        "val_auc": 0.5343,
-        "ep": 19,
+        "val_auc": 0.5338,
+        "ep": 17,
         "train": "2019-01-01\u21922026-03-31",
         "oos": "2026-04-01\u21922026-07-01"
       }
@@ -137,7 +137,7 @@
   },
   "grid_val": "2022-01-01\u21922024-05-30",
   "oos_period": "2024-05-31\u21922026-05-16",
-  "oos_auc": 0.5319,
+  "oos_auc": 0.5314,
   "architecture": {
     "d_model": 64,
     "d_state": 16,
@@ -434,43 +434,43 @@
   ],
   "best_params": {
     "long_threshold": 0.58,
-    "short_threshold": 0.4,
+    "short_threshold": 0.42,
     "entry_atr_mult": 0.3,
-    "sl_atr_mult": 2.0,
-    "tp_atr_mult": 3.0,
-    "min_sl": 0.01,
-    "min_hold": 8,
-    "max_hold": 24,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 2.5,
+    "min_sl": 0.015,
+    "min_hold": 4,
+    "max_hold": 48,
     "cooldown": 2
   },
   "backtest_wfees": {
-    "n_trades": 288,
-    "n_long": 79,
-    "n_short": 209,
-    "win_rate": 0.4792,
-    "total_ret": 0.0456,
-    "sharpe": 0.0915,
-    "maxdd": -0.2934
+    "n_trades": 272,
+    "n_long": 84,
+    "n_short": 188,
+    "win_rate": 0.4669,
+    "total_ret": 0.0525,
+    "sharpe": 0.0914,
+    "maxdd": -0.2952
   },
   "backtest_0fee": {
-    "n_trades": 288,
-    "n_long": 79,
-    "n_short": 209,
-    "win_rate": 0.4896,
-    "total_ret": 0.2888,
-    "sharpe": 0.5221,
-    "maxdd": -0.2453
+    "n_trades": 272,
+    "n_long": 84,
+    "n_short": 188,
+    "win_rate": 0.4853,
+    "total_ret": 0.2996,
+    "sharpe": 0.4706,
+    "maxdd": -0.2574
   },
   "monthly": {
-    "mean_pct": -0.965,
-    "positive_months": 10,
+    "mean_pct": 0.392,
+    "positive_months": 13,
     "total_months": 25
   },
   "artifacts": {
     "oos_probs": "oos_probs.npy",
     "oos_index": "oos_index.npy (int64 ns)",
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_index": "wfo_index.npy (int64 ns)",
     "model": "model_lastfold.pt"
-  },
-  "selection": "leak-free: trading grid chosen on grid-val 2022-06->2024-05 (min 80 trades), applied to OOS",
-  "note": "Trading grid re-selected leak-free (prior run was OOS-overfit). Model wfo_probs unchanged."
+  }
 }

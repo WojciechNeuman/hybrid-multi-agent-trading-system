@@ -1,11 +1,11 @@
 {
   "notebook": "05_patchtst_v1",
-  "created": "2026-06-10T22:37:19.132721",
+  "created": "2026-06-16T13:41:14.427264",
   "model": "PatchTST (patch transformer, direction + forward-vol, temp-scaled)",
   "splits": {
     "train_end": "2022-12-31",
     "grid_val_end": "2024-05-30",
-    "oos_start": "2024-05-31"
+    "oos_start": "2024-06-01"
   },
   "tbm": {
     "mult": 2.0,
@@ -31,7 +31,7 @@
     "best_epoch": 13,
     "best_val_loss": 0.69295
   },
-  "oos_auc_tbm": 0.5091,
+  "oos_auc_tbm": 0.5098,
   "all_features": [
     "stoch_k_14",
     "ret_2h",
@@ -82,7 +82,7 @@
     "n_short": 129,
     "win_rate": 0.4496,
     "total_ret": 0.3607,
-    "sharpe": 0.8743,
+    "sharpe": 0.8749,
     "maxdd": -0.1069
   },
   "backtest_0fee": {
@@ -91,13 +91,13 @@
     "n_short": 129,
     "win_rate": 0.4806,
     "total_ret": 0.5175,
-    "sharpe": 1.1833,
+    "sharpe": 1.1841,
     "maxdd": -0.0996
   },
   "monthly": {
-    "mean_pct": 1.29,
-    "positive_months": 15,
-    "total_months": 25
+    "mean_pct": 1.27,
+    "positive_months": 14,
+    "total_months": 24
   },
   "artifacts": {
     "oos_probs": "oos_probs.npy",

@@ -1,11 +1,11 @@
 {
   "notebook": "03_tcn_v1",
-  "created": "2026-06-07T22:02:37.561206",
+  "created": "2026-06-16T01:38:35.386895",
   "model": "TCNMultiTask (direction + forward-vol)",
   "splits": {
     "train_end": "2022-12-31",
     "grid_val_end": "2024-05-30",
-    "oos_start": "2024-05-31"
+    "oos_start": "2024-06-01"
   },
   "tbm": {
     "mult": 2.0,
@@ -31,7 +31,7 @@
     "best_epoch": 14,
     "best_val_loss": 0.69312
   },
-  "oos_auc_tbm": 0.5127,
+  "oos_auc_tbm": 0.513,
   "all_features": [
     "stoch_k_14",
     "ret_2h",
@@ -82,7 +82,7 @@
     "n_short": 232,
     "win_rate": 0.4522,
     "total_ret": 0.7381,
-    "sharpe": 1.1405,
+    "sharpe": 1.1413,
     "maxdd": -0.1358
   },
   "backtest_0fee": {
@@ -91,13 +91,13 @@
     "n_short": 232,
     "win_rate": 0.4522,
     "total_ret": 0.9037,
-    "sharpe": 1.3317,
+    "sharpe": 1.3327,
     "maxdd": -0.1217
   },
   "monthly": {
-    "mean_pct": 2.356,
-    "positive_months": 16,
-    "total_months": 25
+    "mean_pct": 2.245,
+    "positive_months": 15,
+    "total_months": 24
   },
   "artifacts": {
     "oos_probs": "oos_probs.npy",
