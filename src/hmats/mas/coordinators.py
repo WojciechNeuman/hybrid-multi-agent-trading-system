@@ -1,6 +1,6 @@
 """Alternative agent-merge methods for the multi-agent system.
 
-The notebook-07 `Coordinator` allocates by `softmax(trailing-Sharpe) × competence`. Empirically it
+The original `Coordinator` allocates by `softmax(trailing-Sharpe) × competence`. Empirically it
 *loses* to a naive equal-weight fund of the same agents — the trailing-Sharpe momentum gate
 concentrates capital into an agent just as its edge mean-reverts. This module implements several
 alternative allocators so they can be compared on the same OOS panel, all under one rule:
@@ -15,6 +15,7 @@ Methods
 -------
 - ``equal_weight``         — 1/N (the benchmark to beat).
 - ``inverse_vol``         — risk parity lite: w ∝ 1/trailing-vol. Down-weights the wild agents.
+- ``capped_inverse_vol``  — inverse-volatility with a 2/N single-agent cap.
 - ``trailing_sharpe``     — softmax over trailing Sharpe only (the gate, no competence tilt).
 - ``mas_coordinator``     — the full notebook-07 allocator (softmax Sharpe × regime competence).
 - ``shrink_to_ew``        — the MAS allocator blended λ toward equal weight (concentration cap).
@@ -50,6 +51,10 @@ def inverse_vol(agents, panel, perf, competence) -> pd.DataFrame:
     return _norm(inv.reindex(panel.index)).fillna(1.0 / len(agents))
 
 
+def capped_inverse_vol(agents, panel, perf, competence) -> pd.DataFrame:
+    return m.capped_inverse_vol_weights(agents, panel)
+
+
 def softmax_sharpe(agents, panel, perf, competence) -> pd.DataFrame:
     z = (perf[list(agents)] / m.PERF_TEMP).clip(-10, 10)
     soft = np.exp(z)
@@ -75,6 +80,7 @@ def inverse_vol_competence(agents, panel, perf, competence) -> pd.DataFrame:
 
 METHODS = {
     "Equal weight (1/N)": equal_weight,
+    "Capped inverse-vol (2/N cap)": capped_inverse_vol,
     "Inverse-vol (risk parity)": inverse_vol,
     "Trailing-Sharpe softmax": softmax_sharpe,
     "MAS coordinator (current)": mas_coordinator,

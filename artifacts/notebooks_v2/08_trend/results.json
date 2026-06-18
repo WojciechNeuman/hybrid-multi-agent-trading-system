@@ -2,13 +2,13 @@
   "notebook": "08_rule_agents_v1",
   "agent": "trend",
   "paradigm": "rule: trend-following",
-  "created": "2026-06-19T00:05:54.032240",
+  "created": "2026-06-19T00:52:17.152720",
   "model": "rule-based (rule: trend-following), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-30",
-  "oos_period": "2024-06-01\u21922026-05-16",
+  "oos_period": "2024-05-31\u21922026-05-16",
   "best_params": {
-    "long_threshold": 0.55,
-    "short_threshold": 0.45,
+    "long_threshold": 0.6,
+    "short_threshold": 0.4,
     "entry_atr_mult": 0.0,
     "sl_atr_mult": 1.5,
     "tp_atr_mult": 3.0,
@@ -18,20 +18,20 @@
     "min_sl": 0.01
   },
   "backtest_wfees": {
-    "n_trades": 528,
+    "n_trades": 529,
     "n_long": 142,
-    "n_short": 386,
-    "total_ret": 0.8099,
-    "sharpe": 0.7254,
-    "maxdd": -0.2833
+    "n_short": 387,
+    "total_ret": 0.5643,
+    "sharpe": 0.5464,
+    "maxdd": -0.2863
   },
   "backtest_0fee": {
-    "n_trades": 528,
+    "n_trades": 529,
     "n_long": 142,
-    "n_short": 386,
-    "total_ret": 1.1888,
-    "sharpe": 0.9584,
-    "maxdd": -0.2778
+    "n_short": 387,
+    "total_ret": 0.8928,
+    "sharpe": 0.7799,
+    "maxdd": -0.2808
   },
   "artifacts": {
     "oos_probs": "oos_probs.npy",

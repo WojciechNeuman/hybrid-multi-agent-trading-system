@@ -2,10 +2,10 @@
   "notebook": "08_rule_agents_v1",
   "agent": "volbreak",
   "paradigm": "rule: volatility breakout",
-  "created": "2026-06-19T00:06:02.435046",
+  "created": "2026-06-19T00:52:25.358182",
   "model": "rule-based (rule: volatility breakout), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-30",
-  "oos_period": "2024-06-01\u21922026-05-16",
+  "oos_period": "2024-05-31\u21922026-05-16",
   "best_params": {
     "long_threshold": 0.6,
     "short_threshold": 0.4,
@@ -18,20 +18,20 @@
     "min_sl": 0.01
   },
   "backtest_wfees": {
-    "n_trades": 440,
+    "n_trades": 441,
     "n_long": 235,
-    "n_short": 205,
-    "total_ret": 0.3818,
-    "sharpe": 0.488,
-    "maxdd": -0.2254
+    "n_short": 206,
+    "total_ret": 0.2993,
+    "sharpe": 0.3947,
+    "maxdd": -0.2366
   },
   "backtest_0fee": {
-    "n_trades": 440,
+    "n_trades": 441,
     "n_long": 235,
-    "n_short": 205,
-    "total_ret": 0.6569,
-    "sharpe": 0.7622,
-    "maxdd": -0.1903
+    "n_short": 206,
+    "total_ret": 0.5588,
+    "sharpe": 0.6695,
+    "maxdd": -0.2019
   },
   "artifacts": {
     "oos_probs": "oos_probs.npy",

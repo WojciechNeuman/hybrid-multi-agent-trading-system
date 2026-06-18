@@ -1,4 +1,4 @@
-"""Hybrid Multi-Agent System — coordination layer (notebook 07).
+"""Hybrid Multi-Agent Trading System — final coordination layer (notebook 06).
 
 This module turns the four trained base models (LightGBM, Mamba, TCN, PatchTST) into genuine
 *autonomous trading agents* and a *coordinator* that allocates capital across them. It goes
@@ -13,12 +13,12 @@ What makes this multi-agent rather than an ensemble of probabilities:
 2. **Agents have measured specialisations.** A per-regime competence prior is estimated for
    every agent on the *pre-OOS* window only (leak-free): the coordinator learns *whom to
    trust in which market regime*.
-3. **The coordinator is a capital allocator, not an averager.** At each bar it routes capital
-   to agents by ``competence(regime) x online-reliability x confidence`` — a mixture-of-experts
-   gate. Opposing agents hedge (diversification); a regime's specialist gets the capital.
-   This is the structure of a real multi-strategy trading desk (a fund of agents).
-4. **It adapts online.** Each agent's reliability weight tracks the trailing realised
-   performance of *its own* strategy, shifted by an embargo so no future bar informs the past.
+3. **The system tests several capital allocators.** The original regime-gated coordinator is
+   retained as an ablation, while the final reported allocator is capped inverse-volatility risk
+   parity over the accepted agents.
+4. **It is honest about failed agents.** The cross-asset learner is removed because its predictive
+   skill did not clear the random-bracket null; the mean-reversion rule is excluded because its
+   current OOS return is negative.
 
 Leakage discipline: an allocation decided with information up to bar ``t`` earns each agent's
 return over ``t -> t+1``; every trailing statistic uses a right-open window shifted by >= 1 bar
@@ -40,17 +40,19 @@ import pandas as pd
 # Configuration
 # ---------------------------------------------------------------------------
 
-# Learned agents (nonlinear models on the shared feature panel) + rule agents (notebook 08,
-# parameter-free classical strategies). The rule agents are structurally orthogonal — their edge
-# is strategy logic, not the feature panel — which is what gives the coordinator something to
-# rotate into when the learned agents fail together.
+# Learned agents (nonlinear models on the shared feature panel) + accepted rule agents. The rule
+# agents are structurally orthogonal: their edge is strategy logic, not another learned transform of
+# the same feature matrix. The mean-reversion rule and cross-asset learner remain in the repository
+# as experiments, but are excluded from the final roster for the reasons documented below.
 LEARNED_AGENTS = ["lgbm", "mamba", "tcn", "patch"]
-RULE_AGENTS = ["trend", "meanrev", "volbreak"]
-CROSS_AGENTS = ["crossasset"]   # learned, but on orthogonal cross-asset/sentiment/flow info
-AGENTS = LEARNED_AGENTS + RULE_AGENTS + CROSS_AGENTS
+RULE_AGENTS = ["trend", "volbreak"]
+EXCLUDED_AGENTS = {
+    "meanrev": "excluded from final roster: negative current OOS return",
+    "crossasset": "excluded from final roster: weak OOS AUC and not significant vs random bracket null",
+}
+AGENTS = LEARNED_AGENTS + RULE_AGENTS
 AGENT_DIR = {"lgbm": "01_lgbm", "mamba": "02_mamba", "tcn": "03_tcn", "patch": "05_patchtst",
-             "trend": "08_trend", "meanrev": "08_meanrev", "volbreak": "08_volbreak",
-             "crossasset": "09_crossasset"}
+             "trend": "08_trend", "volbreak": "08_volbreak"}
 # Multiclass TBM agents emit two *independent* softmax channels (P-up, P-down) and decide
 # long on P-up and short on P-down. A single saved probability is the P-up channel only, so
 # these agents must be backtested with their P-down channel too — otherwise the binary engine
@@ -62,9 +64,7 @@ PARADIGM = {
     "tcn": "dilated causal conv.",
     "patch": "patch transformer",
     "trend": "rule: trend-following",
-    "meanrev": "rule: mean-reversion",
     "volbreak": "rule: volatility breakout",
-    "crossasset": "learned: cross-asset / sentiment / flow",
 }
 
 OOS_START = pd.Timestamp("2024-05-31")
@@ -176,7 +176,7 @@ def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
                     elif hold >= max_hold: xpx, ex, xf = px, True, (TAKER_FEE if with_fees else 0.0)
             if ex:
                 g = ((xpx - entry_px) / entry_px if direction == "long" else (entry_px - xpx) / entry_px)
-                net = g - (entry_fee + xf if with_fees else 0.0) + funding
+                net = g - (entry_fee + xf if with_fees else 0.0) - funding
                 cur = pos_eq * (1.0 + net); eq[i] = cur
                 in_pos = False; cd = cooldown; funding = 0.0
         elif pend is not None:
@@ -392,8 +392,9 @@ def smoothed_competence(competence: pd.DataFrame, panel: pd.DataFrame,
         lambda x: np.bincount(x.astype(int), minlength=3).argmax(), raw=True)
     inv = {0: "chop", 1: "bull", 2: "bear"}
     smr = sm.map(inv)
+    cols = list(competence.index)
     return pd.DataFrame(competence.T.reindex(smr.values).values,
-                        index=panel.index, columns=AGENTS)
+                        index=panel.index, columns=cols)
 
 
 # ---------------------------------------------------------------------------
@@ -429,13 +430,14 @@ class Coordinator:
 
     def allocate(self, agents: dict[str, TradingAgent], panel: pd.DataFrame,
                  perf: pd.DataFrame) -> pd.DataFrame:
+        names = list(agents)
         idx = panel.index
-        z = (perf[AGENTS] / self.temp).clip(-10, 10)
-        soft = np.exp(z); soft = soft.div(soft.sum(axis=1), axis=0).fillna(1.0 / len(AGENTS))
-        tilt = smoothed_competence(self.competence, panel, self.smooth) + self.floor
+        z = (perf[names] / self.temp).clip(-10, 10)
+        soft = np.exp(z); soft = soft.div(soft.sum(axis=1), axis=0).fillna(1.0 / len(names))
+        tilt = smoothed_competence(self.competence.loc[names], panel, self.smooth) + self.floor
         raw = soft.values * tilt.values
         W = raw / np.maximum(raw.sum(axis=1, keepdims=True), 1e-12)
-        return pd.DataFrame(W, index=idx, columns=AGENTS)
+        return pd.DataFrame(W, index=idx, columns=names)
 
 
 # ---------------------------------------------------------------------------
@@ -449,16 +451,97 @@ def _oos(panel: pd.DataFrame) -> pd.DatetimeIndex:
 def portfolio_equity(weights: pd.DataFrame, agents: dict[str, TradingAgent],
                      idx: pd.DatetimeIndex) -> np.ndarray:
     """Equity of a capital-allocation portfolio over agents (leak-free: w[t-1] earns g[t])."""
-    W = weights.reindex(idx).fillna(0.0)[AGENTS].values
-    G = pd.DataFrame({a: agents[a].g for a in AGENTS}).reindex(idx).fillna(0.0)[AGENTS].values
+    names = list(agents)
+    W = weights.reindex(idx).fillna(0.0)[names].values
+    G = pd.DataFrame({a: agents[a].g for a in names}).reindex(idx).fillna(0.0)[names].values
     n = len(idx)
-    eq = np.ones(n); cur = 1.0; prev = np.zeros(len(AGENTS))
+    eq = np.ones(n); cur = 1.0; prev = np.zeros(len(names))
     for t in range(n):
         r = float((prev * G[t]).sum()) if t > 0 else 0.0
         realloc = float(np.abs(W[t] - prev).sum()) * REALLOC_FEE
         cur *= (1.0 + r - realloc); eq[t] = cur
         prev = W[t]
     return eq
+
+
+def equal_weight_weights(agents: dict[str, TradingAgent], panel: pd.DataFrame) -> pd.DataFrame:
+    """Static 1/N capital allocation over the supplied roster."""
+    names = list(agents)
+    return pd.DataFrame(1.0 / len(names), index=panel.index, columns=names)
+
+
+def inverse_vol_weights(agents: dict[str, TradingAgent], panel: pd.DataFrame,
+                        win: int = PERF_WIN, embargo: int = EMBARGO_H) -> pd.DataFrame:
+    """Leak-free inverse-volatility allocation.
+
+    Volatility is measured on each agent's own realised return stream and shifted by
+    ``1 + embargo`` bars before it can affect a weight.
+    """
+    names = list(agents)
+    vol = pd.DataFrame({
+        a: agents[a].g.rolling(win, min_periods=200).std().shift(1 + embargo)
+        for a in names
+    })
+    inv = 1.0 / (vol + 1e-9)
+    return inv.div(inv.sum(axis=1).replace(0, np.nan), axis=0).fillna(1.0 / len(names))
+
+
+def _cap_weight_row(row: pd.Series, cap: float) -> pd.Series:
+    """Cap one allocation row and redistribute excess across uncapped agents."""
+    w = row.astype(float).copy()
+    if len(w) == 0 or w.sum() <= 0:
+        return w
+    w = w / w.sum()
+    capped = pd.Series(False, index=w.index)
+    for _ in range(len(w)):
+        over = (w > cap) & ~capped
+        if not over.any():
+            break
+        excess = float((w[over] - cap).sum())
+        w[over] = cap
+        capped |= over
+        free = ~capped
+        if not free.any() or excess <= 0:
+            break
+        base = w[free].sum()
+        if base <= 0:
+            w[free] += excess / free.sum()
+        else:
+            w[free] += excess * (w[free] / base)
+    return w / w.sum()
+
+
+def capped_inverse_vol_weights(agents: dict[str, TradingAgent], panel: pd.DataFrame,
+                               cap_mult: float = 2.0) -> pd.DataFrame:
+    """Inverse-volatility allocation with a diversification cap.
+
+    The cap is ``cap_mult`` times equal weight. With six accepted agents and ``cap_mult=2``, no
+    single agent can receive more than one third of capital. This prevents the low-volatility
+    allocator from assigning almost all capital to an inactive or stale agent.
+    """
+    base = inverse_vol_weights(agents, panel)
+    cap = cap_mult / len(agents)
+    return base.apply(lambda row: _cap_weight_row(row, cap), axis=1)
+
+
+def static_subset(agents: dict[str, TradingAgent], names: list[str]) -> dict[str, TradingAgent]:
+    """Return an ordered agent subset for roster bake-offs."""
+    return {a: agents[a] for a in names if a in agents}
+
+
+def load_sp500_benchmark(idx: pd.DatetimeIndex) -> pd.Series | None:
+    """Daily S&P 500 / SPY benchmark, aligned to the hourly OOS index when local data exists."""
+    path = repo_root() / "data" / "external" / "sp500_daily.parquet"
+    if not path.exists():
+        return None
+    sp = pd.read_parquet(path)
+    sp.index = pd.to_datetime(sp.index).tz_localize(None) if sp.index.tz else pd.to_datetime(sp.index)
+    close = sp["close"].astype(float).sort_index()
+    aligned = close.reindex(idx, method="ffill").dropna()
+    if aligned.empty:
+        return None
+    eq = aligned / aligned.iloc[0]
+    return eq.reindex(idx).ffill().rename("S&P 500 Buy & Hold")
 
 
 def evaluate_equity(eq_full: pd.Series, idx: pd.DatetimeIndex, name: str) -> tuple[dict, np.ndarray]:
@@ -490,7 +573,7 @@ def regime_breakdown(eq_full: pd.Series, panel: pd.DataFrame) -> pd.DataFrame:
 def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
     repo = repo_root()
     a2 = repo / "artifacts" / "notebooks_v2"
-    arts = a2 / "07_mas"; arts.mkdir(parents=True, exist_ok=True)
+    arts = a2 / "06_mas"; arts.mkdir(parents=True, exist_ok=True)
 
     panel = load_panel()
     agents = build_agents(panel, a2)
@@ -498,9 +581,12 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
     perf = trailing_sharpe(agents)
     coordinator = Coordinator(competence)
     weights = coordinator.allocate(agents, panel, perf)
+    ew_w = equal_weight_weights(agents, panel)
+    iv_w = capped_inverse_vol_weights(agents, panel)
 
     idx = _oos(panel)
     bh = pd.Series((1.0 + panel["ret"].reindex(idx)).cumprod().values, index=idx)
+    sp500 = load_sp500_benchmark(idx)
 
     results = []; equities = {}
 
@@ -513,101 +599,180 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
     # standalone agents (their authentic risk-managed strategy)
     for a, ag in agents.items():
         _add_equity(f"{a}", ag.eq)
-    # naive equal-weight fund-of-agents (1/N each → gross exposure 1.0, matching the coordinator)
-    ew_w = pd.DataFrame(1.0 / len(AGENTS), index=panel.index, columns=AGENTS)
+    # capped risk-parity fund-of-agents (gross exposure 1.0, low turnover)
+    iv_eq = pd.Series(portfolio_equity(iv_w, agents, idx), index=idx)
+    final_row = _add_equity(
+        "Final MAS fund (capped inverse-vol)", iv_eq.reindex(panel.index).ffill().fillna(1.0))
+    # naive equal-weight fund-of-agents (1/N each → gross exposure 1.0)
     ew_eq = pd.Series(portfolio_equity(ew_w, agents, idx), index=idx)
     _add_equity("Naive EW fund", ew_eq.reindex(panel.index).ffill().fillna(1.0))
-    # coordinator
+    # original coordinator retained as an ablation rather than the final result
     coord_eq_oos = pd.Series(portfolio_equity(weights, agents, idx), index=idx)
     coord_eq_full = coord_eq_oos.reindex(panel.index).ffill().fillna(1.0)
-    coord_row = _add_equity("Coordinator (MAS)", coord_eq_full)
+    coord_row = _add_equity("Coordinator ablation (Sharpe x regime)", coord_eq_full)
     _add_equity("BTC Buy & Hold", pd.Series(
         (1.0 + panel["ret"]).cumprod().values, index=panel.index))
+    if sp500 is not None:
+        _add_equity("S&P 500 Buy & Hold", sp500.reindex(panel.index).ffill().fillna(1.0))
 
     lb = pd.DataFrame(results).sort_values("sharpe", ascending=False).reset_index(drop=True)
-    breakdown = regime_breakdown(coord_eq_full, panel)
+    final_full = iv_eq.reindex(panel.index).ffill().fillna(1.0)
+    breakdown = regime_breakdown(final_full, panel)
     mean_w = weights.reindex(idx).mean()
+    mean_iv_w = iv_w.reindex(idx).mean()
 
     if verbose:
         print("=== Per-regime competence priors (pre-OOS Sharpe, normalised, leak-free) ===")
         print(competence.round(3).to_string())
-        print(f"\nMean coordinator capital weights (OOS): {mean_w.round(3).to_dict()}")
+        print(f"\nFinal roster: {AGENTS}")
+        print(f"Excluded experiments: {EXCLUDED_AGENTS}")
+        print(f"Mean final capped inverse-vol weights (OOS): {mean_iv_w.round(3).to_dict()}")
+        print(f"Mean coordinator ablation weights (OOS): {mean_w.round(3).to_dict()}")
         print(f"Coordinator mean gross exposure (OOS): {weights.reindex(idx).sum(axis=1).mean():.2f}\n")
         show = lb.copy()
         for c in ["ret", "maxdd", "alpha"]:
             show[c] = (show[c] * 100).round(1)
         show["sharpe"] = show["sharpe"].round(2); show["sortino"] = show["sortino"].round(2)
         print(show[["name", "ret", "sharpe", "sortino", "maxdd", "alpha"]].to_string(index=False))
-        print("\n=== Coordinator regime breakdown ===")
+        print("\n=== Final MAS fund regime breakdown ===")
         print(breakdown.to_string(index=False))
 
     out = dict(
-        notebook="07_multi_agent_v1", created=pd.Timestamp.now().isoformat(),
-        design="regime-gated mixture-of-experts capital allocation over autonomous "
-               "risk-managed agents; competence priors measured pre-OOS, online reliability "
-               "adapts within OOS; leak-free (w[t-1] earns g[t]).",
+        notebook="06_multi_agent_v1", created=pd.Timestamp.now().isoformat(),
+        design="hybrid multi-agent trading system over six accepted agents: four learned models "
+               "and two rule-based agents. The original regime-gated coordinator is retained as "
+               "an ablation; the final reported allocator is leak-free capped inverse-volatility "
+               "risk parity over autonomous risk-managed agents.",
+        accepted_agents=AGENTS,
+        excluded_agents=EXCLUDED_AGENTS,
         oos_period=f"{OOS_START.date()} -> {OOS_END.date()}",
         competence=competence.round(4).to_dict(),
         mean_weights_oos=mean_w.round(4).to_dict(),
-        coordinator=coord_row, regime_breakdown=breakdown.to_dict("records"),
+        mean_capped_inverse_vol_weights_oos=mean_iv_w.round(4).to_dict(),
+        final=final_row,
+        coordinator_ablation=coord_row,
+        regime_breakdown=breakdown.to_dict("records"),
         leaderboard=lb.to_dict("records"))
     if save:
         json.dump(out, open(arts / "results.json", "w"), indent=2, default=float)
         lb.to_csv(arts / "leaderboard.csv", index=False)
         competence.to_csv(arts / "competence.csv")
-        weights.reindex(idx).to_csv(arts / "weights_oos.csv")
+        weights.reindex(idx).to_csv(arts / "coordinator_weights_oos.csv")
+        iv_w.reindex(idx).to_csv(arts / "capped_inverse_vol_weights_oos.csv")
         np.save(arts / "oos_index.npy", idx.values.astype("int64"))
-        np.save(arts / "coord_equity.npy", coord_eq_oos.values.astype(np.float32))
+        np.save(arts / "final_equity.npy", iv_eq.values.astype(np.float32))
+        np.save(arts / "coord_ablation_equity.npy", coord_eq_oos.values.astype(np.float32))
         if verbose:
             print(f"\nArtifacts -> {arts}")
 
     out.update(_equities=equities, _panel=panel, _weights=weights, _agents=agents,
-               _coord_eq=coord_eq_full, _bh=bh, _idx=idx)
+               _capped_inverse_vol_weights=iv_w, _final_eq=iv_eq, _coord_eq=coord_eq_full,
+               _bh=bh, _sp500=sp500, _idx=idx)
     return out
 
 
 def plot_results(out: dict, save: bool = True):
-    """Equity curves (coordinator vs agents vs baselines) and the coordinator's capital
-    allocation over time. Expects the dict returned by :func:`run_pipeline`."""
+    """Create the thesis-ready chart suite for the final multi-agent notebook."""
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
 
-    arts = repo_root() / "artifacts" / "notebooks_v2" / "07_mas"
+    arts = repo_root() / "artifacts" / "notebooks_v2" / "06_mas"
     idx = out["_idx"]
     eqs = out["_equities"]
-    weights = out["_weights"].reindex(idx).fillna(0.0)
+    weights = out["_capped_inverse_vol_weights"].reindex(idx).fillna(0.0)
     colours = {"lgbm": "#F7931A", "mamba": "#7B1FA2", "tcn": "#00ACC1", "patch": "#EF5350",
-               "trend": "#43A047", "meanrev": "#FB8C00", "volbreak": "#5E35B1",
-               "crossasset": "#00695C"}
+               "trend": "#43A047", "volbreak": "#5E35B1"}
+    main = "Final MAS fund (capped inverse-vol)"
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(13, 9), height_ratios=[2, 1], sharex=True)
+    fig, ax1 = plt.subplots(figsize=(13.5, 6.2))
     for name, eq in eqs.items():
-        if name == "Coordinator (MAS)":
-            ax1.plot(idx, (eq - 1) * 100, lw=2.6, color="k", label=f"{name} ({eq[-1]-1:+.0%})", zorder=5)
+        if name == main:
+            ax1.plot(idx, (eq - 1) * 100, lw=3.0, color="#005BBB",
+                     label=f"{name} ({eq[-1]-1:+.0%})", zorder=6)
         elif name == "BTC Buy & Hold":
-            ax1.plot(idx, (eq - 1) * 100, lw=1.2, ls=":", color="#9E9E9E", label=f"{name} ({eq[-1]-1:+.0%})")
+            ax1.plot(idx, (eq - 1) * 100, lw=1.5, ls=":", color="#757575",
+                     label=f"{name} ({eq[-1]-1:+.0%})")
+        elif name == "S&P 500 Buy & Hold":
+            ax1.plot(idx, (eq - 1) * 100, lw=1.5, ls=(0, (4, 2)), color="#00897B",
+                     label=f"{name} ({eq[-1]-1:+.0%})")
         elif name == "Naive EW fund":
-            ax1.plot(idx, (eq - 1) * 100, lw=1.4, ls="--", color="#455A64", label=f"{name} ({eq[-1]-1:+.0%})")
+            ax1.plot(idx, (eq - 1) * 100, lw=1.7, ls="--", color="#263238",
+                     label=f"{name} ({eq[-1]-1:+.0%})")
+        elif name.startswith("Coordinator ablation"):
+            ax1.plot(idx, (eq - 1) * 100, lw=1.4, ls="-.", color="#8D6E63",
+                     label=f"{name} ({eq[-1]-1:+.0%})")
         else:
-            ax1.plot(idx, (eq - 1) * 100, lw=1.1, alpha=0.8, color=colours.get(name),
+            ax1.plot(idx, (eq - 1) * 100, lw=1.0, alpha=0.42, color=colours.get(name),
                      label=f"{name} ({eq[-1]-1:+.0%})")
     for r, c in [("chop", "#9E9E9E"), ("bull", "#26A69A"), ("bear", "#EF5350")]:
         s, e = REGIME_DATES[r]
         ax1.axvspan(s, min(e, idx[-1]), alpha=0.06, color=c)
     ax1.axhline(0, color="#9E9E9E", lw=0.6, ls=":")
     ax1.set_ylabel("Return (%)"); ax1.legend(fontsize=8, ncol=2)
-    ax1.set_title("Multi-agent coordinator vs autonomous agents and baselines (OOS)", fontweight="bold")
+    ax1.set_title("Final hybrid multi-agent fund vs agents and benchmarks (OOS)", fontweight="bold")
+    ax1.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 4, 7, 10]))
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b %y"))
+    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=30, ha="right")
+    fig.tight_layout()
+    if save:
+        fig.savefig(arts / "01_equity_comparison.png", dpi=180, bbox_inches="tight")
 
-    ax2.stackplot(idx, *[weights[a].values for a in AGENTS],
-                  labels=AGENTS, colors=[colours[a] for a in AGENTS], alpha=0.85)
+    fig2, ax2 = plt.subplots(figsize=(13.5, 4.8))
+    names = list(out["_agents"])
+    ax2.stackplot(idx, *[weights[a].values for a in names],
+                  labels=names, colors=[colours[a] for a in names], alpha=0.88)
     ax2.set_ylabel("Capital weight"); ax2.set_ylim(0, 1); ax2.legend(fontsize=8, ncol=4, loc="upper left")
-    ax2.set_title("Coordinator capital allocation over time", fontweight="bold")
+    ax2.set_title("Capped inverse-volatility allocation over time", fontweight="bold")
     ax2.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 4, 7, 10]))
     ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %y"))
     plt.setp(ax2.xaxis.get_majorticklabels(), rotation=30, ha="right")
-    fig.tight_layout()
+    fig2.tight_layout()
     if save:
-        fig.savefig(arts / "01_coordinator_equity.png", dpi=160, bbox_inches="tight")
+        fig2.savefig(arts / "02_capped_inverse_vol_weights.png", dpi=180, bbox_inches="tight")
+
+    lb = pd.DataFrame(out["leaderboard"]).copy()
+    top = lb.sort_values("sharpe", ascending=True)
+    fig3, (ax3, ax4) = plt.subplots(1, 2, figsize=(13.5, 5.3), sharey=True)
+    colors = ["#005BBB" if x == main else "#90A4AE" for x in top["name"]]
+    ax3.barh(top["name"], top["ret"] * 100, color=colors)
+    ax3.axvline(0, color="#9E9E9E", lw=0.8)
+    ax3.set_xlabel("Total return (%)")
+    ax3.set_title("OOS total return", fontweight="bold")
+    ax4.barh(top["name"], top["sharpe"], color=colors)
+    ax4.axvline(0, color="#9E9E9E", lw=0.8)
+    ax4.set_xlabel("Annualised Sharpe")
+    ax4.set_title("OOS risk-adjusted result", fontweight="bold")
+    fig3.tight_layout()
+    if save:
+        fig3.savefig(arts / "03_leaderboard_return_sharpe.png", dpi=180, bbox_inches="tight")
+
+    monthly = {}
+    monthly_names = [main, "Naive EW fund", "BTC Buy & Hold"]
+    if "S&P 500 Buy & Hold" in eqs:
+        monthly_names.append("S&P 500 Buy & Hold")
+    for name in monthly_names:
+        eq = pd.Series(eqs[name], index=idx)
+        monthly[name] = eq.resample("ME").last().pct_change().fillna(eq.resample("ME").last() - 1)
+    mon = pd.DataFrame(monthly).dropna(how="all") * 100
+    fig4, ax5 = plt.subplots(figsize=(13.5, 4.8))
+    x = np.arange(len(mon))
+    width = 0.8 / len(monthly_names)
+    offsets = (np.arange(len(monthly_names)) - (len(monthly_names) - 1) / 2) * width
+    palette = {
+        main: "#005BBB", "Naive EW fund": "#455A64",
+        "BTC Buy & Hold": "#9E9E9E", "S&P 500 Buy & Hold": "#00897B",
+    }
+    for off, name in zip(offsets, monthly_names):
+        ax5.bar(x + off, mon[name].values, width=width, label=name, color=palette[name])
+    ax5.axhline(0, color="#9E9E9E", lw=0.8)
+    ax5.set_ylabel("Monthly return (%)")
+    ax5.set_xticks(x[::2])
+    ax5.set_xticklabels([d.strftime("%b %y") for d in mon.index[::2]], rotation=30, ha="right")
+    ax5.legend(fontsize=8)
+    ax5.set_title("Monthly return comparison: MAS fund vs benchmarks", fontweight="bold")
+    fig4.tight_layout()
+    if save:
+        fig4.savefig(arts / "04_monthly_returns_comparison.png", dpi=180, bbox_inches="tight")
     return fig
 
 
