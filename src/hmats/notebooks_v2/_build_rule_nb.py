@@ -1,4 +1,4 @@
-"""Builds src/hmats/notebooks_v2/08_rule_agents_v1.ipynb — a SELF-CONTAINED notebook (engine +
+"""Builds src/hmats/notebooks_v2/05_rule_agents_v1.ipynb — a SELF-CONTAINED notebook (engine +
 rule-agent logic inlined) that runs top-to-bottom in Jupyter with no local imports.
 Run:  python _build_rule_nb.py
 """
@@ -104,6 +104,6 @@ nb = {"cells": cells,
       "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
                    "language_info": {"name": "python"}},
       "nbformat": 4, "nbformat_minor": 5}
-dst = Path(__file__).resolve().parent / "08_rule_agents_v1.ipynb"
+dst = Path(__file__).resolve().parent / "05_rule_agents_v1.ipynb"
 json.dump(nb, open(dst, "w"), indent=1)
 print("wrote", dst, "| cells:", len(cells))

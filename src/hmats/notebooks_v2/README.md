@@ -2,18 +2,114 @@
 
 This folder is the **canonical, final** set of notebooks for the master's thesis.
 Each notebook has a single, well-defined responsibility and they form a strict
-execution chain: run them in order (00 → 01 → 02 → 03 → 04).
+execution chain.
+
+---
+
+## Runtime modules live in `hmats.mas` — notebooks are *generated* from them
+
+The five runtime modules that implement the multi-agent pipeline were moved out of
+this folder into a proper importable package, **`src/hmats/mas/`**:
+
+```
+src/hmats/mas/
+├── __init__.py            # re-exports the engine API + the four submodules
+├── mas07.py               # engine + Coordinator (the single source of truth)
+├── rule_agents.py         # trend / mean-reversion / vol-breakout rule agents
+├── crossasset_agent.py    # learned cross-asset / sentiment / flow agent
+├── agent_eval.py          # evaluation helpers
+└── coordinators.py        # alternative capital-allocation rules
+```
+
+Import it like any other project package (same convention as `hmats.data`):
+
+```python
+from hmats.mas import mas07, rule_agents, crossasset_agent, agent_eval, coordinators
+```
+
+`rule_agents`, `crossasset_agent`, `agent_eval` do `from .mas07 import ...`;
+`coordinators` does `from . import mas07 as m`. `mas07.AGENT_DIR` and every artifact
+path are **unchanged** — only the modules' on-disk location and their intra-package
+imports moved.
+
+### The non-obvious coupling: notebooks inline these modules' *source*
+
+Notebooks `05_rule_agents_v1`, `06_crossasset_v1` and `07_multi_agent_v1` are
+**self-contained** — they import nothing at runtime. They are *generated* by the
+builder scripts that stay in this folder:
+
+| Builder | Reads (from `hmats/mas/`) | Writes (here) |
+|---------|---------------------------|----------------|
+| `_build_rule_nb.py`       | `mas07.py` + `rule_agents.py`      | `05_rule_agents_v1.ipynb` |
+| `_build_crossasset_nb.py` | `mas07.py` + `crossasset_agent.py` | `06_crossasset_v1.ipynb`  |
+| `_build_mas07_nb.py`      | `mas07.py` + `agent_eval.py` + `coordinators.py` | `07_multi_agent_v1.ipynb` |
+
+`_nbinline.py` is the shared inliner. It reads each module's **source text** from
+`MODDIR = src/hmats/mas/`, then:
+
+- strips the module docstring, `from __future__ import …`, and the `if __name__ ==
+  "__main__"` trailer;
+- strips the **engine imports** so the engine (inlined once, in scope) isn't
+  re-imported — it removes `from .mas07 import (...)` / `from .mas07 import …`,
+  `from . import mas07 as m`, the legacy bare-`mas07` forms, and any leftover
+  `import sys` / `sys.path.insert(...)` hack;
+- rewrites the `m.` alias prefix (`coordinators` / `agent_eval`) back to bare names.
+
+**Therefore: if you move these modules again or change how they import each other,
+update both `MODDIR` and the strip-regexes in `_nbinline.py`, or notebook generation
+will silently inline broken (or duplicate-import) cells.**
+
+### Regenerating the notebooks
+
+```bash
+cd src/hmats/notebooks_v2
+python _build_rule_nb.py
+python _build_crossasset_nb.py
+python _build_mas07_nb.py
+```
+
+Each builder reads the live module source, so editing logic in `hmats/mas/` and
+re-running the builder is the canonical way to update the notebooks. After
+regenerating, the inlined cells contain **no** `from .mas07` / `import mas07` /
+`sys.path` lines and parse cleanly; `05_` was executed end-to-end to confirm runtime
+self-containment is intact.
 
 ---
 
 ## Execution Order
 
 ```
-00_data_ingestion_v1   →   01_lgbm_v1   ─┐
-                       →   03_tcn_v1    ─┼─→  04_meta_learning_v1
-                       →   02_mamba_v1  ─┘       (loads artifacts)
-                           (Colab/GPU)
+00_data_ingestion_v1
+  → 01_lgbm_v1 · 02_mamba_v1 · 03_tcn_v1 · 04_patchtst_v1   (learned agents)
+  → 05_rule_agents_v1 · 06_crossasset_v1                     (rule + cross-asset agents)
+  → 07_multi_agent_v1   (coordinator: merges all 8 agents, loads their artifacts)
 ```
+
+The final pipeline is exactly eight notebooks, contiguous `00`–`07`. Older
+variants (LGBM copies, `02_mamba_v2`, the Colab A100 mamba, TCN copies, the
+averaging meta-learner `04_meta_learning_v1`, `05_patchtst_v1_40pp_profit`, and
+the signal bake-off `06_ensemble_v1`) were archived to
+`lab/notebooks_v2_archive/`.
+
+---
+
+## Notebook number ↔ artifact directory decoupling
+
+The renumbered notebooks intentionally **do not** share the numeric prefix of the
+artifact directory they write to. The artifact dirs under
+`artifacts/notebooks_v2/` were left at their original names so the Colab notebooks
+and `mas07.AGENT_DIR` keep working without edits:
+
+| Notebook | Artifact directory |
+|----------|--------------------|
+| `04_patchtst_v1`   | `05_patchtst` |
+| `05_rule_agents_v1`| `08_trend`, `08_meanrev`, `08_volbreak` |
+| `06_crossasset_v1` | `09_crossasset` |
+
+`00`–`03` (`01_lgbm`, `02_mamba`, `03_tcn`) still match. This decoupling is
+deliberate: renaming the artifact dirs would break `mas07.AGENT_DIR` and the
+save paths baked into the Colab notebooks, so only the notebook filenames were
+renumbered.
 
 ---
 

@@ -2,7 +2,7 @@
   "notebook": "09_crossasset_v1",
   "agent": "crossasset",
   "paradigm": "learned: cross-asset / sentiment / flow",
-  "created": "2026-06-18T16:35:49.897112",
+  "created": "2026-06-18T17:22:31.933990",
   "model": "LightGBM expanding-window WFO on orthogonal features",
   "features": [
     "cross_eth_btc_ratio",

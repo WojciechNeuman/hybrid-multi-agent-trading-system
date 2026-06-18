@@ -1,6 +1,6 @@
 {
   "notebook": "07_multi_agent_v1",
-  "created": "2026-06-18T16:36:03.580353",
+  "created": "2026-06-18T17:22:41.163786",
   "design": "regime-gated mixture-of-experts capital allocation over autonomous risk-managed agents; competence priors measured pre-OOS, online reliability adapts within OOS; leak-free (w[t-1] earns g[t]).",
   "oos_period": "2024-05-31 -> 2026-05-16",
   "competence": {

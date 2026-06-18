@@ -2,7 +2,7 @@
   "notebook": "08_rule_agents_v1",
   "agent": "volbreak",
   "paradigm": "rule: volatility breakout",
-  "created": "2026-06-18T16:22:58.313835",
+  "created": "2026-06-18T17:21:31.334955",
   "model": "rule-based (rule: volatility breakout), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-30",
   "oos_period": "2024-05-31\u21922026-05-16",

@@ -30,16 +30,14 @@ from __future__ import annotations
 
 import itertools
 import json
-import sys
 import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from mas07 import (ANN, OOS_END, OOS_START, bracket_run, maxdd, repo_root,  # noqa: E402
-                   sharpe, sortino)
+from .mas07 import (ANN, OOS_END, OOS_START, bracket_run, maxdd, repo_root,
+                    sharpe, sortino)
 
 # ---------------------------------------------------------------------------
 # Configuration

@@ -1,4 +1,4 @@
-"""Builds src/hmats/notebooks_v2/09_crossasset_v1.ipynb — a SELF-CONTAINED notebook (engine +
+"""Builds src/hmats/notebooks_v2/06_crossasset_v1.ipynb — a SELF-CONTAINED notebook (engine +
 cross-asset LGBM agent inlined) that runs top-to-bottom in Jupyter. Run: python _build_crossasset_nb.py
 """
 import json
@@ -81,6 +81,6 @@ nb = {"cells": cells,
       "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
                    "language_info": {"name": "python"}},
       "nbformat": 4, "nbformat_minor": 5}
-dst = Path(__file__).resolve().parent / "09_crossasset_v1.ipynb"
+dst = Path(__file__).resolve().parent / "06_crossasset_v1.ipynb"
 json.dump(nb, open(dst, "w"), indent=1)
 print("wrote", dst, "| cells:", len(cells))

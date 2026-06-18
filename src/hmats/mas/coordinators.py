@@ -25,7 +25,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-import mas07 as m
+from . import mas07 as m
 
 
 def _trailing_vol(agents, win=m.PERF_WIN, embargo=m.EMBARGO_H) -> pd.DataFrame:

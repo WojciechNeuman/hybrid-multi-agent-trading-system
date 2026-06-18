@@ -27,7 +27,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from mas07 import OOS_END, OOS_START, bracket_run, maxdd, repo_root, sharpe
+from .mas07 import OOS_END, OOS_START, bracket_run, maxdd, repo_root, sharpe
 
 SEED = 42
 

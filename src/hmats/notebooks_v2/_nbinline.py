@@ -7,7 +7,8 @@ import re
 import uuid
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent          # notebooks_v2/ — where notebooks are WRITTEN
+MODDIR = HERE.parent / "mas"                     # src/hmats/mas/ — where modules are now READ from
 
 
 def cell(kind, source):
@@ -28,12 +29,12 @@ def _strip_head(src: str) -> str:
 
 def mas07_engine_source() -> str:
     """The full mas07.py engine as one runnable block (imports + all definitions)."""
-    return _strip_head((HERE / "mas07.py").read_text())
+    return _strip_head((MODDIR / "mas07.py").read_text())
 
 
 def mas07_sections():
     """(imports_chunk, [(title, body), ...]) split on mas07.py's section dividers — for notebook 07."""
-    src = _strip_head((HERE / "mas07.py").read_text())
+    src = _strip_head((MODDIR / "mas07.py").read_text())
     parts = re.split(r"# -{10,}\n# (.+?)\n# -{10,}\n", src)
     return parts[0].strip("\n"), [(parts[i], parts[i + 1].strip("\n")) for i in range(1, len(parts), 2)]
 
@@ -41,19 +42,21 @@ def mas07_sections():
 def agent_module_source(filename: str) -> str:
     """Body of rule_agents.py / crossasset_agent.py with engine imports stripped (engine is inlined
     separately, so its names — bracket_run, sharpe, OOS_START, ... — are already in scope)."""
-    src = _strip_head((HERE / filename).read_text())
-    src = re.sub(r"\nimport sys\n", "\n", src)
+    src = _strip_head((MODDIR / filename).read_text())
+    src = re.sub(r"\nimport sys\n", "\n", src)               # legacy sys.path hack (pre-package)
     src = re.sub(r"sys\.path\.insert\([^\n]*\)\n", "", src)
-    src = re.sub(r"from mas07 import \([^)]*\)\n", "", src)   # multiline import
-    src = re.sub(r"from mas07 import [^\n]*\n", "", src)      # single-line import
+    src = re.sub(r"from \.?mas07 import \([^)]*\)\n", "", src)   # multiline import (pkg or bare)
+    src = re.sub(r"from \.?mas07 import [^\n]*\n", "", src)      # single-line import (pkg or bare)
     return src.strip("\n")
 
 
 def helper_source(filename: str) -> str:
-    """Body of agent_eval.py / coordinators.py for inlining into notebook 07: strip mas07 imports
-    and rewrite the ``m.`` (``import mas07 as m``) prefix to bare names (engine is in scope)."""
-    src = _strip_head((HERE / filename).read_text())
-    src = re.sub(r"import mas07 as m\n", "", src)
-    src = re.sub(r"from mas07 import [^\n]*\n", "", src)
+    """Body of agent_eval.py / coordinators.py for inlining into notebook 07: strip the engine
+    imports and rewrite the ``m.`` (``from . import mas07 as m``) prefix to bare names
+    (the engine is already inlined and in scope)."""
+    src = _strip_head((MODDIR / filename).read_text())
+    src = re.sub(r"from \. import mas07 as m\n", "", src)    # package alias import
+    src = re.sub(r"import mas07 as m\n", "", src)            # legacy bare alias (pre-package)
+    src = re.sub(r"from \.?mas07 import [^\n]*\n", "", src)  # named import (pkg or bare)
     src = re.sub(r"\bm\.", "", src)
     return src.strip("\n")

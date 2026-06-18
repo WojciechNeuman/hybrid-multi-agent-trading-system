@@ -38,19 +38,19 @@ each *produce one agent* and save its signal to `artifacts/notebooks_v2/<agent>/
 | 01 | `01_lgbm`     | `lgbm`     | gradient boosting (tabular) |
 | 02 | `02_mamba`    | `mamba`    | selective state-space |
 | 03 | `03_tcn`      | `tcn`      | dilated causal conv. (TBM, 2-channel) |
-| 05 | `05_patchtst` | `patch`    | patch transformer (TBM, 2-channel) |
-| 08 | `08_trend`    | `trend`    | rule: trend-following |
-| 08 | `08_meanrev`  | `meanrev`  | rule: mean-reversion |
-| 08 | `08_volbreak` | `volbreak` | rule: volatility breakout |
-| 09 | `09_crossasset` | `crossasset` | learned: cross-asset / sentiment / flow |
+| 04 | `05_patchtst` | `patch`    | patch transformer (TBM, 2-channel) |
+| 05 | `08_trend`    | `trend`    | rule: trend-following |
+| 05 | `08_meanrev`  | `meanrev`  | rule: mean-reversion |
+| 05 | `08_volbreak` | `volbreak` | rule: volatility breakout |
+| 06 | `09_crossasset` | `crossasset` | learned: cross-asset / sentiment / flow |
 
 Here those eight independent signals are wrapped as **autonomous risk-managed `TradingAgent`s** and
 fused by a **`Coordinator`** that allocates capital across them by `online skill × regime
-competence`. This is the fund-of-agents layer — not an averaging ensemble (that was notebook 04).
+competence`. This is the fund-of-agents layer — not an averaging ensemble (that was the now-archived averaging meta-learner).
 
 **Self-contained:** this notebook inlines the full engine and all evaluation code — run it
 top-to-bottom with no local imports. It reads each agent's saved artifacts, so run notebooks
-01–05 (learned), 08 (rule) and 09 (cross-asset) first to produce them.
+01–04 (learned), 05 (rule) and 06 (cross-asset) first to produce them.
 
 **Leak discipline (carried through every cell):** a weight decided with information up to bar *t*
 earns each agent's return over *t → t+1*; every trailing statistic is shifted by ≥1 bar + embargo;
@@ -73,11 +73,11 @@ md(r"""---
 full eight-agent roster. The cell below verifies every agent's artifacts exist on disk, then runs
 the whole pipeline.""")
 
-code(r"""# Verify all agents' artifacts exist (produced by notebooks 01–05, 08, 09).
+code(r"""# Verify all agents' artifacts exist (produced by notebooks 01–04, 05, 06).
 missing = [d for a, d in AGENT_DIR.items()
            if not (repo_root() / "artifacts" / "notebooks_v2" / d / "oos_probs.npy").exists()]
 assert not missing, ("missing artifacts — run the producing notebooks first: "
-                     + ", ".join(missing) + " (08 → rule agents, 09 → cross-asset, 01–05 → learned)")
+                     + ", ".join(missing) + " (05 → rule agents, 06 → cross-asset, 01–04 → learned)")
 print("All", len(AGENT_DIR), "agents present:", list(AGENT_DIR))""")
 
 code("out = run_pipeline(save=True, verbose=True)")

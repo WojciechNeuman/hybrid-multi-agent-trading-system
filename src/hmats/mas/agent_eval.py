@@ -14,7 +14,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from mas07 import OOS_END, OOS_START, bracket_run, maxdd, sharpe
+from .mas07 import OOS_END, OOS_START, bracket_run, maxdd, sharpe
 
 
 def _n_trades(pos: np.ndarray) -> int:
