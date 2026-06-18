@@ -1,0 +1,166 @@
+{
+  "notebook": "07_multi_agent_v1",
+  "created": "2026-06-18T16:36:03.580353",
+  "design": "regime-gated mixture-of-experts capital allocation over autonomous risk-managed agents; competence priors measured pre-OOS, online reliability adapts within OOS; leak-free (w[t-1] earns g[t]).",
+  "oos_period": "2024-05-31 -> 2026-05-16",
+  "competence": {
+    "chop": {
+      "lgbm": 0.2644,
+      "mamba": 0.091,
+      "tcn": 0.2681,
+      "patch": 0.1264,
+      "trend": 0.0628,
+      "meanrev": 0.0226,
+      "volbreak": 0.0408,
+      "crossasset": 0.124
+    },
+    "bull": {
+      "lgbm": 0.3616,
+      "mamba": 0.0787,
+      "tcn": 0.2507,
+      "patch": 0.0,
+      "trend": 0.1439,
+      "meanrev": 0.0485,
+      "volbreak": 0.0042,
+      "crossasset": 0.1123
+    },
+    "bear": {
+      "lgbm": 0.0,
+      "mamba": 0.1598,
+      "tcn": 0.0495,
+      "patch": 0.603,
+      "trend": 0.0,
+      "meanrev": 0.0189,
+      "volbreak": 0.0,
+      "crossasset": 0.1688
+    }
+  },
+  "mean_weights_oos": {
+    "lgbm": 0.1326,
+    "mamba": 0.0838,
+    "tcn": 0.1908,
+    "patch": 0.1375,
+    "trend": 0.1001,
+    "meanrev": 0.1157,
+    "volbreak": 0.1711,
+    "crossasset": 0.0684
+  },
+  "coordinator": {
+    "name": "Coordinator (MAS)",
+    "ret": -0.19114981608573023,
+    "sharpe": -0.5216034641105864,
+    "sortino": -0.6131439274718055,
+    "maxdd": -0.31886467033910926,
+    "alpha": -0.3467431552618939
+  },
+  "regime_breakdown": [
+    {
+      "regime": "chop",
+      "ret": "-20.6%",
+      "sharpe": "-2.58",
+      "maxdd": "-27.2%"
+    },
+    {
+      "regime": "bull",
+      "ret": "-2.2%",
+      "sharpe": "-0.12",
+      "maxdd": "-16.1%"
+    },
+    {
+      "regime": "bear",
+      "ret": "+1.8%",
+      "sharpe": "0.14",
+      "maxdd": "-16.4%"
+    }
+  ],
+  "leaderboard": [
+    {
+      "name": "Naive EW fund",
+      "ret": 0.48815951710019134,
+      "sharpe": 1.9646046187211441,
+      "sortino": 2.3709577765504433,
+      "maxdd": -0.07986613617271256,
+      "alpha": 0.33256617792402765
+    },
+    {
+      "name": "volbreak",
+      "ret": 1.2760367187470836,
+      "sharpe": 1.2009570200666078,
+      "sortino": 1.2543658520047027,
+      "maxdd": -0.2814922883148848,
+      "alpha": 1.1204433795709199
+    },
+    {
+      "name": "tcn",
+      "ret": 0.7381393004291792,
+      "sharpe": 1.1405249866041363,
+      "sortino": 0.9178148427189338,
+      "maxdd": -0.13579577157329692,
+      "alpha": 0.5825459612530155
+    },
+    {
+      "name": "patch",
+      "ret": 0.3606907855126176,
+      "sharpe": 0.8743343659133741,
+      "sortino": 0.4523350051299956,
+      "maxdd": -0.10690963048039022,
+      "alpha": 0.20509744633645388
+    },
+    {
+      "name": "trend",
+      "ret": 0.8498414669431988,
+      "sharpe": 0.7824838415442499,
+      "sortino": 0.8542934610006614,
+      "maxdd": -0.2973523747545013,
+      "alpha": 0.6942481277670352
+    },
+    {
+      "name": "lgbm",
+      "ret": 0.37776908340588045,
+      "sharpe": 0.7514229161483928,
+      "sortino": 0.3641349403818027,
+      "maxdd": -0.15671225666285765,
+      "alpha": 0.22217574422971675
+    },
+    {
+      "name": "crossasset",
+      "ret": 0.5340412264949992,
+      "sharpe": 0.6362018958085507,
+      "sortino": 0.6055171759413521,
+      "maxdd": -0.2829548736455119,
+      "alpha": 0.3784478873188355
+    },
+    {
+      "name": "meanrev",
+      "ret": 0.18331043092995825,
+      "sharpe": 0.2133650186142668,
+      "sortino": 0.23626495421984586,
+      "maxdd": -0.3867680200635446,
+      "alpha": 0.027717091753794554
+    },
+    {
+      "name": "BTC Buy & Hold",
+      "ret": 0.15559333917617324,
+      "sharpe": 0.15740979416694828,
+      "sortino": 0.2018745882133225,
+      "maxdd": -0.5008379415220551,
+      "alpha": 9.547918011776346e-15
+    },
+    {
+      "name": "mamba",
+      "ret": 0.05014170643128768,
+      "sharpe": 0.08747625762747507,
+      "sortino": 0.08469985386447978,
+      "maxdd": -0.29519886369678766,
+      "alpha": -0.10545163274487601
+    },
+    {
+      "name": "Coordinator (MAS)",
+      "ret": -0.19114981608573023,
+      "sharpe": -0.5216034641105864,
+      "sortino": -0.6131439274718055,
+      "maxdd": -0.31886467033910926,
+      "alpha": -0.3467431552618939
+    }
+  ]
+}

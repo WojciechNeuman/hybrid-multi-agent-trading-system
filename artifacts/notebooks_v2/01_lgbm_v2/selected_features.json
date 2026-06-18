@@ -1,0 +1,31 @@
+{
+  "selected_features": [
+    "mtf_h1d_rsi",
+    "skew_168h",
+    "mkt_btc_dominance",
+    "mtf_alignment",
+    "mom_normalized_72h",
+    "close_vs_ema_200",
+    "halving_cycle_cos",
+    "cross_btc_relative_strength",
+    "cross_altcoin_breadth_24h",
+    "cross_eth_btc_mom_24h",
+    "struct_dist_swing_low_l",
+    "sma50_vs_sma200",
+    "close_vs_sma_4320",
+    "bb_width_pct",
+    "sent_fear_greed",
+    "ma_ribbon_width",
+    "sma50_vs_sma100",
+    "candles_since_cross",
+    "mkt_btc_dominance_chg_7d",
+    "struct_dist_swing_high_l"
+  ],
+  "best_model": {
+    "top_n_features": 20,
+    "corr_threshold": 0.85,
+    "num_leaves": 63,
+    "min_child_samples": 50,
+    "learning_rate": 0.01
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "notebook": "08_rule_agents_v1",
+  "agent": "volbreak",
+  "paradigm": "rule: volatility breakout",
+  "created": "2026-06-18T16:22:58.313835",
+  "model": "rule-based (rule: volatility breakout), parameter-free causal signal",
+  "grid_val": "2022-01-01\u21922024-05-30",
+  "oos_period": "2024-05-31\u21922026-05-16",
+  "best_params": {
+    "long_threshold": 0.6,
+    "short_threshold": 0.4,
+    "entry_atr_mult": 0.0,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 3.0,
+    "min_hold": 12,
+    "max_hold": 48,
+    "cooldown": 3,
+    "min_sl": 0.01
+  },
+  "backtest_wfees": {
+    "n_trades": 376,
+    "n_long": 194,
+    "n_short": 182,
+    "total_ret": 1.3199,
+    "sharpe": 1.2296,
+    "maxdd": -0.2815
+  },
+  "backtest_0fee": {
+    "n_trades": 376,
+    "n_long": 194,
+    "n_short": 182,
+    "total_ret": 1.6365,
+    "sharpe": 1.4178,
+    "maxdd": -0.2705
+  },
+  "artifacts": {
+    "oos_probs": "oos_probs.npy",
+    "oos_index": "oos_index.npy (int64 ns)",
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_index": "wfo_index.npy (int64 ns)"
+  }
+}
