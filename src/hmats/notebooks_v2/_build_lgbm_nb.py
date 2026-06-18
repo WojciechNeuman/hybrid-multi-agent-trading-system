@@ -8,12 +8,12 @@ cells = []
 def md(s):   cells.append(nbf.v4.new_markdown_cell(s))
 def code(s): cells.append(nbf.v4.new_code_cell(s))
 
-md("""# 01 — LGBM v1: Joint MODEL_GRID + Feature-Selection Search · M1Y WFO · Long+Short (with fees)
+md("""# 01 — LGBM v1: Joint MODEL_GRID + Feature-Selection Search · M2Y WFO · Long+Short (with fees)
 
 **What this notebook does**
-- Walk-forward (sliding 1-year, monthly step) LightGBM probability model, identical fee model to v12.
-- **Joint search** over a *feature-selection* grid (`top_n_features`, `corr_threshold`) and a
-  *model* grid (`num_leaves`, `min_child_samples`, `learning_rate`) → 48 configurations.
+- Walk-forward (sliding 2-year, monthly step) LightGBM probability model, identical fee model to v12.
+- **Joint search** over a *model* grid (`num_leaves`, `min_child_samples`, `learning_rate`) → 8 configs;
+  feature-selection grid is fixed (`top_n_features=50`, `corr_threshold=0.85`) — Boruta prunes downstream.
 - Feature selection = relevance–redundancy filter (univariate AUC → Spearman redundancy prune → top-N).
 - For each config: WFO → OOS probs → exhaustive trading grid (v12 grid). Best config chosen by
   **OOS Sharpe** subject to a **≥120-trade floor** (prevents the near-dormant high-threshold configs
@@ -58,7 +58,7 @@ ARTS_DIR.mkdir(parents=True, exist_ok=True)
 OOS_START      = pd.Timestamp('2024-05-31')
 GRID_VAL_START = pd.Timestamp('2022-01-01')
 GRID_VAL_END   = pd.Timestamp('2024-05-30')
-TRAIN_WINDOW_H = 8760      # sliding 1-year window (M1Y)
+TRAIN_WINDOW_H = 17520     # sliding 2-year window (M2Y) — spans a full bull→bear regime flip
 STEP_SIZE      = 720       # monthly step
 EMBARGO        = 12
 VAL_FRAC       = 0.20
@@ -70,8 +70,8 @@ BUFFER=0.0005; SHORT_FUNDING_H=0.0000077
 
 # ── Joint search grids ───────────────────────────────────────────────
 MODEL_GRID = {
-    'top_n_features':    [20, 35, 50],
-    'corr_threshold':    [0.85, 0.90],
+    'top_n_features':    [50],          # fixed; Boruta prunes downstream
+    'corr_threshold':    [0.85],         # fixed; Boruta prunes downstream
     'num_leaves':        [31, 63],
     'min_child_samples': [30, 50],
     'learning_rate':     [0.01, 0.02],
@@ -151,7 +151,7 @@ for ct in MODEL_GRID['corr_threshold']:
         FSETS[(ct,tn)] = select_features(SURV, AUC_, RHO, tn, ct)
         print(f'  corr<={ct}  top_n={tn:>2} -> {len(FSETS[(ct,tn)])} feats')""")
 
-code("""# ── Walk-forward (sliding 1-year window, monthly step) ───────────────────────
+code("""# ── Walk-forward (sliding 2-year window, monthly step) ───────────────────────
 def run_m1y_wfo(df, feats, num_leaves, min_child_samples, learning_rate, verbose=False):
     n = len(df); probs = np.full(n, np.nan); i = 0; last = None
     params = dict(LGBM_BASE, num_leaves=num_leaves,
@@ -263,7 +263,7 @@ def trading_grid_on(probs, sub, min_trades):
     return best
 print('Backtest + selection utilities ready.')""")
 
-code("""# ── JOINT SEARCH: 48 model configs × 1,944 trading combos ────────────────────
+code("""# ── JOINT SEARCH: model configs × trading combos ─────────────────────────────
 rows=[]; best_overall=None; t0=time.time()
 for ci,mc in enumerate(_mcombos):
     m=dict(zip(_mkeys,mc)); feats=FSETS[(m['corr_threshold'],m['top_n_features'])]
@@ -272,11 +272,11 @@ for ci,mc in enumerate(_mcombos):
     a=roc_auc_score(oos_df[LABEL_COL].values[valid], op.values[valid])
     bt=trading_grid_on(op, oos_df, MIN_TRADES_OOS)
     if bt is None:
-        print(f'[{ci+1}/48] {m} AUC={a:.4f}  no >= {MIN_TRADES_OOS}-trade config'); continue
+        print(f'[{ci+1}/{len(_mcombos)}] {m} AUC={a:.4f}  no >= {MIN_TRADES_OOS}-trade config'); continue
     rows.append({**m,'oos_auc':a,**{f'tr_{k}':v for k,v in bt.items()}})
     if best_overall is None or bt['sharpe']>best_overall['bt']['sharpe']:
         best_overall=dict(m=m,bt=bt,auc=a,feats=feats,probs=probs,last=last)
-    print(f"[{ci+1}/48] lr={m['learning_rate']} nl={m['num_leaves']} mcs={m['min_child_samples']} "
+    print(f"[{ci+1}/{len(_mcombos)}] lr={m['learning_rate']} nl={m['num_leaves']} mcs={m['min_child_samples']} "
           f"N={m['top_n_features']} rho={m['corr_threshold']} | AUC={a:.4f} "
           f"Sharpe={bt['sharpe']:.3f} Ret={bt['total_ret']:+.1%} DD={bt['maxdd']:.1%} T={bt['n_trades']}")
 leaderboard=pd.DataFrame(rows).sort_values('tr_sharpe',ascending=False).reset_index(drop=True)
@@ -381,11 +381,11 @@ def _m(eq,t):
             'win_rate':round(float((t['net']>0).mean()),4) if len(t) else 0.,
             'total_ret':round(float(eq[-1]-1),4),'sharpe':round(_sharpe(eq),4),'maxdd':round(_maxdd(eq),4)}
 results={'notebook':'01_lgbm_v1','created':pd.Timestamp.now().isoformat(),
-    'model':'LightGBM M1Y WFO — joint MODEL_GRID + relevance-redundancy feature selection',
+    'model':'LightGBM M2Y WFO — joint MODEL_GRID + relevance-redundancy feature selection',
     'feature_selection':{'method':'relevance-redundancy filter (univariate AUC -> Spearman prune -> top-N), jointly tuned',
         'pool':len(POOL),'survivors':len(SURV),'n_selected':len(SELECTED_FEATURES),
         'top_n_features':BEST_MODEL['top_n_features'],'corr_threshold':BEST_MODEL['corr_threshold']},
-    'wfo':{'scheme':'M1Y sliding','train_window_h':TRAIN_WINDOW_H,'step_size':STEP_SIZE,'embargo':EMBARGO},
+    'wfo':{'scheme':'M2Y sliding','train_window_h':TRAIN_WINDOW_H,'step_size':STEP_SIZE,'embargo':EMBARGO},
     'selection':f'OOS Sharpe (min_trades>={MIN_TRADES_OOS})',
     'oos_period':f'{OOS_START.date()}→{oos_df.index[-1].date()}','oos_auc':round(float(auc_oos),4),
     'best_model':BEST_MODEL,'selected_features':SELECTED_FEATURES,'best_params':BEST,

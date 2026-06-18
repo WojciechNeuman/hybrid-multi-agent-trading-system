@@ -2,36 +2,36 @@
   "notebook": "08_rule_agents_v1",
   "agent": "meanrev",
   "paradigm": "rule: mean-reversion",
-  "created": "2026-06-18T17:21:26.891349",
+  "created": "2026-06-19T00:05:57.847358",
   "model": "rule-based (rule: mean-reversion), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-30",
-  "oos_period": "2024-05-31\u21922026-05-16",
+  "oos_period": "2024-06-01\u21922026-05-16",
   "best_params": {
     "long_threshold": 0.55,
     "short_threshold": 0.45,
     "entry_atr_mult": 0.0,
-    "sl_atr_mult": 2.5,
-    "tp_atr_mult": 3.0,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 2.0,
     "min_hold": 12,
-    "max_hold": 48,
+    "max_hold": 24,
     "cooldown": 3,
     "min_sl": 0.01
   },
   "backtest_wfees": {
-    "n_trades": 415,
-    "n_long": 207,
-    "n_short": 208,
-    "total_ret": 0.1643,
-    "sharpe": 0.1929,
-    "maxdd": -0.3868
+    "n_trades": 755,
+    "n_long": 352,
+    "n_short": 403,
+    "total_ret": -0.0461,
+    "sharpe": -0.0554,
+    "maxdd": -0.3235
   },
   "backtest_0fee": {
-    "n_trades": 415,
-    "n_long": 207,
-    "n_short": 208,
-    "total_ret": 0.3492,
-    "sharpe": 0.3801,
-    "maxdd": -0.3613
+    "n_trades": 755,
+    "n_long": 352,
+    "n_short": 403,
+    "total_ret": 0.2537,
+    "sharpe": 0.2656,
+    "maxdd": -0.2914
   },
   "artifacts": {
     "oos_probs": "oos_probs.npy",

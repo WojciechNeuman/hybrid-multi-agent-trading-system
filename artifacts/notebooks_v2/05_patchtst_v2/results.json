@@ -1,0 +1,168 @@
+{
+  "notebook": "04_patchtst_v2_wfo",
+  "created": "2026-06-18T23:23:39.450585",
+  "model": "PatchTST WFO (3m val / 3m OOS, expanding train)",
+  "wfo": {
+    "base_train_end": "2022-12-31",
+    "fold_val_months": 3,
+    "fold_oos_months": 3,
+    "n_folds": 12,
+    "completed_folds": 10
+  },
+  "wfo_oos_range": {
+    "start": "2023-03-31",
+    "end": "2026-03-30"
+  },
+  "oos_ref_range": {
+    "start": "2024-06-01",
+    "end": "2026-03-30"
+  },
+  "backtest_stitched": {
+    "n_trades": 200,
+    "n_long": 72,
+    "n_short": 128,
+    "win_rate": 0.5,
+    "total_ret": 0.236,
+    "sharpe": 0.3679,
+    "maxdd": -0.2799
+  },
+  "fold_params": [
+    {
+      "fold": 1,
+      "long_threshold": 0.55,
+      "short_threshold": 0.65,
+      "entry_atr_mult": 0.3,
+      "sl_atr_mult": 2.0,
+      "tp_atr_mult": 3.0,
+      "min_hold": 12,
+      "max_hold": 24,
+      "cooldown": 3,
+      "val_auc": 0.4946169618814694,
+      "best_epoch": 8
+    },
+    {
+      "fold": 3,
+      "long_threshold": 0.6,
+      "short_threshold": 0.53,
+      "entry_atr_mult": 0.0,
+      "sl_atr_mult": 1.5,
+      "tp_atr_mult": 2.0,
+      "min_hold": 6,
+      "max_hold": 48,
+      "cooldown": 3,
+      "val_auc": 0.5346597566011114,
+      "best_epoch": 9
+    },
+    {
+      "fold": 4,
+      "long_threshold": 0.58,
+      "short_threshold": 0.63,
+      "entry_atr_mult": 0.0,
+      "sl_atr_mult": 2.5,
+      "tp_atr_mult": 2.0,
+      "min_hold": 6,
+      "max_hold": 48,
+      "cooldown": 3,
+      "val_auc": 0.4504172516452896,
+      "best_epoch": 12
+    },
+    {
+      "fold": 5,
+      "long_threshold": 0.56,
+      "short_threshold": 0.55,
+      "entry_atr_mult": 0.0,
+      "sl_atr_mult": 2.0,
+      "tp_atr_mult": 3.0,
+      "min_hold": 6,
+      "max_hold": 48,
+      "cooldown": 2,
+      "val_auc": 0.5061281677768017,
+      "best_epoch": 16
+    },
+    {
+      "fold": 6,
+      "long_threshold": 0.65,
+      "short_threshold": 0.55,
+      "entry_atr_mult": 0.0,
+      "sl_atr_mult": 2.0,
+      "tp_atr_mult": 3.0,
+      "min_hold": 6,
+      "max_hold": 24,
+      "cooldown": 3,
+      "val_auc": 0.5002792250849902,
+      "best_epoch": 13
+    },
+    {
+      "fold": 8,
+      "long_threshold": 0.53,
+      "short_threshold": 0.6,
+      "entry_atr_mult": 0.0,
+      "sl_atr_mult": 2.0,
+      "tp_atr_mult": 2.0,
+      "min_hold": 6,
+      "max_hold": 48,
+      "cooldown": 3,
+      "val_auc": 0.48223170478888805,
+      "best_epoch": 13
+    },
+    {
+      "fold": 9,
+      "long_threshold": 0.53,
+      "short_threshold": 0.55,
+      "entry_atr_mult": 0.6,
+      "sl_atr_mult": 2.0,
+      "tp_atr_mult": 3.0,
+      "min_hold": 6,
+      "max_hold": 48,
+      "cooldown": 2,
+      "val_auc": 0.5665437704882468,
+      "best_epoch": 12
+    },
+    {
+      "fold": 10,
+      "long_threshold": 0.53,
+      "short_threshold": 0.63,
+      "entry_atr_mult": 0.0,
+      "sl_atr_mult": 2.5,
+      "tp_atr_mult": 2.0,
+      "min_hold": 6,
+      "max_hold": 48,
+      "cooldown": 2,
+      "val_auc": 0.563672791657136,
+      "best_epoch": 15
+    },
+    {
+      "fold": 11,
+      "long_threshold": 0.6,
+      "short_threshold": 0.6799999999999999,
+      "entry_atr_mult": 0.0,
+      "sl_atr_mult": 2.5,
+      "tp_atr_mult": 3.0,
+      "min_hold": 12,
+      "max_hold": 48,
+      "cooldown": 3,
+      "val_auc": 0.5501917631056703,
+      "best_epoch": 21
+    },
+    {
+      "fold": 12,
+      "long_threshold": 0.55,
+      "short_threshold": 0.56,
+      "entry_atr_mult": 0.6,
+      "sl_atr_mult": 1.5,
+      "tp_atr_mult": 3.0,
+      "min_hold": 6,
+      "max_hold": 24,
+      "cooldown": 3,
+      "val_auc": 0.5165133125678756,
+      "best_epoch": 10
+    }
+  ],
+  "artifacts": {
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_index": "wfo_index.npy",
+    "oos_probs": "oos_probs.npy",
+    "oos_index": "oos_index.npy",
+    "model": "model_lastfold.pt"
+  }
+}

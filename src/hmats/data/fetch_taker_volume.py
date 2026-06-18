@@ -156,6 +156,11 @@ def _incremental_fetch_and_store(
     else:
         fetch_start_ms = _to_millis(start)
 
+    if fetch_start_ms >= end_ms:
+        if verbose:
+            print(f"  {label}: already up to date.")
+        return existing if existing is not None else pd.DataFrame()
+
     if verbose:
         print(f"  {label}: fetching from "
               f"{pd.to_datetime(fetch_start_ms, unit='ms', utc=True).date()} ...")

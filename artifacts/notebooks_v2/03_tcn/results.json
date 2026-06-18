@@ -1,10 +1,10 @@
 {
   "notebook": "03_tcn_v1",
-  "created": "2026-06-16T01:38:35.386895",
+  "created": "2026-06-18T22:41:09.043815",
   "model": "TCNMultiTask (direction + forward-vol)",
   "splits": {
     "train_end": "2022-12-31",
-    "grid_val_end": "2024-05-30",
+    "grid_val_end": "2024-05-31",
     "oos_start": "2024-06-01"
   },
   "tbm": {
@@ -28,10 +28,10 @@
   },
   "training": {
     "epochs": 80,
-    "best_epoch": 14,
-    "best_val_loss": 0.69312
+    "best_epoch": 15,
+    "best_val_loss": 0.69455
   },
-  "oos_auc_tbm": 0.513,
+  "oos_auc_tbm": 0.5156,
   "all_features": [
     "stoch_k_14",
     "ret_2h",
@@ -71,32 +71,32 @@
     "short_threshold": 0.63,
     "entry_atr_mult": 0.0,
     "sl_atr_mult": 1.5,
-    "tp_atr_mult": 2.5,
+    "tp_atr_mult": 2.0,
     "min_hold": 6,
     "max_hold": 48,
-    "cooldown": 3
+    "cooldown": 2
   },
   "backtest_wfees": {
-    "n_trades": 272,
-    "n_long": 40,
-    "n_short": 232,
-    "win_rate": 0.4522,
-    "total_ret": 0.7381,
-    "sharpe": 1.1413,
-    "maxdd": -0.1358
+    "n_trades": 416,
+    "n_long": 3,
+    "n_short": 413,
+    "win_rate": 0.4663,
+    "total_ret": 0.2204,
+    "sharpe": 0.3491,
+    "maxdd": -0.2084
   },
   "backtest_0fee": {
-    "n_trades": 272,
-    "n_long": 40,
-    "n_short": 232,
-    "win_rate": 0.4522,
-    "total_ret": 0.9037,
-    "sharpe": 1.3327,
-    "maxdd": -0.1217
+    "n_trades": 416,
+    "n_long": 3,
+    "n_short": 413,
+    "win_rate": 0.4712,
+    "total_ret": 0.3858,
+    "sharpe": 0.5736,
+    "maxdd": -0.1939
   },
   "monthly": {
-    "mean_pct": 2.245,
-    "positive_months": 15,
+    "mean_pct": 0.697,
+    "positive_months": 11,
     "total_months": 24
   },
   "artifacts": {

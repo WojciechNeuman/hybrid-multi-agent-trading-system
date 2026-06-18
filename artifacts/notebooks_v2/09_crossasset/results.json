@@ -2,7 +2,7 @@
   "notebook": "09_crossasset_v1",
   "agent": "crossasset",
   "paradigm": "learned: cross-asset / sentiment / flow",
-  "created": "2026-06-18T17:22:31.933990",
+  "created": "2026-06-19T00:07:09.479862",
   "model": "LightGBM expanding-window WFO on orthogonal features",
   "features": [
     "cross_eth_btc_ratio",
@@ -25,10 +25,10 @@
     "avg_trade_size_z24"
   ],
   "seed": 42,
-  "oos_period": "2024-05-31\u21922026-05-16",
+  "oos_period": "2024-06-01\u21922026-05-16",
   "best_params": {
-    "long_threshold": 0.6,
-    "short_threshold": 0.4,
+    "long_threshold": 0.58,
+    "short_threshold": 0.42,
     "entry_atr_mult": 0.0,
     "sl_atr_mult": 1.5,
     "tp_atr_mult": 3.0,
@@ -38,15 +38,15 @@
     "min_sl": 0.01
   },
   "backtest_wfees": {
-    "n_trades": 327,
-    "n_long": 173,
-    "n_short": 154,
-    "total_ret": 0.534,
-    "sharpe": 0.6362,
-    "maxdd": -0.283
+    "n_trades": 407,
+    "n_long": 232,
+    "n_short": 175,
+    "total_ret": 0.6698,
+    "sharpe": 0.7072,
+    "maxdd": -0.2359
   },
   "backtest_0fee": {
-    "total_ret": 0.7241,
-    "sharpe": 0.8105
+    "total_ret": 0.9373,
+    "sharpe": 0.9131
   }
 }

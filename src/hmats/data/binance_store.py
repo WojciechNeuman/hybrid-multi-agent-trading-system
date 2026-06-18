@@ -149,6 +149,9 @@ def fetch_and_store(
     else:
         fetch_start_ms = _to_millis(start)
 
+    if fetch_start_ms >= end_ms:
+        return existing if existing is not None else pd.DataFrame()
+
     rows = _fetch_pages(symbol, interval, fetch_start_ms, end_ms, limit, sleep_s)
 
     if rows:

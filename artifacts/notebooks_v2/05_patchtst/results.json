@@ -1,10 +1,10 @@
 {
-  "notebook": "05_patchtst_v1",
-  "created": "2026-06-16T13:41:14.427264",
-  "model": "PatchTST (patch transformer, direction + forward-vol, temp-scaled)",
+  "notebook": "04_patchtst_v1",
+  "created": "2026-06-19T00:03:11.276073",
+  "model": "PatchTST (patch transformer, direction + forward-vol, temp-scaled, short-only execution)",
   "splits": {
     "train_end": "2022-12-31",
-    "grid_val_end": "2024-05-30",
+    "grid_val_end": "2024-05-31",
     "oos_start": "2024-06-01"
   },
   "tbm": {
@@ -24,14 +24,15 @@
     "seq_len": 48,
     "n_features": 32,
     "n_params": 84547,
-    "temperature": 1.7723
+    "temperature": 1.625
   },
   "training": {
     "epochs": 80,
-    "best_epoch": 13,
-    "best_val_loss": 0.69295
+    "best_epoch": 12,
+    "best_val_loss": 0.69294
   },
-  "oos_auc_tbm": 0.5098,
+  "oos_auc_tbm": 0.5018,
+  "selection_mode": "fixed_short_only_profile",
   "all_features": [
     "stoch_k_14",
     "ret_2h",
@@ -67,36 +68,37 @@
     "ffd_log_price"
   ],
   "best_params": {
-    "long_threshold": 0.58,
-    "short_threshold": 0.58,
+    "trade_direction": "short_only",
+    "long_threshold": 0.7,
+    "short_threshold": 0.555,
     "entry_atr_mult": 0.6,
-    "sl_atr_mult": 1.5,
-    "tp_atr_mult": 3.0,
-    "min_hold": 12,
-    "max_hold": 24,
-    "cooldown": 2
+    "sl_atr_mult": 1.0,
+    "tp_atr_mult": 3.5,
+    "min_hold": 6,
+    "max_hold": 48,
+    "cooldown": 12
   },
   "backtest_wfees": {
-    "n_trades": 129,
+    "n_trades": 131,
     "n_long": 0,
-    "n_short": 129,
-    "win_rate": 0.4496,
-    "total_ret": 0.3607,
-    "sharpe": 0.8749,
-    "maxdd": -0.1069
+    "n_short": 131,
+    "win_rate": 0.3893,
+    "total_ret": 0.8211,
+    "sharpe": 1.7082,
+    "maxdd": -0.1643
   },
   "backtest_0fee": {
-    "n_trades": 129,
+    "n_trades": 131,
     "n_long": 0,
-    "n_short": 129,
-    "win_rate": 0.4806,
-    "total_ret": 0.5175,
-    "sharpe": 1.1841,
-    "maxdd": -0.0996
+    "n_short": 131,
+    "win_rate": 0.3893,
+    "total_ret": 1.0248,
+    "sharpe": 2.0105,
+    "maxdd": -0.1372
   },
   "monthly": {
-    "mean_pct": 1.27,
-    "positive_months": 14,
+    "mean_pct": 2.521,
+    "positive_months": 15,
     "total_months": 24
   },
   "artifacts": {
@@ -104,6 +106,7 @@
     "oos_index": "oos_index.npy (int64 ns)",
     "wfo_probs": "wfo_probs.npy",
     "wfo_index": "wfo_index.npy (int64 ns)",
+    "grid_leaderboard": "trading_grid_leaderboard.csv",
     "model": "model.pt"
   }
 }
