@@ -32,7 +32,7 @@ files so the university-facing notebook and runtime code do not drift.
 ```text
 src/hmats/mas/
 ├── mas07.py          # final engine, accepted-agent roster, allocator evaluation, thesis charts
-├── rule_agents.py    # rule agents; final MAS keeps trend and volbreak, excludes meanrev
+├── rule_agents.py    # rule agents; final MAS keeps trend, volbreak, dominance_rotation; excludes meanrev, sentiment_regime
 ├── agent_eval.py     # random-bracket null utilities
 ├── coordinators.py   # alternative merge/allocation methods
 └── crossasset_agent.py
@@ -61,13 +61,34 @@ Accepted agents:
 | `patch` | `04_patchtst_v1` | patch transformer | TBM transformer learned agent |
 | `trend` | `05_rule_agents_v1` | rule-based trend following | structurally different rule agent |
 | `volbreak` | `05_rule_agents_v1` | rule-based volatility breakout | structurally different rule agent |
+| `dominance_rotation` | `05_rule_agents_v1` | rule-based cross-asset dominance rotation | **diversification** rule agent (cross-asset flow, not price panel; not claimed as alpha) |
 
 Excluded experiments:
 
 | Agent | Reason |
 |---|---|
-| `meanrev` | negative current OOS result, so it is not included in the final roster |
+| `meanrev` | negative OOS return |
+| `sentiment_regime` | negative OOS return (−27.7%) and below its random-bracket null (7th percentile) |
 | `crossasset` | weak directional evidence and not significant versus random-bracket null |
+
+### Rule agent evaluation: `sentiment_regime` and `dominance_rotation`
+
+Two heterogeneous rule agents were evaluated using only causal features in the unified parquet and
+the same grid-search protocol as the existing rule agents (2022-01 → 2024-05 validation window,
+frozen before OOS). Inclusion criteria: positive OOS return and max drawdown no worse than BTC
+buy-and-hold (−50.1%). The random-bracket null determines whether a passing agent is described as
+an alpha source or a diversification agent only.
+
+| Agent | Inputs | OOS ret | OOS Sharpe | OOS maxdd | Random-bracket null percentile | Status |
+|---|---|---:|---:|---:|---|---|
+| `sentiment_regime` | Fear & Greed level / 7-day MA / 7-day change | −27.7% | −0.77 | −42.8% | 7th | Excluded — negative OOS return |
+| `dominance_rotation` | BTC dominance Δ7d lagged 24h, ETH/BTC 24h & 72h momentum | +153.6% | 1.09 | −26.4% | 93–95th | Accepted — diversification agent, not claimed as alpha |
+
+`dominance_rotation` reads cross-asset capital rotation (BTC dominance, ETH/BTC momentum) — an
+information source no BTC price-feature model uses — and its return stream is therefore structurally
+decorrelated from the four learned agents. Its OOS return sits at the 95% boundary of the
+random-bracket null across multiple seeds, so it is not presented as alpha. The daily BTC-dominance
+component is lagged by 24h before use on hourly bars to avoid same-day market-cap leakage.
 
 ## Final Conclusion To Carry Into The Thesis
 
@@ -78,9 +99,9 @@ Current executed result in `artifacts/notebooks_v2/06_mas/results.json`:
 
 | Strategy | OOS return | Sharpe | MaxDD | Interpretation |
 |---|---:|---:|---:|---|
-| Final MAS fund, capped inverse-vol | +41.2% | 1.58 | -10.9% | final system result |
-| Naive EW fund | +41.5% | 1.32 | -11.1% | simple fund-of-agents baseline |
-| Original coordinator ablation | +15.0% | 0.37 | -23.0% | tested and rejected as final allocator |
+| Final MAS fund, capped inverse-vol | +48.1% | 1.90 | -5.3% | final system result |
+| Naive EW fund | +53.8% | 1.76 | -5.2% | simple fund-of-agents baseline |
+| Original coordinator ablation | +28.6% | 0.59 | -20.4% | tested and rejected as final allocator |
 | BTC buy-and-hold | +15.6% | 0.16 | -50.1% | crypto benchmark |
 | S&P 500 buy-and-hold | +43.6% | 1.11 | -18.8% | broad-market benchmark |
 
@@ -88,14 +109,13 @@ The original `softmax(trailing Sharpe) x regime competence` coordinator does not
 claim as a headline mechanism. It remains useful as a negative ablation: it shows that not every
 agentic-looking coordination rule improves the fund. The final thesis should present capped
 inverse-volatility risk parity over heterogeneous agents as the robust merge method. The cap is
-`2/N`, which limits any single agent to one third of capital in the six-agent roster and prevents
-long inactive periods dominated by one method.
+`2/N`, which limits any single agent to 2/7 ≈ 28.6% of capital in the seven-agent roster and
+prevents long inactive periods dominated by one method.
 
 The capped fund intentionally sacrifices part of the uncapped inverse-volatility result in exchange
-for a more credible multi-agent allocation. In the current OOS run, the cap keeps the maximum LGBM
-weight at 33.3% and produces mean weights of approximately LGBM 24.5%, Patch 24.6%, Mamba 15.6%,
-TCN 14.2%, VolBreak 11.7%, and Trend 9.5%. This is a better architectural fit for the thesis than
-an allocation path that assigns nearly all capital to one low-volatility or inactive agent.
+for a more credible multi-agent allocation. In the OOS evaluation the seven-agent roster produces
+mean weights of approximately LGBM 21.7%, Patch 22.0%, Mamba 14.6%, TCN 13.2%, VolBreak 10.9%,
+Trend 8.9%, and DominanceRotation 8.7%.
 
 ## Thesis Figures To Use
 

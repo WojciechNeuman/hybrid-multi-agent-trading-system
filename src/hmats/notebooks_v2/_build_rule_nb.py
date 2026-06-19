@@ -20,20 +20,34 @@ def code(s):
 
 md(r"""# 08 — Rule-based strategy agents (self-contained)
 
-Three economically-motivated, **parameter-free, causal** strategy agents whose edge is *strategy
-logic*, not a fit to the feature panel:
+Economically-motivated, **parameter-free, causal** strategy agents whose edge is *strategy logic*,
+not a fit to the feature panel. The first three read the BTC price/feature panel; the last two read
+a **different information source** (crowd sentiment, cross-asset capital rotation) and are therefore
+structurally orthogonal to every price-feature model:
 
 | Agent | Logic | Designed for |
 |-------|-------|--------------|
 | `trend`    | trend-following (MA / SuperTrend / MACD vote) | directional bull/bear |
 | `meanrev`  | fade oscillator extremes (RSI / Stoch / Williams / MFI / Bollinger) | chop / range |
 | `volbreak` | direction of a 24h range break (squeeze-confirmed) | expansion |
+| `sentiment_regime`   | contrarian Fear & Greed (fade sentiment extremes) | capitulation / euphoria |
+| `dominance_rotation` | cross-asset rotation (BTC dominance + ETH/BTC momentum) | BTC-leadership vs alt-season |
 
 **Leak-free:** signals are vote-fractions over already-causal features with fixed economic
 thresholds (nothing fitted → nothing leaks); ATR-bracket params are grid-searched on
 2022-01→2024-05 only, then frozen for OOS; backtests use the same `bracket_run` engine as every
-other agent. Artifacts → `artifacts/notebooks_v2/08_{trend,meanrev,volbreak}/` (drop-in for the
-coordinator, notebook 07).
+other agent. Artifacts → `artifacts/notebooks_v2/08_<agent>/` (drop-in for the coordinator,
+notebook 06).
+
+**Inclusion criteria.** An agent joins the multi-agent roster only if its OOS return is positive
+*and* its max drawdown is no worse than BTC buy-and-hold. The random-bracket null determines only
+how a passing agent is *described* — agents that fail to clear the 95th percentile are included as
+diversification agents rather than as alpha sources:
+
+| Agent | OOS ret | OOS maxdd | vs B&H maxdd (−50.1%) | random-bracket null percentile | status |
+|---|---|---|---|---|---|
+| `sentiment_regime`   | −27.7% | −42.8% | comparable | 7th (below random) | excluded — negative OOS return |
+| `dominance_rotation` | +153.6% | −26.4% | better | 93–95th | accepted — diversification agent, not claimed as alpha |
 
 This notebook is **self-contained**: the execution engine and the agent logic are inlined below.""")
 
@@ -56,6 +70,45 @@ for a in RULE_AGENTS:
                  "n_long": bt["n_long"], "n_short": bt["n_short"]})
 pd.DataFrame(rows).sort_values("sharpe", ascending=False).reset_index(drop=True)""")
 
+md(r"""## 4b · Random-bracket null — honest skill check
+
+A signal's headline OOS return is dominated by two things that are **not** skill: the asymmetric ATR
+bracket (cut losers / let winners run = positive convexity) and the trending OOS market. The fair
+benchmark is therefore *not* buy-and-hold but **random entries through each agent's own bracket**,
+trade-count-matched. An agent is only "alpha" if its real return clears the 95th percentile of that
+random distribution. Agents that pass the acceptance gate but **not** this test are kept as
+*diversification* agents only — their value is decorrelation, not predictive skill.""")
+code(r"""def random_bracket_null(sig, df, bp, n_sims=400, seed=0):
+    oos = (df.index >= OOS_START) & (df.index <= OOS_END); sub = df[oos]
+    c, hi, lo = sub["close"].values, sub["high"].values, sub["low"].values
+    atr = sub["atr_14_pct"].values; n = len(sub)
+    eq, pos, _ = bracket_run(sig[oos].values, c, hi, lo, atr, with_fees=True, **bp)
+    real = float(eq[-1] - 1)
+    n_tr = int((np.diff(np.sign(pos), prepend=0) != 0).sum())
+    lt, st = bp["long_threshold"], bp["short_threshold"]
+    rng = np.random.default_rng(seed); rets = np.empty(n_sims)
+    for k in range(n_sims):
+        s = np.full(n, 0.5)
+        locs = rng.choice(n, size=min(max(n_tr, 2), n), replace=False)
+        s[locs] = rng.choice([lt + 0.05, st - 0.05], size=len(locs))
+        e, _, _ = bracket_run(s, c, hi, lo, atr, with_fees=True, **bp)
+        rets[k] = e[-1] - 1
+    pct = float((rets < real).mean())
+    return {"real_ret": real, "null_p50": float(np.percentile(rets, 50)),
+            "null_p95": float(np.percentile(rets, 95)), "pctile": pct,
+            "alpha_vs_null": real - float(np.percentile(rets, 50)),
+            "skill_sig (>=95%)": "yes" if pct >= 0.95 else "no"}
+
+rows = []
+for a in RULE_AGENTS:
+    r = random_bracket_null(SIGNALS[a](df).reindex(df.index), df, out[a]["best_params"])
+    rows.append({"agent": a, **r})
+nullt = pd.DataFrame(rows)
+for c in ["real_ret", "null_p50", "null_p95", "alpha_vs_null"]:
+    nullt[c] = (nullt[c] * 100).round(1)
+nullt["pctile"] = (nullt["pctile"] * 100).round(0)
+nullt""")
+
 md(r"""## 5 · Leakage robustness — extra execution delay
 
 A genuine signal survives an extra bar of delay; a look-ahead leak collapses immediately.""")
@@ -72,7 +125,8 @@ pd.DataFrame(rows).pivot(index="agent", columns="delay", values=["ret", "sharpe"
 
 md(r"""## 6 · Equity curves & per-regime breakdown (OOS)""")
 code(r"""import matplotlib.pyplot as plt, matplotlib.dates as mdates
-colours = {"trend": "#43A047", "meanrev": "#FB8C00", "volbreak": "#5E35B1"}
+colours = {"trend": "#43A047", "meanrev": "#FB8C00", "volbreak": "#5E35B1",
+           "sentiment_regime": "#00897B", "dominance_rotation": "#D81B60"}
 fig, ax = plt.subplots(figsize=(13, 5))
 for a in RULE_AGENTS:
     eq = out[a]["_eq_oos"]

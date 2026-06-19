@@ -41,10 +41,17 @@ The final roster is intentionally conservative:
 | `04_patchtst_v1` | `patch` | patch transformer, TBM two-channel signal | accepted |
 | `05_rule_agents_v1` | `trend` | rule-based trend following | accepted |
 | `05_rule_agents_v1` | `volbreak` | rule-based volatility breakout | accepted |
-| `05_rule_agents_v1` | `meanrev` | rule-based mean reversion | excluded: negative current OOS result |
+| `05_rule_agents_v1` | `dominance_rotation` | rule-based cross-asset dominance rotation | accepted as a **diversification** agent (OOS-profitable, drawdown < B&H, but straddles the 95% random-bracket null → not claimed as alpha) |
+| `05_rule_agents_v1` | `meanrev` | rule-based mean reversion | excluded: negative OOS return |
+| `05_rule_agents_v1` | `sentiment_regime` | rule-based contrarian Fear & Greed | excluded: negative OOS return (−27.7%), below random-bracket null |
 | removed `06_crossasset_v1` | `crossasset` | cross-asset / sentiment learner | excluded: weak predictive skill and not significant vs random-bracket null |
 
-The key methodological change from the earlier multi-agent draft is that the original
+The `dominance_rotation` rule agent reads BTC dominance and ETH/BTC cross-asset momentum rather than
+the BTC price/feature panel. Its return stream is structurally decorrelated from every price-feature
+model, and it is included for that diversification property — not as an alpha source, since its OOS
+return sits at the 95% boundary of its own random-bracket null.
+
+The key design decision is that the original
 `softmax(trailing Sharpe) × regime competence` coordinator is treated as an **ablation**, not the
 headline result. The final reported system is a leak-free capped inverse-volatility fund of
 autonomous agents. This is still a multi-agent architecture in the defensible sense used in the thesis: agents
@@ -106,8 +113,8 @@ display(pd.DataFrame(realised).T.round(2))""")
 md(r"""### Final Leaderboard
 
 All rows use the same OOS window. `Final MAS fund (capped inverse-vol)` is the final system result.
-`Coordinator ablation` is the earlier adaptive coordinator retained to show that the tested
-agent-merging rule did not add value.""")
+`Coordinator ablation` is the regime-gated coordinator retained as a negative result: it shows
+that this particular adaptive merging rule did not add value over capped inverse-volatility.""")
 
 code(r"""lb = pd.DataFrame(out["leaderboard"]).copy()
 for c in ["ret", "maxdd", "alpha"]:
@@ -159,7 +166,7 @@ rosters = {
     "rules_positive": RULE_AGENTS,
     "tcn_patch": ["tcn", "patch"],
     "tcn_patch_volbreak": ["tcn", "patch", "volbreak"],
-    "final6": AGENTS,
+    "final_roster": AGENTS,
 }
 
 rows = []
@@ -178,8 +185,8 @@ display(disp)""")
 
 md(r"""### Alternative Coordinator Rules
 
-These allocators use the accepted six-agent roster and identical gross exposure. They differ only
-in how capital is routed across agents.""")
+These allocators use the accepted roster and identical gross exposure. They differ only in how
+capital is routed across agents.""")
 
 md("*Alternative allocators inlined from `hmats.mas.coordinators`:*")
 code(helper_source("coordinators.py"))

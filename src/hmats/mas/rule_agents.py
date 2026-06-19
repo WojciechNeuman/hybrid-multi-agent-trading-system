@@ -10,6 +10,13 @@ whose edge comes from *strategy logic*, not from fitting the feature panel:
 * ``meanrev``  — mean-reversion: fade oscillator extremes (RSI / Stoch / Williams / MFI / Bollinger
                  position). Designed to earn in choppy / range-bound regimes.
 * ``volbreak`` — volatility breakout: trade the direction of a range break (24h breakout flags).
+* ``sentiment_regime`` — contrarian Fear & Greed: fade sentiment extremes (extreme fear -> long,
+                 extreme greed -> short), confirmed by the 7-day sentiment trend. Its only inputs are
+                 the crowd-sentiment columns, so it carries information no price-feature model holds.
+* ``dominance_rotation`` — cross-asset capital rotation: long BTC when capital is rotating *into* it
+                 (BTC dominance rising, ETH/BTC weakening), short/neutral when alts lead (dominance
+                 falling, ETH/BTC strengthening). Edge — if any — comes from cross-asset flow, not BTC
+                 price structure.
 
 Design discipline (why this is leak-free):
 
@@ -43,12 +50,15 @@ from .mas07 import (ANN, OOS_END, OOS_START, bracket_run, maxdd, repo_root,
 # Configuration
 # ---------------------------------------------------------------------------
 
-RULE_AGENTS = ["trend", "meanrev", "volbreak"]
-RULE_DIR = {"trend": "08_trend", "meanrev": "08_meanrev", "volbreak": "08_volbreak"}
+RULE_AGENTS = ["trend", "meanrev", "volbreak", "sentiment_regime", "dominance_rotation"]
+RULE_DIR = {"trend": "08_trend", "meanrev": "08_meanrev", "volbreak": "08_volbreak",
+            "sentiment_regime": "08_sentiment_regime", "dominance_rotation": "08_dominance_rotation"}
 RULE_PARADIGM = {
     "trend": "rule: trend-following",
     "meanrev": "rule: mean-reversion",
     "volbreak": "rule: volatility breakout",
+    "sentiment_regime": "rule: contrarian sentiment (Fear & Greed)",
+    "dominance_rotation": "rule: cross-asset dominance rotation",
 }
 
 GRID_VAL_START = pd.Timestamp("2022-01-01")
@@ -125,7 +135,65 @@ def volbreak_signal(df: pd.DataFrame) -> pd.Series:
     return (0.5 + 0.5 * strength * (up - dn)).clip(0, 1).rename("volbreak")
 
 
-SIGNALS = {"trend": trend_signal, "meanrev": meanrev_signal, "volbreak": volbreak_signal}
+def sentiment_regime_signal(df: pd.DataFrame) -> pd.Series:
+    """Contrarian Fear & Greed: fade sentiment extremes, confirmed by the 7-day sentiment trend.
+
+    The crowd is most wrong at the extremes. Extreme *fear* (capitulation) is a long opportunity;
+    extreme *greed* (euphoria) a short one. A second vote requires the 7-day change to be turning
+    *against* the extreme (fear basing out / greed rolling over) so the agent leans into mean-
+    reversion of sentiment rather than catching a falling knife. All inputs are the (already-causal)
+    crowd-sentiment columns; no BTC price feature enters, so the signal is structurally orthogonal.
+
+    Neutral (0.5) whenever sentiment sits in its normal band — the agent only acts on dislocations.
+    """
+    fg = df["sent_fear_greed"].astype("float64")          # 0 = extreme fear .. 1 = extreme greed
+    ma7 = df["sent_fear_greed_ma7"].astype("float64")      # smoothed level
+    chg = df["sent_fear_greed_chg_7d"].astype("float64")   # 7-day change in sentiment
+    long_votes = _vote_mean([
+        fg < 0.25,            # extreme fear right now
+        ma7 < 0.30,           # the week has been fearful (persistent capitulation)
+        chg > 0.0,            # ...and sentiment is starting to recover (basing out)
+    ])
+    short_votes = _vote_mean([
+        fg > 0.75,            # extreme greed right now
+        ma7 > 0.70,           # the week has been euphoric
+        chg < 0.0,            # ...and sentiment is starting to roll over
+    ])
+    return (0.5 + 0.5 * (long_votes - short_votes)).clip(0, 1).rename("sentiment_regime")
+
+
+def dominance_rotation_signal(df: pd.DataFrame) -> pd.Series:
+    """Cross-asset capital rotation: trade BTC by where crypto capital is flowing.
+
+    Rising BTC dominance with a *weakening* ETH/BTC cross means capital is rotating into BTC (a
+    risk-off-within-crypto / BTC-leadership regime) -> long BTC. Falling dominance with a
+    *strengthening* ETH/BTC cross is the alt-season rotation out of BTC -> short / neutral BTC.
+    Inputs are dominance and ETH/BTC cross-asset momentum only — no BTC price-structure feature —
+    so the agent reads a genuinely different information source from every price-feature model.
+
+    Neutral (0.5) when dominance and the cross are flat (no clear rotation).
+    """
+    # The dominance series is daily and built from daily market-cap snapshots. Lag it by 24h before
+    # using it on hourly bars so a same-day close/market-cap value cannot leak into that day.
+    dom_chg = df["mkt_btc_dominance_chg_7d"].astype("float64").shift(24)
+    ebm24 = df["cross_eth_btc_mom_24h"].astype("float64")        # 24h ETH/BTC momentum
+    ebm72 = df["cross_eth_btc_mom_72h"].astype("float64")        # 72h ETH/BTC momentum
+    long_votes = _vote_mean([
+        dom_chg > 0.005,      # BTC dominance rising
+        ebm24 < 0.0,          # ETH losing ground to BTC (short horizon)
+        ebm72 < 0.0,          # ...and over the longer horizon (capital favouring BTC)
+    ])
+    short_votes = _vote_mean([
+        dom_chg < -0.005,     # BTC dominance falling
+        ebm24 > 0.0,          # ETH outpacing BTC (short horizon)
+        ebm72 > 0.0,          # ...and over the longer horizon (alt-season rotation)
+    ])
+    return (0.5 + 0.5 * (long_votes - short_votes)).clip(0, 1).rename("dominance_rotation")
+
+
+SIGNALS = {"trend": trend_signal, "meanrev": meanrev_signal, "volbreak": volbreak_signal,
+           "sentiment_regime": sentiment_regime_signal,
+           "dominance_rotation": dominance_rotation_signal}
 
 
 # ---------------------------------------------------------------------------

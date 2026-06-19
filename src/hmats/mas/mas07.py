@@ -1,8 +1,8 @@
 """Hybrid Multi-Agent Trading System — final coordination layer (notebook 06).
 
-This module turns the four trained base models (LightGBM, Mamba, TCN, PatchTST) into genuine
-*autonomous trading agents* and a *coordinator* that allocates capital across them. It goes
-beyond the averaging meta-learner of notebook 04 and the signal bake-off of notebook 06.
+This module turns the trained base models (LightGBM, Mamba, TCN, PatchTST) and the accepted rule
+agents into genuine *autonomous trading agents* and a *coordinator* that allocates capital across
+them.
 
 What makes this multi-agent rather than an ensemble of probabilities:
 
@@ -16,9 +16,11 @@ What makes this multi-agent rather than an ensemble of probabilities:
 3. **The system tests several capital allocators.** The original regime-gated coordinator is
    retained as an ablation, while the final reported allocator is capped inverse-volatility risk
    parity over the accepted agents.
-4. **It is honest about failed agents.** The cross-asset learner is removed because its predictive
-   skill did not clear the random-bracket null; the mean-reversion rule is excluded because its
-   current OOS return is negative.
+4. **It is honest about failed agents.** The cross-asset learner and the contrarian-sentiment rule
+   are excluded because their OOS returns are negative. The mean-reversion rule is excluded for the
+   same reason. The ``dominance_rotation`` rule is included as a *diversification* agent only — it
+   is OOS-profitable with a shallower drawdown than buy-and-hold, but its OOS return sits at the
+   95% boundary of the random-bracket null and is not claimed as alpha.
 
 Leakage discipline: an allocation decided with information up to bar ``t`` earns each agent's
 return over ``t -> t+1``; every trailing statistic uses a right-open window shifted by >= 1 bar
@@ -45,14 +47,17 @@ import pandas as pd
 # the same feature matrix. The mean-reversion rule and cross-asset learner remain in the repository
 # as experiments, but are excluded from the final roster for the reasons documented below.
 LEARNED_AGENTS = ["lgbm", "mamba", "tcn", "patch"]
-RULE_AGENTS = ["trend", "volbreak"]
+RULE_AGENTS = ["trend", "volbreak", "dominance_rotation"]
 EXCLUDED_AGENTS = {
-    "meanrev": "excluded from final roster: negative current OOS return",
+    "meanrev": "excluded from final roster: negative OOS return",
     "crossasset": "excluded from final roster: weak OOS AUC and not significant vs random bracket null",
+    "sentiment_regime": "excluded from final roster: negative OOS return (-27.7%) and below the "
+                        "random-bracket null (7th percentile) — contrarian Fear & Greed has no edge OOS",
 }
 AGENTS = LEARNED_AGENTS + RULE_AGENTS
 AGENT_DIR = {"lgbm": "01_lgbm", "mamba": "02_mamba", "tcn": "03_tcn", "patch": "05_patchtst",
-             "trend": "08_trend", "volbreak": "08_volbreak"}
+             "trend": "08_trend", "volbreak": "08_volbreak",
+             "dominance_rotation": "08_dominance_rotation"}
 # Multiclass TBM agents emit two *independent* softmax channels (P-up, P-down) and decide
 # long on P-up and short on P-down. A single saved probability is the P-up channel only, so
 # these agents must be backtested with their P-down channel too — otherwise the binary engine
@@ -65,6 +70,7 @@ PARADIGM = {
     "patch": "patch transformer",
     "trend": "rule: trend-following",
     "volbreak": "rule: volatility breakout",
+    "dominance_rotation": "rule: cross-asset dominance rotation",
 }
 
 OOS_START = pd.Timestamp("2024-05-31")
@@ -515,7 +521,7 @@ def capped_inverse_vol_weights(agents: dict[str, TradingAgent], panel: pd.DataFr
                                cap_mult: float = 2.0) -> pd.DataFrame:
     """Inverse-volatility allocation with a diversification cap.
 
-    The cap is ``cap_mult`` times equal weight. With six accepted agents and ``cap_mult=2``, no
+    The cap is ``cap_mult`` times equal weight. With seven accepted agents and ``cap_mult=2``, no
     single agent can receive more than one third of capital. This prevents the low-volatility
     allocator from assigning almost all capital to an inactive or stale agent.
     """
@@ -639,8 +645,8 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
 
     out = dict(
         notebook="06_multi_agent_v1", created=pd.Timestamp.now().isoformat(),
-        design="hybrid multi-agent trading system over six accepted agents: four learned models "
-               "and two rule-based agents. The original regime-gated coordinator is retained as "
+        design="hybrid multi-agent trading system over seven accepted agents: four learned models "
+               "and three rule-based agents. The original regime-gated coordinator is retained as "
                "an ablation; the final reported allocator is leak-free capped inverse-volatility "
                "risk parity over autonomous risk-managed agents.",
         accepted_agents=AGENTS,
@@ -681,7 +687,7 @@ def plot_results(out: dict, save: bool = True):
     eqs = out["_equities"]
     weights = out["_capped_inverse_vol_weights"].reindex(idx).fillna(0.0)
     colours = {"lgbm": "#F7931A", "mamba": "#7B1FA2", "tcn": "#00ACC1", "patch": "#EF5350",
-               "trend": "#43A047", "volbreak": "#5E35B1"}
+               "trend": "#43A047", "volbreak": "#5E35B1", "dominance_rotation": "#FB8C00"}
     main = "Final MAS fund (capped inverse-vol)"
 
     fig, ax1 = plt.subplots(figsize=(13.5, 6.2))

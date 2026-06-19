@@ -2,7 +2,7 @@
   "notebook": "08_rule_agents_v1",
   "agent": "trend",
   "paradigm": "rule: trend-following",
-  "created": "2026-06-19T00:52:17.152720",
+  "created": "2026-06-19T01:15:54.344416",
   "model": "rule-based (rule: trend-following), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-30",
   "oos_period": "2024-05-31\u21922026-05-16",
