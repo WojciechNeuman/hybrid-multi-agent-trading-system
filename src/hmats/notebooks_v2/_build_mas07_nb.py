@@ -31,7 +31,7 @@ This notebook is the final integration point for the thesis pipeline. It convert
 model outputs into autonomous, risk-managed trading agents, compares several capital-allocation
 methods, and saves publication-ready figures for the thesis.
 
-The final roster is intentionally conservative:
+The final agent set is intentionally conservative:
 
 | Source notebook | Agent | Method family | Final status |
 |---|---|---|---|
@@ -43,7 +43,7 @@ The final roster is intentionally conservative:
 | `05_rule_agents_v1` | `volbreak` | rule-based volatility breakout | accepted |
 | `05_rule_agents_v1` | `dominance_rotation` | rule-based cross-asset dominance rotation | accepted as a **diversification** agent (OOS-profitable, drawdown < B&H, but straddles the 95% random-bracket null → not claimed as alpha) |
 | `05_rule_agents_v1` | `meanrev` | rule-based mean reversion | excluded: negative OOS return |
-| `05_rule_agents_v1` | `sentiment_regime` | rule-based contrarian Fear & Greed | excluded: negative OOS return (−27.7%), below random-bracket null |
+| `05_rule_agents_v1` | `sentiment_regime` | rule-based contrarian Fear & Greed | excluded: negative OOS return (−29.9%), below random-bracket null |
 | removed `06_crossasset_v1` | `crossasset` | cross-asset / sentiment learner | excluded: weak predictive skill and not significant vs random-bracket null |
 
 The `dominance_rotation` rule agent reads BTC dominance and ETH/BTC cross-asset momentum rather than
@@ -144,13 +144,13 @@ The plotting function saves four figures into `artifacts/notebooks_v2/06_mas/`:
 code("fig = plot_results(out, save=True)\nfig")
 
 md(r"""---
-## Part C — Roster And Merge-Method Bake-Off
+## Part C — Agent-Set And Merge-Method Bake-Off
 
-This section evaluates several rosters and allocation rules on the same OOS window. It is included
+This section evaluates several agent sets and allocation rules on the same OOS window. It is included
 as an ablation table rather than as a separate optimisation stage.""")
 
-code(r"""def _portfolio_row(name, roster, weights):
-    sub = static_subset(agents, roster)
+code(r"""def _portfolio_row(name, agent_set, weights):
+    sub = static_subset(agents, agent_set)
     eq = portfolio_equity(weights, sub, idx)
     return {
         "setup": name,
@@ -161,19 +161,19 @@ code(r"""def _portfolio_row(name, roster, weights):
         "maxdd": maxdd(eq),
     }
 
-rosters = {
+agent_sets = {
     "learned4": LEARNED_AGENTS,
     "rules_positive": RULE_AGENTS,
     "tcn_patch": ["tcn", "patch"],
     "tcn_patch_volbreak": ["tcn", "patch", "volbreak"],
-    "final_roster": AGENTS,
+    "final_agent_set": AGENTS,
 }
 
 rows = []
-for label, roster in rosters.items():
-    sub = static_subset(agents, roster)
-    rows.append(_portfolio_row(f"{label} / EW", roster, equal_weight_weights(sub, panel)))
-    rows.append(_portfolio_row(f"{label} / capped inverse-vol", roster, capped_inverse_vol_weights(sub, panel)))
+for label, agent_set in agent_sets.items():
+    sub = static_subset(agents, agent_set)
+    rows.append(_portfolio_row(f"{label} / EW", agent_set, equal_weight_weights(sub, panel)))
+    rows.append(_portfolio_row(f"{label} / capped inverse-vol", agent_set, capped_inverse_vol_weights(sub, panel)))
 
 rb = pd.DataFrame(rows).sort_values("sharpe", ascending=False).reset_index(drop=True)
 disp = rb.copy()
@@ -185,7 +185,7 @@ display(disp)""")
 
 md(r"""### Alternative Coordinator Rules
 
-These allocators use the accepted roster and identical gross exposure. They differ only in how
+These allocators use the accepted agent set and identical gross exposure. They differ only in how
 capital is routed across agents.""")
 
 md("*Alternative allocators inlined from `hmats.mas.coordinators`:*")

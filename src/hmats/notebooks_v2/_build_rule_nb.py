@@ -39,15 +39,15 @@ thresholds (nothing fitted → nothing leaks); ATR-bracket params are grid-searc
 other agent. Artifacts → `artifacts/notebooks_v2/08_<agent>/` (drop-in for the coordinator,
 notebook 06).
 
-**Inclusion criteria.** An agent joins the multi-agent roster only if its OOS return is positive
+**Inclusion criteria.** An agent joins the final multi-agent system only if its OOS return is positive
 *and* its max drawdown is no worse than BTC buy-and-hold. The random-bracket null determines only
 how a passing agent is *described* — agents that fail to clear the 95th percentile are included as
 diversification agents rather than as alpha sources:
 
 | Agent | OOS ret | OOS maxdd | vs B&H maxdd (−50.1%) | random-bracket null percentile | status |
 |---|---|---|---|---|---|
-| `sentiment_regime`   | −27.7% | −42.8% | comparable | 7th (below random) | excluded — negative OOS return |
-| `dominance_rotation` | +153.6% | −26.4% | better | 93–95th | accepted — diversification agent, not claimed as alpha |
+| `sentiment_regime`   | −29.9% | −42.8% | comparable | 7th (below random) | excluded — negative OOS return |
+| `dominance_rotation` | +152.5% | −26.4% | better | 93–95th | accepted — diversification agent, not claimed as alpha |
 
 This notebook is **self-contained**: the execution engine and the agent logic are inlined below.""")
 

@@ -2,10 +2,10 @@
   "notebook": "08_rule_agents_v1",
   "agent": "dominance_rotation",
   "paradigm": "rule: cross-asset dominance rotation",
-  "created": "2026-06-19T01:51:48.841633",
+  "created": "2026-06-19T14:00:02.779764",
   "model": "rule-based (rule: cross-asset dominance rotation), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-30",
-  "oos_period": "2024-05-31\u21922026-05-16",
+  "oos_period": "2024-05-31\u21922026-05-31",
   "best_params": {
     "long_threshold": 0.6,
     "short_threshold": 0.4,
@@ -18,19 +18,19 @@
     "min_sl": 0.01
   },
   "backtest_wfees": {
-    "n_trades": 687,
-    "n_long": 410,
-    "n_short": 277,
-    "total_ret": 1.5363,
-    "sharpe": 1.0933,
+    "n_trades": 698,
+    "n_long": 419,
+    "n_short": 279,
+    "total_ret": 1.5247,
+    "sharpe": 1.0726,
     "maxdd": -0.2639
   },
   "backtest_0fee": {
-    "n_trades": 687,
-    "n_long": 410,
-    "n_short": 277,
-    "total_ret": 2.3774,
-    "sharpe": 1.4304,
+    "n_trades": 698,
+    "n_long": 419,
+    "n_short": 279,
+    "total_ret": 2.3789,
+    "sharpe": 1.4109,
     "maxdd": -0.2433
   },
   "artifacts": {

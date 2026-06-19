@@ -2,10 +2,10 @@
   "notebook": "08_rule_agents_v1",
   "agent": "meanrev",
   "paradigm": "rule: mean-reversion",
-  "created": "2026-06-19T01:15:58.179917",
+  "created": "2026-06-19T13:59:52.946084",
   "model": "rule-based (rule: mean-reversion), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-30",
-  "oos_period": "2024-05-31\u21922026-05-16",
+  "oos_period": "2024-05-31\u21922026-05-31",
   "best_params": {
     "long_threshold": 0.55,
     "short_threshold": 0.45,
@@ -18,19 +18,19 @@
     "min_sl": 0.01
   },
   "backtest_wfees": {
-    "n_trades": 758,
-    "n_long": 352,
-    "n_short": 406,
-    "total_ret": -0.0836,
-    "sharpe": -0.1024,
+    "n_trades": 772,
+    "n_long": 360,
+    "n_short": 412,
+    "total_ret": -0.0652,
+    "sharpe": -0.078,
     "maxdd": -0.3412
   },
   "backtest_0fee": {
-    "n_trades": 758,
-    "n_long": 352,
-    "n_short": 406,
-    "total_ret": 0.2044,
-    "sharpe": 0.2183,
+    "n_trades": 772,
+    "n_long": 360,
+    "n_short": 412,
+    "total_ret": 0.2354,
+    "sharpe": 0.2446,
     "maxdd": -0.2918
   },
   "artifacts": {

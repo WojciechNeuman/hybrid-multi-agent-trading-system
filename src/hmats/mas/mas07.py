@@ -45,13 +45,13 @@ import pandas as pd
 # Learned agents (nonlinear models on the shared feature panel) + accepted rule agents. The rule
 # agents are structurally orthogonal: their edge is strategy logic, not another learned transform of
 # the same feature matrix. The mean-reversion rule and cross-asset learner remain in the repository
-# as experiments, but are excluded from the final roster for the reasons documented below.
+    # as experiments, but are excluded from the final agent set for the reasons documented below.
 LEARNED_AGENTS = ["lgbm", "mamba", "tcn", "patch"]
 RULE_AGENTS = ["trend", "volbreak", "dominance_rotation"]
 EXCLUDED_AGENTS = {
-    "meanrev": "excluded from final roster: negative OOS return",
-    "crossasset": "excluded from final roster: weak OOS AUC and not significant vs random bracket null",
-    "sentiment_regime": "excluded from final roster: negative OOS return (-27.7%) and below the "
+    "meanrev": "excluded from final agent set: negative OOS return",
+    "crossasset": "excluded from final agent set: weak OOS AUC and not significant vs random bracket null",
+    "sentiment_regime": "excluded from final agent set: negative OOS return (-29.9%) and below the "
                         "random-bracket null (7th percentile) — contrarian Fear & Greed has no edge OOS",
 }
 AGENTS = LEARNED_AGENTS + RULE_AGENTS
@@ -74,7 +74,7 @@ PARADIGM = {
 }
 
 OOS_START = pd.Timestamp("2024-05-31")
-OOS_END = pd.Timestamp("2026-05-16")
+OOS_END = pd.Timestamp("2026-05-31")
 COMPETENCE_START = pd.Timestamp("2023-01-01")  # pre-OOS window common to all four agents
 
 REGIMES = ("chop", "bull", "bear")
@@ -471,7 +471,7 @@ def portfolio_equity(weights: pd.DataFrame, agents: dict[str, TradingAgent],
 
 
 def equal_weight_weights(agents: dict[str, TradingAgent], panel: pd.DataFrame) -> pd.DataFrame:
-    """Static 1/N capital allocation over the supplied roster."""
+    """Static 1/N capital allocation over the supplied agent set."""
     names = list(agents)
     return pd.DataFrame(1.0 / len(names), index=panel.index, columns=names)
 
@@ -531,7 +531,7 @@ def capped_inverse_vol_weights(agents: dict[str, TradingAgent], panel: pd.DataFr
 
 
 def static_subset(agents: dict[str, TradingAgent], names: list[str]) -> dict[str, TradingAgent]:
-    """Return an ordered agent subset for roster bake-offs."""
+    """Return an ordered agent subset for agent-set bake-offs."""
     return {a: agents[a] for a in names if a in agents}
 
 
@@ -630,7 +630,7 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
     if verbose:
         print("=== Per-regime competence priors (pre-OOS Sharpe, normalised, leak-free) ===")
         print(competence.round(3).to_string())
-        print(f"\nFinal roster: {AGENTS}")
+        print(f"\nFinal agent set: {AGENTS}")
         print(f"Excluded experiments: {EXCLUDED_AGENTS}")
         print(f"Mean final capped inverse-vol weights (OOS): {mean_iv_w.round(3).to_dict()}")
         print(f"Mean coordinator ablation weights (OOS): {mean_w.round(3).to_dict()}")

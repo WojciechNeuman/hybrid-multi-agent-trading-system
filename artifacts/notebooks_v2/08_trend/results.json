@@ -2,10 +2,10 @@
   "notebook": "08_rule_agents_v1",
   "agent": "trend",
   "paradigm": "rule: trend-following",
-  "created": "2026-06-19T01:15:54.344416",
+  "created": "2026-06-19T13:59:49.104798",
   "model": "rule-based (rule: trend-following), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-30",
-  "oos_period": "2024-05-31\u21922026-05-16",
+  "oos_period": "2024-05-31\u21922026-05-31",
   "best_params": {
     "long_threshold": 0.6,
     "short_threshold": 0.4,
@@ -18,19 +18,19 @@
     "min_sl": 0.01
   },
   "backtest_wfees": {
-    "n_trades": 529,
+    "n_trades": 538,
     "n_long": 142,
-    "n_short": 387,
-    "total_ret": 0.5643,
-    "sharpe": 0.5464,
+    "n_short": 396,
+    "total_ret": 0.6343,
+    "sharpe": 0.5907,
     "maxdd": -0.2863
   },
   "backtest_0fee": {
-    "n_trades": 529,
+    "n_trades": 538,
     "n_long": 142,
-    "n_short": 387,
-    "total_ret": 0.8928,
-    "sharpe": 0.7799,
+    "n_short": 396,
+    "total_ret": 0.9835,
+    "sharpe": 0.8243,
     "maxdd": -0.2808
   },
   "artifacts": {
