@@ -2,8 +2,60 @@
 \label{08_Discussion}
 \thispagestyle{empty}
 
+\section{What the Fund Does, and What It Does Not}
+\label{sec:agent_contributions}
 
-why results look like this
-which agents contribute most
-limitations (overfitting, data leakage, etc.)
-practical usability
+The clearest reading of the results is that the value of this system lies in \textit{diversification across heterogeneous agents}, realised through a transparent risk-balanced allocator, rather than in any single model or in a sophisticated learned controller. The final fund's defining property is not its return --- the equal-weight baseline and the strongest individual agents return more --- but its \textit{risk-adjusted} profile: the highest Sharpe in the study at the smallest drawdown, positive in all three market regimes. A collection of volatile, individually unreliable return streams is converted into a smooth portfolio, which is exactly what a fund-of-agents is meant to achieve.
+
+\vspace{3mm}
+
+The individual agents form a clear hierarchy once they are judged under honest, leak-free selection. The LightGBM agent is the most reliable single performer: gradient boosting suits the tabular, high-dimensional feature space, and its joint feature-selection and model--trading grid search produces an execution policy well matched to its own probability distribution. The PatchTST agent is a close second, its calibrated probabilities supporting selective, low-turnover entries with a controlled drawdown. The Mamba agent is a genuine but volatile chop-specialist, and the TCN --- which appears strong when its parameters are tuned on the test window --- retains little standalone edge once that look-ahead is removed. This last point is itself instructive: it is a reminder of how easily an optimistic evaluation protocol can manufacture an edge that does not exist.
+
+\section{The Role of Feature and Model Diversity}
+\label{sec:feature_diversity_discussion}
+
+A deliberate design decision throughout is that each agent consumes a \textit{different} feature subset matched to its learning mechanism. This is validated by the low Spearman correlations between the learned agents' probability series (Table~\ref{tab:spearman_corr}): the cross-paradigm pairs are near zero, and even the TCN and PatchTST --- which share an identical feature diet --- correlate at only $0.47$, their differing inductive biases producing materially distinct rankings. The rule agents extend this diversity further, since their signals come from fixed economic logic and, for the dominance agent, from a cross-asset information source that no price-feature model touches.
+
+From the perspective of ensemble theory, uncorrelated errors are precisely what allow a combination to reduce variance without sacrificing expected return~\cite{dietterich2000ensemble}. Diversity, however, is a \textit{necessary but not sufficient} condition: it is what makes the risk-parity allocator effective, but it does not by itself guarantee that a more elaborate combination rule will help --- as the coordinator ablation shows.
+
+\section{Why the Adaptive Coordinator Did Not Help}
+\label{sec:meta_failure}
+
+The most interesting negative result of this work concerns the integration layer. The intuition behind a hybrid multi-agent system is that an intelligent controller should learn \textit{when to trust which agent} and so beat any mechanical combination. The regime-gated coordinator was built to do exactly this --- weighting agents by a softmax of their trailing Sharpe ratios times a per-regime competence score --- and it nonetheless underperformed the far simpler capped inverse-volatility rule on every risk metric ($+22.8\%$ at Sharpe $0.47$ versus $+49.7\%$ at Sharpe $1.92$).
+
+\vspace{3mm}
+
+The reason is that adaptivity buys little when the underlying estimates are noisy. With only a two-year hold-out and a handful of regime transitions, trailing-Sharpe and competence estimates are themselves high-variance; weighting agents by them adds estimation noise faster than it adds skill, and concentrates capital into whichever agent was recently lucky. The simple inverse-volatility rule, by contrast, asks only for a stable quantity --- each agent's recent volatility --- and is correspondingly steady. This generalises an earlier finding in the project's development: an even more elaborate meta-labelling supervisor, which tried to learn a profitability classifier over the agents' signals, also failed to beat its best constituent, in that case because a near-monotonic calendar feature let it memorise \textit{when} it was trained rather than \textit{what} works. The recurring lesson is that, in this data regime, the burden of proof on a complex coordinator is high, and simple, transparent allocation is the more defensible choice. We therefore report hybrid \textit{diversification}, not learned coordination, as the contribution.
+
+\section{An Independent Red-Team Audit}
+\label{sec:redteam}
+
+Because results in this field are so easily flattered by subtle errors, the system was subjected to a deliberate adversarial review --- a ``red-team'' audit, conducted with the help of a separate automated coding agent and recorded in the project's internal audit notes. Its conclusions are reflected throughout this thesis and are worth summarising honestly. The audit judged the current system materially more defensible than earlier versions: the learned coordinator is correctly demoted to an ablation, weak agents (sentiment, mean-reversion, cross-asset) are excluded for stated reasons, the equal-weight baseline is kept visible, and the dominance agent is described as a diversifier rather than as alpha. It also identified the limitations this thesis does not hide: the evidence is a single-asset, single two-year OOS path; the execution model is optimistic around limit fills and slippage; and much of the realised return is a mixture of weak signal, asymmetric ATR exits, and diversification rather than clean forecasting skill. Its bottom line --- that the honest claim is promising research evidence gathered under limited data access, not a strategy proven ready to trade --- is the claim this thesis makes.
+
+\section{Scope: Why Bitcoin}
+\label{sec:scope_btc}
+
+The system is trained and evaluated on Bitcoin alone, and this is a considered choice rather than a convenience. Forecasting BTC at an hourly horizon, with leakage controlled and costs modelled honestly, is already a hard enough problem to fill a thesis; adding assets multiplies the engineering and the ways to fool oneself without changing the core scientific question. The broader cryptocurrency universe enters only indirectly: the other tracked coins are used to approximate a market-wide capitalisation, from which Bitcoin dominance --- an input to the dominance-rotation agent --- is derived. With the exception of a few BTC-specific features (most notably the halving-cycle encoding), the entire pipeline could in large part be replicated for other continuously traded crypto assets. Their higher volatility would likely make the forecasting harder and the execution costlier, but for the same reason it could also offer larger returns; this is a natural extension rather than a limitation of the present design.
+
+\section{Limitations}
+\label{sec:limitations}
+
+\paragraph{Single asset, single venue, single path.}
+All models are trained and evaluated on BTC/USDT and costed on one exchange's fee schedule. The out-of-sample window, though deliberately multi-regime, is a single contiguous two-year path through one asset's history. This is sufficient to demonstrate architectural feasibility and promising evidence, but not to establish robustness across assets, venues, and longer macro cycles.
+
+\paragraph{Execution realism.}
+As discussed in Chapter~\ref{07_Financial_Evaluation}, the backtest assumes favourable passive limit fills and near-zero maker fees, and the fund's aggregate turnover is high despite per-agent position caps. Stricter fill and slippage assumptions would absorb part of the apparent edge; with only two years of data, such sensitivity tests are inherently noisy. A stronger validation would need historical order-book or sub-hourly data, which was beyond the budget available for this thesis.
+
+\paragraph{Signal strength versus risk management.}
+The agents' classification AUCs are modest (roughly $0.50$--$0.54$). The returns should therefore be understood as a combination of weak directional signal and effective ATR-bracket risk management, not as evidence of strong predictive accuracy. The random-bracket null test is included precisely to keep this distinction explicit.
+
+\paragraph{Reproducibility of the deep agents.}
+The deep sequence models do not yet fix every stochastic component (notably the Mamba training loop and \texttt{DataLoader} shuffling), so their walk-forward outputs vary between runs and the fund inherits this non-determinism. Full bitwise reproducibility is a prerequisite for treating any single agent's contribution as fixed and is treated as a blocking task in the project's remediation notes.
+
+\paragraph{Computational budget.}
+Training was performed on a personal laptop and a single cloud A100 GPU, so the deep agents ran under modest epoch and fold budgets. The reported results should be read as a lower bound on what the same architectures could achieve with larger budgets.
+
+\section{Practical Usability}
+\label{sec:practical_usability}
+
+Of the components, the LightGBM agent is the most deployment-ready: it trains in minutes, produces usable probability estimates, and has a well-understood failure mode (probability compression toward $0.5$ in low-predictability regimes). The fund layer adds little latency, since the allocation is a simple causal computation over trailing returns. The principal obstacle to live deployment is not the models but the execution assumptions: moving from this backtest to paper trading would expose the strategy to the real slippage, latency, and partial fills that --- as argued throughout --- ultimately matter more than headline fees.

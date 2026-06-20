@@ -1,60 +1,86 @@
-%\chapter*{Nomenclature}
-%\ \vfill \centerline{\Huge \bf NOMENCLATURE} \vfill \ 
+% Glossary of acronyms and key terms (distinct from the References list).
+% Linked from the first emergence of each acronym via \gloss{...}.
 
-%\addcontentsline{toc}{chapter}{Nomenclature}
-%\cleardoublepage
+\begin{onehalfspacing}
 
-\chapter*{\center\Huge{ACRONYMS}}
+\chapter*{Glossary}
+\label{ch:glossary}
+\hypertarget{glossary}{}
+\addcontentsline{toc}{chapter}{Glossary}
 
+This glossary collects the acronyms and domain-specific terms used in the thesis, each with a short description. Where an acronym first appears in the text it is hyperlinked to this list. The glossary is separate from the bibliographic references at the end of the document.
 
-\addcontentsline{toc}{chapter}{Acronyms}
-%\addcontentsline{lot}{chapter}{Acronyms}
+\section*{Acronyms}
 
-%\begin{table}[h!]
-%\begin{center}
-%\caption{Acronyms}
-%\resizebox{1\textwidth}{!}
-%{
-%\renewcommand{\baselinestretch}{1.3}
-\begin{center}
+\renewcommand{\arraystretch}{1.2}
 \small
-\begin{longtable}{ll}\hline  
-\textbf{Symbol} & \textbf{Meaning}\\\hline
-CA & Cellulose Acetate\\
-CE & Cellulose Ester\\
-COC & Cyclic Olefin Copolymer\\
-CTE &Coefficient of Thermal Expansion\\
-EMPIRe & Electromechanical Microsystems and Polymer Integration Research\\
-EOF & Electro-Osmotic Flow\\
-HAA & Heat Activated Adhesive\\
+\begin{longtable}{@{}l p{3.5cm} p{6.6cm}@{}}
+\toprule
+\textbf{Acronym} & \textbf{Expansion} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Acronym} & \textbf{Expansion} & \textbf{Description} \\
+\midrule
+\endhead
+AI    & Artificial Intelligence            & Computational methods that learn or reason from data. \\
+ADF   & Augmented Dickey--Fuller           & Statistical test for whether a series is stationary (has no unit root). \\
+ATR   & Average True Range                 & A measure of recent price volatility, used to size stops and targets. \\
+AUC   & Area Under the ROC Curve           & Ranking quality of a classifier; $0.5$ is random, $1.0$ is perfect. \\
+B\&H  & Buy-and-Hold                       & Passive benchmark that buys the asset once and holds it. \\
+BTC   & Bitcoin                            & The cryptocurrency studied throughout the thesis. \\
+CMF   & Chaikin Money Flow                 & Volume-weighted momentum oscillator. \\
+EMA   & Exponential Moving Average         & Moving average that weights recent prices more heavily. \\
+ETH   & Ethereum                           & Second-largest cryptocurrency; used for the ETH/BTC cross. \\
+GRU   & Gated Recurrent Unit               & A recurrent-network cell; prototyped but not retained. \\
+LGBM  & LightGBM                           & Gradient-boosted decision-tree framework; the tabular agent. \\
+LOB   & Limit Order Book                   & The full set of resting buy and sell orders at each price. \\
+LSTM  & Long Short-Term Memory             & A recurrent-network cell with gating for long sequences. \\
+MACD  & Moving Average Convergence Divergence & Momentum indicator from the gap between a fast and slow EMA. \\
+MAS   & Multi-Agent System                 & A set of autonomous agents combined into one decision-maker. \\
+MaxDD & Maximum Drawdown                   & Largest peak-to-trough loss of an equity curve. \\
+MLP   & Multi-Layer Perceptron             & A basic feed-forward neural network. \\
+MPS   & Metal Performance Shaders          & Apple's GPU backend, used for local model training. \\
+OHLCV & Open, High, Low, Close, Volume     & The five fields of a price candle. \\
+OOS   & Out-Of-Sample                      & Data held out from training, used for honest evaluation. \\
+PPO   & Proximal Policy Optimisation       & A reinforcement-learning algorithm; prototyped, not retained. \\
+RL    & Reinforcement Learning             & Learning to act by maximising cumulative reward. \\
+RSI   & Relative Strength Index            & Momentum oscillator bounded between $0$ and $100$. \\
+SMA   & Simple Moving Average              & Unweighted average of recent prices. \\
+SSM   & State-Space Model                  & Sequence model with a learned latent state (the Mamba agent). \\
+TBM   & Triple Barrier Method              & Labelling that classifies a trade by which of three barriers it hits first. \\
+TCN   & Temporal Convolutional Network     & Sequence model built from dilated causal convolutions. \\
+TFI   & Taker Flow Imbalance               & Net aggressive buy-versus-sell pressure from taker volume. \\
+VWAP  & Volume-Weighted Average Price      & Average traded price weighted by volume. \\
+WFO   & Walk-Forward Optimisation          & Repeatedly train on the past and test on the next period. \\
+\bottomrule
+\end{longtable}
 
+\section*{Key terms}
 
-\hline
-\end{longtable} 
-\end{center}
-%\renewcommand{\baselinestretch}{1.75}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{longtable}{@{}l p{10.2cm}@{}}
+\toprule
+\textbf{Term} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Term} & \textbf{Description} \\
+\midrule
+\endhead
+Heterogeneous & Components built from categorically different learning paradigms, each with its own bias and failure mode. \\
+Hybrid & The integration of dissimilar components into a single decision-making system. \\
+Fund-of-agents & The framing of the system as a portfolio of autonomous sub-strategies combined by a capital allocator. \\
+Inverse-volatility risk parity & Allocation rule that weights each agent inversely to its trailing return volatility, equalising risk contributions. \\
+Random-bracket null & Significance test that re-runs an agent's signal as random permutations through the same bracket, to separate timing skill from risk-management effects. \\
+Meta-labelling & A two-stage scheme in which a second model predicts whether a primary trading signal will be profitable. \\
+Fractional differentiation & A transform that makes a price series stationary while keeping long-memory content, set by a fractional order $d$. \\
+Sharpe ratio & Mean excess return divided by its standard deviation, annualised; the main risk-adjusted metric. \\
+Sortino ratio & A Sharpe variant that penalises only downside volatility. \\
+Alpha & Return in excess of a passive benchmark over the same period. \\
+Regime & A persistent market condition (here: chop, bull, or bear) with characteristic trend and volatility. \\
+\bottomrule
+\end{longtable}
 
-\chapter*{\center\Huge{LIST OF SYMBOLS}}
-
-
-\addcontentsline{toc}{chapter}{List of Symbols}
-%\addcontentsline{lot}{chapter}{List of Symbols}
-
-%\renewcommand{\baselinestretch}{1.3}
-\begin{center}
-\begin{tabular}{ll}\hline
-\textbf{Symbol} & \textbf{Meaning}\\\hline
-CO$_2$ & Carbon dioxide\\
-KOH& Potassium Hydroxide\\ 
-$P$ & Laser power\\
-$P_b$ & Bonding pressure\\
-$s$ & Laser speed\\
-$t_b$ & Bonding time\\
-$t_c$ & Cooling time\\
-$t_{comp}$ & Compression time\\
-$t_h$ & Heating time\\
-
-\hline
-\end{tabular}
-\end{center}
-%\renewcommand{\baselinestretch}{1.75}
+\end{onehalfspacing}

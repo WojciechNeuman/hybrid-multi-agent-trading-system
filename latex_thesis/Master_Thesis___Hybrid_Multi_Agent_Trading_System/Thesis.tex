@@ -16,7 +16,7 @@
 \usepackage{amsthm}
 \usepackage[cmex10]{amsmath}
 \usepackage{adjustbox} 
-\usepackage{arabtex} 
+% \usepackage{arabtex} % unused; conflicts with current LaTeX kernel when no Arabic text is present
 \usepackage{academicons}
 \usepackage{breakcites} 
 \usepackage{color}
@@ -42,7 +42,7 @@
 \usepackage{setspace}
 \usepackage{subfigure}
 \usepackage{textcomp}
-\usepackage{utf8} 
+% \usepackage{utf8} % companion package for arabtex; UTF-8 input is handled below by inputenc
 \usepackage{url} 
 \usepackage{wrapfig} 
 \usepackage{wasysym} 
@@ -72,6 +72,15 @@
 
 % Disable indentation globally
 \setlength{\parindent}{0pt}
+
+% Link the first emergence of an acronym to the Glossary chapter.
+\newcommand{\gloss}[1]{\hyperref[ch:glossary]{#1}}
+
+% Reduce overfull lines: give TeX a little extra slack and let long URLs/paths break.
+\emergencystretch=3em
+\Urlmuskip=0mu plus 1mu\relax
+\widowpenalty=10000
+\clubpenalty=10000
 
 \usepackage{booktabs} % For professional table formatting
 
@@ -159,13 +168,13 @@
 
 % \include{02_Acknowledgment}  % include your Acknowledgement file
 
-\begin{onehalfspacing}%To make the table of contents, figures, and tables single spaced, as required by the formatting guidelines, pg. 24.
+\begin{spacing}{1.2}%To make the table of contents, figures, and tables single spaced, as required by the formatting guidelines, pg. 24.
 
 %\renewcommand{\contentsname}{\textbf{{\large TABLE OF CONTENTS}}}
 \tableofcontents
 
 
-\end{onehalfspacing}
+\end{spacing}
 % \printglossary[style=altlist,title=Nomenclature, toctitle=Nomenclature, nonumberlist=true] 
 
 % $$$$$$$$$$$$$$$$$  Thesis front matter ends   $$$$$$$$$$$$$$
@@ -202,6 +211,8 @@
 
 % $$$$$$$$$$$$$$$$$  Reference style Ends  $$$$$$$$$$$$$$
 
+\include{Nomenclature}  % Glossary of acronyms and key terms (placed at the end)
+
 
 % % $$$$$$$$$$$$$$$$$  include Appendices   $$$$$$$$$$$$$$
 
@@ -225,3 +236,4 @@
 
 \end{document}
 
+section

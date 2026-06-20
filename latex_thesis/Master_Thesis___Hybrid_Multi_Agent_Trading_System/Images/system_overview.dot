@@ -1,0 +1,91 @@
+// Hybrid Multi-Agent Trading System — high-level architecture
+// Rendered with: dot -Tpng -Gdpi=200 system_overview.dot -o system_overview.png
+digraph SystemOverview {
+    rankdir=TB;
+    bgcolor="white";
+    splines=true;
+    nodesep=0.40;
+    ranksep=0.55;
+    node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11,
+          color="#33485f", penwidth=1.4, margin="0.16,0.09"];
+    edge [color="#5b6b7a", arrowsize=0.8, penwidth=1.2];
+
+    // ---- Data ingestion ----
+    DATA [label="Data Ingestion\nBTC/USDT OHLCV + taker flow,\nCoinGecko, Fear & Greed\n2017–2026, 1h candles",
+          fillcolor="#d7e3ef"];
+
+    // ---- Unified feature library ----
+    FEAT [label="Unified Feature Library\n~285 leakage-audited candidate features\n(technical / external / microstructure / structural)",
+          fillcolor="#cfe0ec"];
+
+    // ---- Learned agents ----
+    subgraph cluster_learned {
+        label="Learned Agents — walk-forward out-of-sample signals";
+        labelloc="t";
+        fontname="Helvetica-Bold";
+        fontsize=12;
+        style="dashed,rounded";
+        color="#8a99a8";
+        margin=12;
+
+        LGBM   [label="LightGBM (gradient boosting)\nsliding 2-year WFO, monthly step\nrelevance–redundancy selection\n+89.7% · Sharpe 1.52",
+                fillcolor="#cdeccd"];
+        PATCH  [label="PatchTST (patch transformer)\nchronological split, temp-scaled\nTriple-Barrier labels\n+74.9% · Sharpe 1.59",
+                fillcolor="#f6cccc"];
+        MAMBA  [label="Mamba (state-space model)\nexpanding WFO from 2019\nselective long-range memory\n+20.7% · Sharpe 0.35",
+                fillcolor="#d7d0ec"];
+        TCN    [label="TCN (dilated causal conv.)\nchronological split\nmulti-task: direction + volatility\n+7.4% · Sharpe 0.13",
+                fillcolor="#bfe6e6"];
+    }
+
+    // ---- Rule-based agents ----
+    subgraph cluster_rules {
+        label="Rule-Based Agents — fixed economic logic";
+        labelloc="t";
+        fontname="Helvetica-Bold";
+        fontsize=12;
+        style="dashed,rounded";
+        color="#8a99a8";
+        margin=12;
+
+        TREND  [label="Trend following\nMA / SuperTrend / MACD\n+63.5% · Sharpe 0.59",
+                fillcolor="#e9e2c8"];
+        VOLB   [label="Volatility breakout\nrange break + squeeze\n+33.1% · Sharpe 0.42",
+                fillcolor="#e9e2c8"];
+        DOM    [label="Dominance rotation\ncross-asset capital flow\n+152.8% (diversifier, not alpha)",
+                fillcolor="#e9e2c8"];
+    }
+
+    // ---- Allocation layer ----
+    ALLOC  [label="Capped Inverse-Volatility Allocator (final)\nleak-free risk parity, cap 2/N\n+49.7% · Sharpe 1.92 · MaxDD -5.3%",
+            fillcolor="#cdeccd"];
+    COORD  [label="Regime-gated Coordinator (ablation)\nsoftmax(trailing Sharpe) × competence\n+22.8% · Sharpe 0.47",
+            fillcolor="#ead9d9"];
+
+    // ---- Execution ----
+    EXEC   [label="Execution & Evaluation\nshared ATR-bracket backtest (fees)\nOOS 2024-05-31 → 2026-05-31\nthree regimes: Chop / Bull / Bear",
+            fillcolor="#f6cccc"];
+
+    // ---- Edges ----
+    DATA -> FEAT;
+    FEAT -> LGBM;
+    FEAT -> PATCH;
+    FEAT -> MAMBA;
+    FEAT -> TCN;
+    FEAT -> TREND;
+    FEAT -> VOLB;
+    FEAT -> DOM;
+
+    LGBM  -> ALLOC;  PATCH -> ALLOC;  MAMBA -> ALLOC;  TCN -> ALLOC;
+    TREND -> ALLOC;  VOLB  -> ALLOC;  DOM   -> ALLOC;
+
+    LGBM  -> COORD [style=dotted];  PATCH -> COORD [style=dotted];
+    MAMBA -> COORD [style=dotted];  TCN   -> COORD [style=dotted];
+    TREND -> COORD [style=dotted];  VOLB  -> COORD [style=dotted];
+    DOM   -> COORD [style=dotted];
+
+    ALLOC -> EXEC;
+    COORD -> EXEC [style=dotted];
+
+    { rank=same; ALLOC; COORD; }
+}

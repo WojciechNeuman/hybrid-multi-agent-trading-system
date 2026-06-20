@@ -2,10 +2,139 @@
 \label{07_Financial_Evaluation}
 \thispagestyle{empty}
 
+A predictive model with genuine directional accuracy is a necessary but not sufficient condition for a profitable trading strategy. Transaction costs, the timing and sizing of entries and exits, and the interaction between trade frequency and fee drag can turn a model with a positive AUC into an unprofitable strategy, or alternatively reveal that a strategy with a seemingly modest Sharpe ratio is already capturing a large fraction of the zero-cost theoretical maximum. This chapter formalises the financial evaluation framework used throughout the thesis and describes the multi-regime evaluation design.
 
-This is what many theses miss:
+% ---------------------------------------------------------------------------
+\section{Performance Metrics}
+\label{sec:metrics}
+% ---------------------------------------------------------------------------
 
-returns
-Sharpe ratio
-max drawdown
-risk-adjusted metrics
+All strategies are evaluated on the same held-out test window (31 May 2024 -- 31 May 2026) using the following metrics.
+
+\paragraph{Total return.}
+The compounded return of a unit investment over the test period:
+\begin{equation}
+    R_{\text{total}} = \prod_{i=1}^{N} (1 + r_i) - 1,
+\end{equation}
+where $r_i$ is the net return of the $i$-th trade (or hourly equity step for the continuous equity curve).
+
+\paragraph{Annualised Sharpe ratio.}
+The primary risk-adjusted performance metric, computed from the hourly equity log-return series:
+\begin{equation}
+    \text{Sharpe} = \frac{\bar{\delta}}{\hat{\sigma}_{\delta}} \cdot \sqrt{24 \times 365},
+\end{equation}
+where $\bar{\delta}$ and $\hat{\sigma}_{\delta}$ are the sample mean and standard deviation of hourly log-returns of the equity curve. The annualisation factor $\sqrt{24 \times 365}$ reflects continuous 24/7 trading in cryptocurrency markets.
+
+\paragraph{Maximum drawdown.}
+The peak-to-trough decline of the equity curve:
+\begin{equation}
+    \text{MaxDD} = \min_{t} \frac{\text{eq}(t) - \max_{s \leq t} \text{eq}(s)}{\max_{s \leq t} \text{eq}(s)}.
+\end{equation}
+A lower absolute value indicates a smoother, more controlled equity curve.
+
+\paragraph{Win rate.}
+The fraction of completed trades with positive net return:
+$\text{WR} = \frac{1}{N}\sum_{i=1}^{N} \mathbf{1}[r_i > 0]$.
+Note that win rate alone is not a sufficient performance metric; a strategy can be profitable with a win rate below 50\% if winning trades are larger on average than losing ones (positive reward-to-risk ratio).
+
+\paragraph{Sortino ratio.}
+A variant of the Sharpe ratio that penalises only downside deviation, making it more appropriate for strategies with positively skewed return distributions:
+\begin{equation}
+    \text{Sortino} = \frac{\bar{\delta}}{\hat{\sigma}_{\delta}^{-}} \cdot \sqrt{24 \times 365},
+\end{equation}
+where $\hat{\sigma}_{\delta}^{-}$ is the standard deviation of hourly log-returns that are negative. A higher Sortino ratio relative to Sharpe indicates that the strategy's volatility is predominantly upside (favourable) rather than symmetric.
+
+\paragraph{Alpha.}
+Excess return relative to the passive Bitcoin buy-and-hold benchmark over the same period:
+$\alpha = R_{\text{strategy}} - R_{\text{B\&H}}$.
+A positive alpha indicates that the strategy outperformed holding the underlying asset.
+
+\paragraph{Per-regime metrics.}
+Each performance metric is also computed separately for the three market regimes defined in Table~\ref{tab:regimes}. For per-regime evaluation, the equity curve is rebased to 1.0 at the start of each regime, and buy-and-hold is similarly rebased to compute regime-specific alpha. This isolates the strategy's behaviour under each market condition and determines whether the reported performance is attributable to specific sub-periods or reflects consistent edge across all three regimes.
+
+% ---------------------------------------------------------------------------
+\section{Fee Model}
+\label{sec:fee_model}
+% ---------------------------------------------------------------------------
+
+All backtests incorporate realistic transaction costs matching the fee structure available to a retail trader on the MEXC exchange, whose published fee schedule is used throughout.\footnote{\url{https://www.mexc.com/fee}} MEXC was selected because it offers one of the most competitive retail cost structures among major venues --- notably a $0\%$ maker fee on a wide range of markets. This is not altruism but a deliberate business model: high-volume exchanges derive the bulk of their revenue from the long tail of frequently-trading, often-overtrading participants, so keeping headline fees minimal is itself a customer-acquisition tool. At the same time, charging nothing (or very little) for resting limit orders incentivises participants to \textit{provide} liquidity, deepening the order book and making the venue more attractive to everyone. For a systematic strategy, the practical consequence is that the maker/taker split --- not the absolute fee level --- becomes the dominant cost lever, which is why the strategies in this thesis are designed to maximise the fraction of passively-filled limit (maker) orders. Two types of order fill are modelled:
+
+\begin{itemize}
+    \item \textbf{Maker orders} (0.00\%): limit orders that rest on the order book and are filled passively when price returns to the limit level. A \textit{fill buffer} of 5 basis points is applied when checking whether a limit was touched within a candle: a long limit at price $L$ is considered filled if the candle low $\leq L + \epsilon$, a short limit if the candle high $\geq L - \epsilon$, where $\epsilon = 0.0005$. If the limit is not touched, the order expires and no trade is entered.
+    \item \textbf{Taker orders} (0.05\%): market orders that execute immediately at the current price, crossing the spread and removing liquidity.
+\end{itemize}
+
+\noindent Stop-loss exits and timeout exits are modelled as taker orders. Take-profit exits are modelled as maker orders (the TP level acts as a resting limit). Short positions accrue a funding credit of $+0.00077\%$ per hour, reflecting the historically positive funding rate on BTC perpetual futures. Leverage does not alter these per-trade fee rates: fees are charged on notional position size, so the relative cost structure is invariant to the leverage multiplier; what dominates real-world execution cost beyond fees is \textit{slippage}, which the resting-limit-order design is intended to minimise.
+
+In the final configuration adopted for all agents, both long and short entries are placed as limit orders, filling at the maker rate when the limit is touched and reverting to taker only when the order must chase the market. Table~\ref{tab:fee_summary} summarises the fee model.
+
+\begin{table}[h!]
+    \centering
+    \caption{Fee model applied to every agent in the long+short backtest. ``Maker'' = 0.00\%, ``Taker'' = 0.05\%, ``Funding'' = $+0.00077\%$/h received on short positions. Entries and take-profits are resting limit orders (maker if filled, taker if missed); stop-loss and timeout exits cross the spread (taker).}
+    \label{tab:fee_summary}
+    \begin{tabular}{llllll}
+        \toprule
+        \textbf{Side} & \textbf{Entry} & \textbf{SL exit} & \textbf{TP exit} & \textbf{Timeout} & \textbf{Funding} \\
+        \midrule
+        Long  & Maker/Taker & Spot taker  & Maker & Spot taker & --- \\
+        Short & Maker/Taker & Fut.\ taker & Maker & Fut.\ taker & $+0.00077\%$/h \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------------------
+\section{Strategy Comparison}
+\label{sec:strategy_comparison}
+% ---------------------------------------------------------------------------
+
+Table~\ref{tab:strategy_comparison} presents the side-by-side comparison of the final multi-agent fund against its baselines and benchmarks on the unified window, all re-evaluated on the identical strict window so that the figures are directly comparable. The BTC buy-and-hold benchmark returned $+8.1\%$ over the period; alpha is measured against it. Returns are net of the fee model of Section~\ref{sec:fee_model}.
+
+\begin{table}[h!]
+    \centering
+    \caption{Financial comparison on the unified two-year OOS window (31 May 2024 -- 31 May 2026), net of fees. The fund attains the strongest risk-adjusted profile --- the highest Sharpe and Sortino and the smallest drawdown --- of any strategy, including both passive benchmarks.}
+    \label{tab:strategy_comparison}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{lrrrrr}
+        \toprule
+        \textbf{Strategy} & \textbf{Return} & \textbf{Sharpe} & \textbf{Sortino} & \textbf{MaxDD} & \textbf{$\alpha$} \\
+        \midrule
+        BTC Buy \& Hold          & $+8.1\%$ & $0.08$ & $0.11$ & $-50.1\%$ & --- \\
+        S\&P~500 Buy \& Hold     & $+46.9\%$ & $1.16$ & $0.25$ & $-18.8\%$ & $+38.8$\,pp \\
+        \midrule
+        Naive equal-weight fund  & $+54.7\%$ & $1.76$ & $2.26$ & $-5.2\%$ & $+46.6$\,pp \\
+        Coordinator ablation     & $+22.8\%$ & $0.47$ & $0.57$ & $-21.4\%$ & $+14.6$\,pp \\
+        \midrule
+        \textbf{Final MAS fund}  & $+49.7\%$ & $1.92$ & $2.51$ & $-5.3\%$ & $+41.5$\,pp \\
+        \bottomrule
+    \end{tabular}}
+\end{table}
+
+\vspace{2mm}
+
+The financial picture confirms the conclusion of the experimental chapter. The fund does not chase the highest headline return --- the naive equal-weight baseline and the strongest individual agents return more in absolute terms --- but it delivers the best \textit{risk-adjusted} profile in the study: a Sharpe of $1.92$ and a maximum drawdown of just $-5.3\%$, against a Bitcoin benchmark that returned only $+8.1\%$ while suffering a $-50\%$ drawdown, and a broad-market S\&P~500 benchmark with a materially lower Sharpe. For a capital allocator, this is the relevant objective: a smoother equity curve at a comparable return is strictly preferable, because it can be levered or sized to taste while a high-drawdown curve cannot.
+
+\paragraph{Per-regime evaluation objectives.}
+Beyond the full-period aggregate, each strategy is assessed against the three market regimes of Table~\ref{tab:regimes}. The decomposition tests specific properties:
+
+\textbf{Regime 1 (Chop):} A well-designed strategy should remain approximately flat or slightly positive, avoiding over-trading and fee drag in a low-signal environment. The fund returns $+10.8\%$ here at a Sharpe of $2.57$, its best regime --- the diversification damps the noise that hurts individual agents.
+
+\textbf{Regime 2 (Bull):} The key metric is alpha versus buy-and-hold during a parabolic uptrend. The fund captures $+22.8\%$ of the run while keeping its drawdown to $-5.3\%$, participating in the trend without taking the benchmark's full risk.
+
+\textbf{Regime 3 (Bear):} This is the most decisive discriminator between strategies with and without a genuine short-side capability. Over a market that fell more than $50\%$ from its high, the fund still returns $+10.0\%$ (Sharpe $1.74$), demonstrating that its agents collectively profit or preserve capital on the short side rather than merely surviving.
+
+That the fund is positive with a Sharpe above $1.5$ in \textit{all three} regimes is the clearest evidence that its performance is regime-robustness rather than a single directional bet.
+
+% ---------------------------------------------------------------------------
+\section{Discussion of Fee Impact and Strategy Design}
+\label{sec:fee_impact}
+% ---------------------------------------------------------------------------
+
+The fee results make plain a design principle that academic strategy evaluation often underweights: the fee model should be fixed as a constraint, not treated as a post-hoc adjustment. Across the agents the gap between the zero-fee and with-fee equity curves is substantial, and it is driven almost entirely by trade frequency interacting with the maker/taker split. Two levers reduce this drag without abandoning activity: raising the trade-quality bar (higher thresholds, fewer but more confident entries) and maximising the fraction of passively-filled maker orders (limit entries and limit take-profits). The final configurations use both --- which is why the strategies are deliberately built around resting limit orders rather than market orders.
+
+\vspace{3mm}
+
+An honest caveat must accompany this. Even after the per-agent position caps, the system as a whole \textit{trades a great deal}: several agents turn over frequently, and the fund inherits their combined activity. On a venue with the assumed near-zero maker fees and reliable passive fills, this is sustainable; on a busier or less liquidity-friendly platform, the same turnover could erode much of the apparent edge. The backtest assumes that limit entries and take-profits are filled passively the great majority of the time, which is optimistic: real execution depends on queue position, spread, slippage, and changing funding rates, none of which a one-hour backtest can fully capture. The results should therefore be read as an optimistic research backtest, not a production execution simulation; execution cost is one of the dominant remaining uncertainties, and is revisited in the limitations of Chapter~\ref{08_Discussion}.
+
+\vspace{3mm}
+
+It is worth being candid about \textit{why} a venue such as MEXC offers near-zero maker fees in the first place. Generating trading volume on these markets is exactly what the platforms want: low headline fees attract the long tail of frequently-trading, often-overtrading retail participants, and the resting limit orders that minimal maker fees encourage deepen the order book and make the venue more attractive still. The uncomfortable reality of this ecosystem is that the great majority of such participants lose money over time, while the exchanges earn substantial revenue from their collective activity. Cryptocurrency in particular has become a place where many people chase fast --- and sometimes dirty --- money, frequently with leverage they do not understand. Smaller venues like MEXC are generally less liquid, less regulated, and less safe than the largest exchanges or than the regulated instruments through which Bitcoin can also be traded. A systematic, risk-managed strategy of the kind developed here is, in part, an attempt to approach this environment with discipline rather than speculation --- but the same environment is the reason its real-world execution must be treated with caution.

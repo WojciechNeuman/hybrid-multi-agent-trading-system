@@ -1,0 +1,15 @@
+# LaTeX build artifacts (regenerated on compile)
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.lof
+*.lot
+*.bcf
+*.run.xml
+*.fls
+*.fdb_latexmk
+*-blx.bib
+*.synctex.gz

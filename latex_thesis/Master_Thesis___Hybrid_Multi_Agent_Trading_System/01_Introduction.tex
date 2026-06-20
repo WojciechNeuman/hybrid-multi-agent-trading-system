@@ -1,100 +1,32 @@
 
-% Chapter 2 File
+% Chapter 1 — Introduction
 
 \chapter{Introduction}
 \label{01_Introduction}
 \thispagestyle{empty}
 
-Open markets have great potential. 
+Financial markets are among the largest and most consequential time-series systems ever created. Every second, currencies, equities, commodities, and cryptocurrencies generate an enormous stream of prices and trades, and the cost of a poor decision is immediate and quantifiable. It is no surprise, then, that the question of whether future prices can be anticipated --- even partially --- has occupied investors, economists, and, increasingly, computer scientists for more than a century. With the arrival of machine learning and, more recently, deep learning, this old question has been given new tools, and a substantial body of research now studies financial forecasting as a problem of pattern recognition under extreme noise.
 
-AI has great potential.
+\vspace{3mm}
 
-Multi-agent systems have great potential.
+There are many ways to interact with a market, and they form a continuum rather than a set of discrete categories. One can invest for decades, holding an asset across entire business cycles in the belief that its underlying value will grow; one can position over months, rotating between sectors as the macroeconomic backdrop shifts; or one can trade on hourly --- or even sub-minute --- horizons, seeking to profit from short-lived dislocations. The horizon one chooses dictates almost everything else: the data, the methods, and the very notion of what counts as a signal.
 
+\vspace{3mm}
 
-One particular example of time series data are financial markets pairs - from currency (forex), stock, resources (metals, oil, cacao), cryptocurrencies, and many more. 
+Two broad analytical traditions have historically guided these decisions. \textit{Fundamental analysis} studies the economic standing of an asset. For a company this means earnings, debt levels, cash flow, and competitive position. For a cryptocurrency it means adoption trends, on-chain network activity, and the rules governing its monetary supply. Because fundamentals change slowly and are expressed in unstructured form, fundamental analysis is inherently long-horizon and difficult to automate~\cite{nti2020systematic}. \textit{Technical analysis}, by contrast, derives signals directly from price and volume through indicators such as moving averages, the Relative Strength Index (\gloss{RSI})\footnote{Acronyms are expanded at first use and collected, with short plain-language definitions, in the Glossary at the end of the thesis.}, and the Moving Average Convergence Divergence (\gloss{MACD}). These operate on whatever timeframe they are fed and are therefore the natural language of short- and medium-horizon trading. This thesis works squarely in the technical, data-driven tradition, at a swing-trading horizon of hours to days, where the volume of data is large enough to train modern models and the feedback is fast enough to evaluate them.
 
-When it comes to ways of interracting with the market there are so many. We can decide on so many pairs, we can invest long term - thinking about decades, or even generations - intending our descendants inherit particular good, we can do this thinking about particular period in the market, called business cycles. We can also trade with leverage, looking only on hourly moves, or even shorter ones. Between these methods there is a continouity - there are pretty much no limits here.
+\vspace{3mm}
 
-\vspace{3mm} 
+A persistent finding across the forecasting literature is that \textit{no single method is consistently best}. Deep sequence models capture rich temporal structure, but they tend to break down when market conditions shift in ways not seen during training. Gradient-boosted trees handle tabular features well yet are blind to sequential patterns. Rule-based strategies are easy to interpret but too rigid to adapt. Reinforcement-learning agents optimise returns directly, yet they routinely overfit to the simulated environments they were trained in. Each paradigm sees only part of the picture, and each fails in its own characteristic way. This observation is the intellectual starting point of the present work.
 
-Fundamental analysis — earnings, P/E ratios, debt, cash flow, competitive moats. This is inherently long-term (months to years) because fundamentals change slowly.
-Technical indicators (SMA, EMA, RSI, MACD etc.) — price and volume derived. These operate on whatever timeframe you feed them:
+\vspace{3mm}
 
-A systematic review of fundamental and technical analysis of stock market predictions
+Rather than searching for a single best model, this thesis asks whether \textit{combining structurally different methods} can produce more stable and reliable trading decisions than any of them alone. We use two terms deliberately throughout. A system is \textit{heterogeneous} when its components are built from categorically different learning paradigms --- not variations of one technique but distinct families, each with its own inductive bias and failure mode. A system is \textit{hybrid} when these dissimilar components are integrated into a single decision-making whole. The central hypothesis is that heterogeneity, properly combined, is a source of robustness: when several agents fail in uncorrelated ways, the system as a whole can stay steady where any one of them alone would struggle.
 
-Day traders use 1m, 5m, 15m candles
-Swing traders use 1h, 4h, daily
-Position traders use weekly
+\vspace{3mm}
 
+The application domain is the cryptocurrency market, and specifically Bitcoin (\gloss{BTC}). Bitcoin trades continuously without session gaps, is highly liquid and volatile, carries fewer of the regulatory and fundamental constraints that complicate equities, and is widely studied, which makes it an ideal testbed. As we argue later, forecasting Bitcoin alone is already hard enough to occupy an entire thesis; the broader cryptocurrency universe enters only indirectly, as a way to approximate market-wide capital flows.
 
+\vspace{3mm}
 
-Fundamental analysis The fundamental analysis uses the economic standing of the
-firm, employees, the board of directors, financial status, firm’s yearly report, balancesheets, income-reports, terrestrial and climatic circumstances like unnatural or natural
-disasters and political data to predict future stock price (Tsai and Hsiao 2010; Anbalagan
-and Maheswari 2014; Ghaznavi et al. 2016; Agarwal et al. 2017). Due to the unstructured
-nature of fundamental factors, automation of fundamental analysis is difficult. On the other
-hand, the emergence of machine learning has enabled researchers to automate stock market
-prediction based on unstructured data, which in some cases has reported higher prediction
-accuracy. Nonetheless, fundamental analysis is useful for long-term stock-price movement,
-but not suitable for short-term stock-price change (Khan et al. 2011).
-Trading varies depending on 
-
-There could be various strategies of trading. 
-
-
-\subsection*{Objectives and Workflow}
-xxx
-
-\vspace{3mm} 
-
-
-
-some article:
-
- 
-
-The fundamental analysis uses the economic standing of the
-
-firm, employees, the board of directors, financial status, firm’s yearly report, balancesheets, income-reports, terrestrial and climatic circumstances like unnatural or natural
-
-disasters and political data to predict future stock price (Tsai and Hsiao 2010; Anbalagan
-
-and Maheswari 2014; Ghaznavi et al. 2016; Agarwal et al. 2017). Due to the unstructured
-
-nature of fundamental factors, automation of fundamental analysis is difficult. On the other
-
-hand, the emergence of machine learning has enabled researchers to automate stock market
-
-prediction based on unstructured data, which in some cases has reported higher prediction
-
-accuracy. Nonetheless, fundamental analysis is useful for long-term stock-price movement,
-
-but not suitable for short-term stock-price change (Khan et al. 2011).
-
-
-
-
-
-evaluate if this is good to be said:
-
-
-
-that we will merge these 2 things by employing a fundame
-
-
-\subsection*{Plan}
-
-With the technical evolution of  Open markets 
-
-1. Motivate algorithmic trading — why does this problem matter? Markets generate enormous volumes of data at speeds no human can process, and the cost of poor decisions is immediate and quantifiable. Systematic, data-driven approaches have become dominant in professional trading, yet no single method has proven consistently reliable across market conditions.
-2. The limitation of single-method approaches — existing systems tend to specialise: deep learning models capture sequential price patterns but are opaque and brittle outside their training distribution; rule-based systems are interpretable but rigid; RL agents optimise for reward but can overfit to simulated environments. Each sees only part of the picture.
-3. The heterogeneity argument — different AI paradigms are suited to different aspects of the market. This is the core intellectual justification for your architecture. Define both terms precisely here: heterogeneous describes the nature of the components, hybrid describes their integration into a unified decision system.
-4. The sentiment gap — most existing multi-agent and ensemble trading systems focus exclusively on price and volume data. Financial news, social media, and market sentiment indexes carry signals that are structurally different from OHLCV data and are largely ignored. Frame including sentiment as a first-class agent as a concrete contribution.
-5. Research questions — state them explicitly:
-
-Does a heterogeneous ensemble outperform any individual agent on risk-adjusted returns?
-Does the sentiment agent add measurable value at a swing-trading horizon?
-Does dynamic weight adjustment in the supervisor improve over equal weighting?
-
-6. Thesis structure — one paragraph walking through the chapters.
+The remainder of the thesis is organised as follows. Chapter~\ref{02_Theoretical_Background} establishes the theoretical background: the statistical character of financial time series, the principles of feature engineering, the artificial-intelligence methods relevant to trading, and the notion of an agent and a multi-agent system. Chapter~\ref{03_System_Architecture} presents the proposed architecture --- the heterogeneous base agents, the rule-based agents, and the capital-allocation layer that binds them into a fund. Chapter~\ref{04_Methodology} details the data, the feature pipeline and its leakage controls, and the construction and training of every agent. Chapter~\ref{05_Implementation} describes the software and reproducible pipeline. Chapter~\ref{06_Experiments_and_Results} reports the experimental results, both for the individual agents and for the integrated system, including the honest negative results. Chapter~\ref{07_Financial_Evaluation} formalises the financial evaluation and transaction-cost model, and Chapter~\ref{08_Discussion} interprets the findings and their limitations. Chapter~\ref{09_Concluding_Remarks} concludes the thesis and sets out directions for future work.

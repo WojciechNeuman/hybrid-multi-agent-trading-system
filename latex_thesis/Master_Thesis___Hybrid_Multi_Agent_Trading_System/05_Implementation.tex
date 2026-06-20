@@ -1,9 +1,36 @@
-\chapter{Imlementation}
-\label{05_Imlementation}
+\chapter{Implementation}
+\label{05_Implementation}
 \thispagestyle{empty}
 
+\section{Software Stack}
+\label{sec:software_stack}
 
-tools (Python, PyTorch, etc.)
-architecture decisions
-integration of agents
-limitations (e.g., compute constraints)
+The system is implemented entirely in Python, organised as a single repository in which a shared core package provides the common utilities --- data loading, feature engineering, agent interfaces, and the backtesting engine --- and a sequence of self-contained notebooks drives the experiments. Each notebook is generated automatically from the corresponding source modules, so the university-facing notebooks and the maintained runtime code cannot drift apart. The repository is available privately and is described in Section~\ref{sec:reproducibility}.
+
+\paragraph{Key libraries.}
+\begin{itemize}
+    \item \textbf{Data:} \texttt{pandas} and \texttt{numpy} for processing, \texttt{pyarrow} for columnar (Parquet) storage, and \texttt{requests} for the Binance and alternative.me APIs.
+    \item \textbf{Machine learning:} \texttt{lightgbm} for the gradient-boosting agent, \texttt{scikit-learn} for preprocessing, metrics, and feature selection, and \texttt{scipy} for the statistical tests.
+    \item \textbf{Deep learning:} \texttt{PyTorch} for the TCN, Mamba, and PatchTST models, their custom losses, and data loaders. The Mamba selective-scan is implemented in pure PyTorch without external CUDA kernels, so it runs unchanged on CPU, Apple MPS, or NVIDIA GPUs.
+    \item \textbf{Feature engineering:} \texttt{statsmodels} for the Augmented Dickey--Fuller test, \texttt{numba} for the accelerated Hurst-exponent computation, and custom implementations of all technical indicators.
+\end{itemize}
+
+\section{Reproducible Pipeline}
+\label{sec:reproducibility}
+
+A central engineering goal of the project is that every reported number can be regenerated end-to-end from raw data. The pipeline is a linear, cache-aware sequence of stages: ingestion, the four learned agents, the rule-based agents, and the final fund. Each stage reads the unified feature file, performs its walk-forward training and grid search, and writes a standardised set of artifacts; the final stage consumes those artifacts, wraps each as an autonomous agent, compares the allocation rules, and emits the thesis figures. Because every stage is cached by output existence, a corrected feature group or a re-tuned agent triggers only the minimal recomputation downstream.
+
+\paragraph{Standardised artifact contract.}
+Every producing stage writes the same schema: a \texttt{float32} array of out-of-sample probabilities, the matching integer-nanosecond timestamp index, the equivalent full-history (walk-forward) arrays, a \texttt{results.json} performance record, and the trained model. Fixing this contract is what allows the agents to be developed independently yet combined mechanically by the final stage. The timestamp encoding is made explicit as integer nanoseconds to avoid a unit-ambiguity defect that arises when a microsecond- or millisecond-resolution index is cast to integer in recent \texttt{pandas} versions --- a subtle bug that, left unguarded, would misalign an agent's signal against the price series by three orders of magnitude.
+
+\paragraph{Shared backtesting engine.}
+All agents share a single ATR-bracket backtester: a one-pass loop over the OOS index tracking the open position, any pending limit order, the stop-loss and take-profit levels, the holding count, a cooldown counter, and accrued short funding. A signal at bar $t$ only places a \textit{pending} order that can fill at bar $t+1$, so no signal ever acts on the same bar's price; exits are checked only after a minimum hold has elapsed. Using identical execution code across every agent guarantees that performance differences reflect signal quality rather than implementation artefacts.
+
+\section{Computational Requirements and Hardware}
+\label{sec:compute}
+
+Most of the work runs comfortably on a personal machine. The gradient-boosting agent's walk-forward generates on the order of a hundred small model fits, each a few seconds, and its entire model-plus-trading grid search completes in minutes; the rule agents and the fund layer are similarly light. All of this, together with the TCN, was developed and trained locally on a MacBook Pro (M4 Pro, 2024, 48~GB unified memory) using the Apple MPS backend, on which a full TCN training run takes roughly fifteen to twenty-five minutes.
+
+\vspace{3mm}
+
+The selective state-space (Mamba) agent was the exception. Its expanding walk-forward retrains the model many times over, and despite the capable laptop this was impractical to iterate on locally; it was therefore trained on Google Colab using a single A100 GPU, under a paid subscription of the same kind used for the author's earlier (bachelor's) thesis. A complete walk-forward there takes roughly thirty to forty-five minutes. It was a useful reminder that even a fast laptop sometimes cannot replace a proper GPU, and that the hardware on hand quietly decided which experiments were realistic to run.
