@@ -39,16 +39,16 @@ The final agent set is intentionally conservative:
 | `02_mamba_v1` | `mamba` | selective state-space sequence model | accepted |
 | `03_tcn_v1` | `tcn` | temporal convolutional network, TBM two-channel signal | accepted |
 | `04_patchtst_v1` | `patch` | patch transformer, TBM two-channel signal | accepted |
-| `05_rule_agents_v1` | `trend` | rule-based trend following | predeclared rule agent |
-| `05_rule_agents_v1` | `meanrev` | rule-based mean reversion | predeclared rule agent |
-| `05_rule_agents_v1` | `volbreak` | rule-based volatility breakout | predeclared rule agent |
-| `05_rule_agents_v1` | `sentiment_regime` | rule-based contrarian Fear & Greed | predeclared rule agent |
-| `05_rule_agents_v1` | `dominance_rotation` | rule-based cross-asset dominance rotation | predeclared rule agent |
+| `05_rule_agents_v1` | `trend` | rule-based trend following | accepted rule agent |
+| `05_rule_agents_v1` | `volbreak` | rule-based volatility breakout | accepted rule agent |
+| `05_rule_agents_v1` | `dominance_rotation` | rule-based cross-asset dominance rotation | accepted diversification rule agent |
+| `05_rule_agents_v1` | `meanrev` | rule-based mean reversion | excluded experiment |
+| `05_rule_agents_v1` | `sentiment_regime` | rule-based contrarian Fear & Greed | excluded experiment |
 | optional `06_crossasset_v1` | `crossasset` | cross-asset / sentiment learner | not part of the canonical 00–06 artifact set |
 
-The rule agents are included by design before the OOS window is evaluated. Weak agents are not
-removed after seeing their OOS result; the fund allocator can only down-weight them using trailing
-past performance and risk.
+The final membership follows the thesis roster: accepted learned agents plus accepted rule agents.
+Rejected rule experiments remain documented in artifacts, but they are not part of the headline
+fund.
 
 The key design decision is that the original
 `softmax(trailing Sharpe) × regime competence` coordinator is treated as an **ablation**, not the

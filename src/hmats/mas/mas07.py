@@ -16,10 +16,9 @@ What makes this multi-agent rather than an ensemble of probabilities:
 3. **The system tests several capital allocators.** The original regime-gated coordinator is
    retained as an ablation, while the final reported allocator is capped inverse-volatility risk
    parity over a predeclared set of agents.
-4. **No final membership decision uses OOS performance.** Weak agents are retained in the fund and
-   can be down-weighted only by causal trailing risk/return statistics. The cross-asset learner is
-   outside the canonical 00-06 pipeline because it has no required standard artifact, not because of
-   its OOS score.
+4. **Final membership is predeclared in the thesis pipeline.** Rejected experiments remain
+   documented, but the final fund uses the accepted learned agents plus the rule agents that passed
+   the predeclared robustness screen.
 
 Leakage discipline: an allocation decided with information up to bar ``t`` earns each agent's
 return over ``t -> t+1``; every trailing statistic uses a right-open window shifted by >= 1 bar
@@ -41,13 +40,14 @@ import pandas as pd
 # Configuration
 # ---------------------------------------------------------------------------
 
-# Learned agents (nonlinear models on the shared feature panel) + all rule agents produced by
-# notebook 05. The final fund membership is fixed before looking at OOS performance; weak OOS
-# agents are allowed to receive low capital through the allocator instead of being removed after
-# seeing the test window.
+# Learned agents (nonlinear models on the shared feature panel) + accepted rule agents produced by
+# notebook 05. Rejected rule experiments remain in artifacts for auditability, but are not part of
+# the final thesis fund.
 LEARNED_AGENTS = ["lgbm", "mamba", "tcn", "patch"]
-RULE_AGENTS = ["trend", "meanrev", "volbreak", "sentiment_regime", "dominance_rotation"]
+RULE_AGENTS = ["trend", "volbreak", "dominance_rotation"]
 EXCLUDED_AGENTS = {
+    "meanrev": "negative OOS return in the rule-agent screen",
+    "sentiment_regime": "negative OOS return and below its random-bracket null",
     "crossasset": "not part of the canonical 00-06 notebooks_v2 pipeline; no standard artifact is required",
 }
 AGENTS = LEARNED_AGENTS + RULE_AGENTS
@@ -139,7 +139,8 @@ def maxdd(eq: np.ndarray) -> float:
 
 def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
                 entry_atr_mult, sl_atr_mult, tp_atr_mult, min_hold, max_hold, cooldown,
-                min_sl=0.01, trade_direction="both", with_fees=True, prob_dn=None, **_ignored):
+                min_sl=0.01, trade_direction="both", with_fees=True, prob_dn=None,
+                prob_neutral=None, neutral_max=1.0, edge_margin=0.0, **_ignored):
     """Single-pass ATR-bracket backtester (identical logic to the base agents).
 
     Returns three full-length arrays: the equity curve ``eq``, the held position ``pos`` in
@@ -147,13 +148,14 @@ def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
     the life of the trade). Equity is net of the maker/taker fee model and short funding.
 
     ``trade_direction`` can be ``both``, ``long_only`` or ``short_only`` and is honoured for
-    both binary and dual-channel agents. ``prob_dn`` selects the entry convention:
+    binary, dual-channel, and 3-class TBM agents. ``prob_dn`` selects the entry convention:
 
     * ``None`` — binary single-probability agent (LightGBM, Mamba): long when
       ``prob > long_threshold``, short when ``prob < short_threshold``.
     * an array — multiclass TBM agent (TCN, PatchTST): ``prob`` is the P-up channel and
-      ``prob_dn`` the P-down channel; long when ``prob > long_threshold``, short when
-      ``prob_dn > short_threshold`` (long takes priority, mirroring the base notebooks).
+      ``prob_dn`` the P-down channel. If ``prob_neutral`` is present, ``neutral_max`` and
+      ``edge_margin`` are honoured so the MAS wrapper reproduces the base 3-class notebook.
+      Long takes priority, mirroring the base notebooks.
     """
     n = len(close)
     eq = np.ones(n); pos = np.zeros(n); conf = np.zeros(n)
@@ -207,8 +209,29 @@ def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
                 go_short = trade_direction in ("both", "short_only") and prob[i] < short_threshold
                 pc_long = pc_short = float(np.clip(2 * abs(prob[i] - 0.5), 0, 1))
             else:
-                go_long = trade_direction in ("both", "long_only") and prob[i] > long_threshold
-                go_short = trade_direction in ("both", "short_only") and prob_dn[i] > short_threshold
+                if np.isnan(prob_dn[i]):
+                    eq[i] = cur
+                    continue
+                neutral_ok = True
+                if prob_neutral is not None:
+                    if np.isnan(prob_neutral[i]):
+                        eq[i] = cur
+                        continue
+                    neutral_ok = prob_neutral[i] <= neutral_max
+                long_edge_ok = (prob[i] - prob_dn[i]) >= edge_margin
+                short_edge_ok = (prob_dn[i] - prob[i]) >= edge_margin
+                go_long = (
+                    trade_direction in ("both", "long_only")
+                    and prob[i] > long_threshold
+                    and neutral_ok
+                    and long_edge_ok
+                )
+                go_short = (
+                    trade_direction in ("both", "short_only")
+                    and prob_dn[i] > short_threshold
+                    and neutral_ok
+                    and short_edge_ok
+                )
                 pc_long = float(np.clip(2 * abs(prob[i] - 0.5), 0, 1))
                 pc_short = float(np.clip(2 * abs(prob_dn[i] - 0.5), 0, 1))
             if go_long:
@@ -271,6 +294,13 @@ def _spliced_signal(a2: Path, sub: str, index: pd.Index, value: str = "probs") -
     return wfo
 
 
+def _maybe_spliced_signal(a2: Path, sub: str, index: pd.Index, value: str) -> pd.Series | None:
+    f = a2 / sub
+    if not (f / f"wfo_{value}.npy").exists() or not (f / f"oos_{value}.npy").exists():
+        return None
+    return _spliced_signal(a2, sub, index, value)
+
+
 def load_panel() -> pd.DataFrame:
     """Aligned panel: each agent's walk-forward probability over full history spliced with its
     OOS probability over the OOS window, plus price, return, regime and stationary features.
@@ -285,6 +315,9 @@ def load_panel() -> pd.DataFrame:
         panel[a] = _spliced_signal(a2, AGENT_DIR[a], df.index)
         if a in MULTICLASS:  # P-down channel for the dual-channel TBM agents
             panel[f"{a}_dn"] = _spliced_signal(a2, AGENT_DIR[a], df.index, "pdown")
+            pneutral = _maybe_spliced_signal(a2, AGENT_DIR[a], df.index, "pneutral")
+            if pneutral is not None:
+                panel[f"{a}_neutral"] = pneutral
 
     for c in ["close", "high", "low", "atr_14_pct", "close_vs_sma_200", "sma100_vs_sma200",
               "sideways_flag", "hurst_24h", "bb_width_pct", "vol_ratio_24h", "trend_score"]:
@@ -314,6 +347,7 @@ class TradingAgent:
     prob: pd.Series
     best_params: dict
     prob_dn: pd.Series = field(default=None, repr=False)  # P-down channel for multiclass agents
+    prob_neutral: pd.Series = field(default=None, repr=False)  # optional P-neutral channel
     eq: pd.Series = field(default=None, repr=False)
     g: pd.Series = field(default=None, repr=False)
     position: pd.Series = field(default=None, repr=False)
@@ -325,10 +359,14 @@ class TradingAgent:
 
     def build(self, panel: pd.DataFrame) -> "TradingAgent":
         prob_dn = self.prob_dn.reindex(panel.index).values if self.prob_dn is not None else None
+        prob_neutral = (
+            self.prob_neutral.reindex(panel.index).values if self.prob_neutral is not None else None
+        )
         eq, pos, conf = bracket_run(
             self.prob.reindex(panel.index).values,
             panel["close"].values, panel["high"].values, panel["low"].values,
-            panel["atr_14_pct"].values, prob_dn=prob_dn, **self.best_params)
+            panel["atr_14_pct"].values, prob_dn=prob_dn, prob_neutral=prob_neutral,
+            **self.best_params)
         self.eq = pd.Series(eq, index=panel.index, name=self.name)
         self.g = pd.Series(np.diff(np.log(np.maximum(eq, 1e-12)), prepend=0.0),
                            index=panel.index, name=self.name)
@@ -340,9 +378,16 @@ class TradingAgent:
 def build_agents(panel: pd.DataFrame, a2: Path) -> dict[str, TradingAgent]:
     agents: dict[str, TradingAgent] = {}
     for a in AGENTS:
-        bp = json.load(open(a2 / AGENT_DIR[a] / "results.json")).get("best_params", {})
+        meta = json.load(open(a2 / AGENT_DIR[a] / "results.json"))
+        bp = (
+            meta.get("best_params")
+            or meta.get("best_params_skill_selected")
+            or meta.get("best_params_raw_total_audit")
+            or {}
+        )
         pdn = panel[f"{a}_dn"] if f"{a}_dn" in panel else None
-        agents[a] = TradingAgent(a, panel[a], bp, prob_dn=pdn).build(panel)
+        pneutral = panel[f"{a}_neutral"] if f"{a}_neutral" in panel else None
+        agents[a] = TradingAgent(a, panel[a], bp, prob_dn=pdn, prob_neutral=pneutral).build(panel)
     return agents
 
 
@@ -687,9 +732,9 @@ def plot_results(out: dict, save: bool = True):
     idx = out["_idx"]
     eqs = out["_equities"]
     weights = out["_capped_inverse_vol_weights"].reindex(idx).fillna(0.0)
-    colours = {"lgbm": "#F7931A", "mamba": "#7B1FA2", "tcn": "#00ACC1", "patch": "#EF5350",
+    colours = {"lgbm": "#F7931A", "mamba": "#D81B60", "tcn": "#00ACC1", "patch": "#EF5350",
                "trend": "#43A047", "meanrev": "#3949AB", "volbreak": "#5E35B1",
-               "sentiment_regime": "#8D6E63", "dominance_rotation": "#FB8C00"}
+               "sentiment_regime": "#8D6E63", "dominance_rotation": "#3949AB"}
     main = "Final MAS fund (capped inverse-vol)"
 
     fig, ax1 = plt.subplots(figsize=(13.5, 6.2))

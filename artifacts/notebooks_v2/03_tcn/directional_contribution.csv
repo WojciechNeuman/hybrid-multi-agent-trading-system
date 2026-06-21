@@ -1,0 +1,4 @@
+side,n_trades,n_long,n_short,win_rate,avg_net,median_net,tp_rate,sl_rate,timeout_rate,total_ret,sharpe,sortino,maxdd,exposure,maker_entries,taker_entries,missed_entries
+long_only,257,257,0,0.4358,0.001224,-0.0105,0.2879,0.5097,0.2023,0.3367,0.7026,0.3965,-0.1407,0.1892,256,1,0
+short_only,289,0,289,0.4221,0.000761,-0.010546,0.2872,0.5052,0.2076,0.2118,0.4217,0.2756,-0.1875,0.2234,288,1,0
+both,456,216,240,0.4232,0.000777,-0.0105,0.2851,0.5175,0.1974,0.3643,0.5759,0.4545,-0.2072,0.341,454,2,0
