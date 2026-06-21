@@ -9,7 +9,7 @@ A predictive model with genuine directional accuracy is a necessary but not suff
 \label{sec:metrics}
 % ---------------------------------------------------------------------------
 
-All strategies are evaluated on the same held-out test window (31 May 2024 -- 31 May 2026) using the following metrics.
+All strategies are evaluated on the same held-out test window (1 June 2024 -- 31 May 2026) using the following metrics.
 
 \paragraph{Total return.}
 The compounded return of a unit investment over the test period:
@@ -87,42 +87,42 @@ In the final configuration adopted for all agents, both long and short entries a
 \label{sec:strategy_comparison}
 % ---------------------------------------------------------------------------
 
-Table~\ref{tab:strategy_comparison} presents the side-by-side comparison of the final multi-agent fund against its baselines and benchmarks on the unified window, all re-evaluated on the identical strict window so that the figures are directly comparable. The BTC buy-and-hold benchmark returned $+8.1\%$ over the period; alpha is measured against it. Returns are net of the fee model of Section~\ref{sec:fee_model}.
+Table~\ref{tab:strategy_comparison} presents the side-by-side comparison of the final multi-agent fund against its baselines and benchmarks on the unified window, all re-evaluated on the identical strict window so that the figures are directly comparable. The BTC buy-and-hold benchmark returned $+8.9\%$ over the period; alpha is measured against it. Returns are net of the fee model of Section~\ref{sec:fee_model}.
 
 \begin{table}[h!]
     \centering
-    \caption{Financial comparison on the unified two-year OOS window (31 May 2024 -- 31 May 2026), net of fees. The fund attains the strongest risk-adjusted profile --- the highest Sharpe and Sortino and the smallest drawdown --- of any strategy, including both passive benchmarks.}
+    \caption{Financial comparison on the unified two-year OOS window (1 June 2024 -- 31 May 2026), net of fees. The fund attains the strongest risk-adjusted profile --- the highest Sharpe and Sortino and the smallest drawdown among the active strategies.}
     \label{tab:strategy_comparison}
     \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrrrr}
         \toprule
         \textbf{Strategy} & \textbf{Return} & \textbf{Sharpe} & \textbf{Sortino} & \textbf{MaxDD} & \textbf{$\alpha$} \\
         \midrule
-        BTC Buy \& Hold          & $+8.1\%$ & $0.08$ & $0.11$ & $-50.1\%$ & --- \\
-        S\&P~500 Buy \& Hold     & $+46.9\%$ & $1.16$ & $0.25$ & $-18.8\%$ & $+38.8$\,pp \\
+        BTC Buy \& Hold          & $+8.9\%$ & $0.09$ & $0.12$ & $-50.1\%$ & --- \\
+        S\&P~500 Buy \& Hold     & $+46.9\%$ & $1.16$ & $0.25$ & $-18.8\%$ & $+38.0$\,pp \\
         \midrule
-        Naive equal-weight fund  & $+54.7\%$ & $1.76$ & $2.26$ & $-5.2\%$ & $+46.6$\,pp \\
-        Coordinator ablation     & $+22.8\%$ & $0.47$ & $0.57$ & $-21.4\%$ & $+14.6$\,pp \\
+        Naive equal-weight fund  & $+55.7\%$ & $1.73$ & $2.18$ & $-6.9\%$ & $+46.8$\,pp \\
+        Coordinator ablation     & $+14.0\%$ & $0.33$ & $0.39$ & $-18.3\%$ & $+5.1$\,pp \\
         \midrule
-        \textbf{Final MAS fund}  & $+49.7\%$ & $1.92$ & $2.51$ & $-5.3\%$ & $+41.5$\,pp \\
+        \textbf{Final MAS fund}  & $+56.8\%$ & $2.02$ & $2.59$ & $-5.9\%$ & $+47.9$\,pp \\
         \bottomrule
     \end{tabular}}
 \end{table}
 
 \vspace{2mm}
 
-The financial picture confirms the conclusion of the experimental chapter. The fund does not chase the highest headline return --- the naive equal-weight baseline and the strongest individual agents return more in absolute terms --- but it delivers the best \textit{risk-adjusted} profile in the study: a Sharpe of $1.92$ and a maximum drawdown of just $-5.3\%$, against a Bitcoin benchmark that returned only $+8.1\%$ while suffering a $-50\%$ drawdown, and a broad-market S\&P~500 benchmark with a materially lower Sharpe. For a capital allocator, this is the relevant objective: a smoother equity curve at a comparable return is strictly preferable, because it can be levered or sized to taste while a high-drawdown curve cannot.
+The financial picture confirms the conclusion of the experimental chapter. The fund does not chase the highest headline return --- the strongest individual agents return more in absolute terms --- but it delivers the best \textit{risk-adjusted} profile in the study: a Sharpe of $2.02$ and a maximum drawdown of just $-5.9\%$, against a Bitcoin benchmark that returned only $+8.9\%$ while suffering a $-50\%$ drawdown, and a broad-market S\&P~500 benchmark with a materially lower Sharpe. For a capital allocator, this is the relevant objective: a smoother equity curve at a comparable return is strictly preferable, because it can be levered or sized to taste while a high-drawdown curve cannot.
 
 \paragraph{Per-regime evaluation objectives.}
 Beyond the full-period aggregate, each strategy is assessed against the three market regimes of Table~\ref{tab:regimes}. The decomposition tests specific properties:
 
-\textbf{Regime 1 (Chop):} A well-designed strategy should remain approximately flat or slightly positive, avoiding over-trading and fee drag in a low-signal environment. The fund returns $+10.8\%$ here at a Sharpe of $2.57$, its best regime --- the diversification damps the noise that hurts individual agents.
+\textbf{Regime 1 (Chop):} A well-designed strategy should remain approximately flat or slightly positive, avoiding over-trading and fee drag in a low-signal environment. The fund returns $+3.0\%$ here at a Sharpe of $0.63$; this is the weakest sub-period, but it still avoids the larger whipsaw losses visible in several individual agents.
 
-\textbf{Regime 2 (Bull):} The key metric is alpha versus buy-and-hold during a parabolic uptrend. The fund captures $+22.8\%$ of the run while keeping its drawdown to $-5.3\%$, participating in the trend without taking the benchmark's full risk.
+\textbf{Regime 2 (Bull):} The key metric is alpha versus buy-and-hold during a parabolic uptrend. The fund captures $+20.7\%$ while keeping its drawdown to $-4.9\%$, participating in the trend without taking the benchmark's full risk.
 
-\textbf{Regime 3 (Bear):} This is the most decisive discriminator between strategies with and without a genuine short-side capability. Over a market that fell more than $50\%$ from its high, the fund still returns $+10.0\%$ (Sharpe $1.74$), demonstrating that its agents collectively profit or preserve capital on the short side rather than merely surviving.
+\textbf{Regime 3 (Bear):} This is the most decisive discriminator between strategies with and without a genuine short-side capability. Over a market that fell more than $50\%$ from its high, the fund returns $+24.8\%$ (Sharpe $3.43$), led by the short-specialist and trend-sensitive agents rather than by passive exposure.
 
-That the fund is positive with a Sharpe above $1.5$ in \textit{all three} regimes is the clearest evidence that its performance is regime-robustness rather than a single directional bet.
+That the fund is positive in \textit{all three} regimes is the clearest evidence that its performance is not a single directional bet.
 
 % ---------------------------------------------------------------------------
 \section{Discussion of Fee Impact and Strategy Design}

@@ -10,8 +10,10 @@ def code(s): cells.append(nbf.v4.new_code_cell(s))
 md("""# 06 — Multi-Agent Ensemble Bake-off (leak-free walk-forward)
 
 **Goal.** Merge the four base agents (LGBM, Mamba, TCN, PatchTST) into a single signal that
-**beats the strongest base agent alone**. LGBM-alone is the bar to clear: **+83.5%, Sharpe 1.77,
-MaxDD −9.1%** on the unified OOS (2024-05-31 → 2026-05-16).
+**beats the strongest base agent alone**. In the current canonical 00--06 artifact set,
+PatchTST is the learned-agent bar to clear: **+77.8%, Sharpe 1.64, MaxDD −17.3%** on the
+unified OOS (2024-06-01 → 2026-05-31). LGBM is now a weak but useful diversifier, not the
+headline base model.
 
 **Why the current meta fails (established in the signal analysis):**
 - The 4 agents' probabilities average to **mean 0.476** (3 of 4 are short-biased), so the

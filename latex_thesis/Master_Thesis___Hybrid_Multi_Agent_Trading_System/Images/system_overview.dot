@@ -28,13 +28,13 @@ digraph SystemOverview {
         color="#8a99a8";
         margin=12;
 
-        LGBM   [label="LightGBM (gradient boosting)\nsliding 2-year WFO, monthly step\nrelevance–redundancy selection\n+89.7% · Sharpe 1.52",
+        LGBM   [label="LightGBM (gradient boosting)\nsliding 2-year WFO, monthly step\n50-feature relevance–redundancy selection\n+9.6% · Sharpe 0.14",
                 fillcolor="#cdeccd"];
-        PATCH  [label="PatchTST (patch transformer)\nchronological split, temp-scaled\nTriple-Barrier labels\n+74.9% · Sharpe 1.59",
+        PATCH  [label="PatchTST (patch transformer)\nchronological split, temp-scaled\nshort-side Triple-Barrier specialist\n+77.8% · Sharpe 1.64",
                 fillcolor="#f6cccc"];
-        MAMBA  [label="Mamba (state-space model)\nexpanding WFO from 2019\nselective long-range memory\n+20.7% · Sharpe 0.35",
+        MAMBA  [label="Mamba (state-space model)\nexpanding WFO from 2019\nfold-percentile long specialist\n+67.4% · Sharpe 0.99",
                 fillcolor="#d7d0ec"];
-        TCN    [label="TCN (dilated causal conv.)\nchronological split\nmulti-task: direction + volatility\n+7.4% · Sharpe 0.13",
+        TCN    [label="TCN (dilated causal conv.)\nexpanding WFO, 3-class TBM\nboth-side skill-selected grid\n+36.4% · Sharpe 0.58",
                 fillcolor="#bfe6e6"];
     }
 
@@ -48,22 +48,22 @@ digraph SystemOverview {
         color="#8a99a8";
         margin=12;
 
-        TREND  [label="Trend following\nMA / SuperTrend / MACD\n+63.5% · Sharpe 0.59",
+        TREND  [label="Trend following\nMA / SuperTrend / MACD\n+62.5% · Sharpe 0.58",
                 fillcolor="#e9e2c8"];
-        VOLB   [label="Volatility breakout\nrange break + squeeze\n+33.1% · Sharpe 0.42",
+        VOLB   [label="Volatility breakout\nrange break + squeeze\n+34.7% · Sharpe 0.44",
                 fillcolor="#e9e2c8"];
-        DOM    [label="Dominance rotation\ncross-asset capital flow\n+152.8% (diversifier, not alpha)",
+        DOM    [label="Dominance rotation\ncross-asset capital flow\n+155.1% (diversifier, not alpha)",
                 fillcolor="#e9e2c8"];
     }
 
     // ---- Allocation layer ----
-    ALLOC  [label="Capped Inverse-Volatility Allocator (final)\nleak-free risk parity, cap 2/N\n+49.7% · Sharpe 1.92 · MaxDD -5.3%",
+    ALLOC  [label="Capped Inverse-Volatility Allocator (final)\nleak-free risk parity, cap 2/N\n+56.8% · Sharpe 2.02 · MaxDD -5.9%",
             fillcolor="#cdeccd"];
-    COORD  [label="Regime-gated Coordinator (ablation)\nsoftmax(trailing Sharpe) × competence\n+22.8% · Sharpe 0.47",
+    COORD  [label="Regime-gated Coordinator (ablation)\nsoftmax(trailing Sharpe) × competence\n+14.0% · Sharpe 0.33",
             fillcolor="#ead9d9"];
 
     // ---- Execution ----
-    EXEC   [label="Execution & Evaluation\nshared ATR-bracket backtest (fees)\nOOS 2024-05-31 → 2026-05-31\nthree regimes: Chop / Bull / Bear",
+    EXEC   [label="Execution & Evaluation\nshared ATR-bracket backtest (fees)\nOOS 2024-06-01 → 2026-05-31\nthree regimes: Chop / Bull / Bear",
             fillcolor="#f6cccc"];
 
     // ---- Edges ----

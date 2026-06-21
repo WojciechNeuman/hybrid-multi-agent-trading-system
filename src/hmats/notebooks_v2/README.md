@@ -99,7 +99,7 @@ Current executed result in `artifacts/notebooks_v2/06_mas/results.json`:
 
 | Strategy | OOS return | Sharpe | MaxDD | Interpretation |
 |---|---:|---:|---:|---|
-| Final MAS fund, capped inverse-vol | +48.1% | 1.90 | -5.3% | final system result |
+| Final MAS fund, capped inverse-vol | +56.8% | 2.02 | -5.9% | final system result |
 | Naive EW fund | +53.8% | 1.76 | -5.2% | simple fund-of-agents baseline |
 | Original coordinator ablation | +28.6% | 0.59 | -20.4% | tested and rejected as final allocator |
 | BTC buy-and-hold | +15.6% | 0.16 | -50.1% | crypto benchmark |

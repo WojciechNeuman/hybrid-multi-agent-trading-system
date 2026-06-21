@@ -1,6 +1,6 @@
 {
   "notebook": "06_multi_agent_v1",
-  "created": "2026-06-21T20:47:01.527165",
+  "created": "2026-06-21T20:56:00.889960",
   "design": "hybrid multi-agent trading system over a predeclared agent set: four learned models and five rule-based agents. No agent is removed using OOS performance. The original regime-gated coordinator is retained as an ablation; the final reported allocator is leak-free capped inverse-volatility risk parity over autonomous risk-managed agents.",
   "accepted_agents": [
     "lgbm",

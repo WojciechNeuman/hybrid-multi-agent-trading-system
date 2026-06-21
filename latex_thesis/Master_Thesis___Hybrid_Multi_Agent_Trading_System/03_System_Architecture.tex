@@ -29,7 +29,7 @@ The system's four learned agents are deliberately drawn from four different fami
 
 \vspace{3mm}
 
-\textbf{LightGBM} is the tabular agent. Gradient-boosted decision trees consume a compact feature subset selected from the full candidate pool and emit a directional probability at every hourly bar. Treating each bar as an independent feature vector, it excels at exploiting shallow non-linear interactions in the high-dimensional technical panel, and it is the most reliable single performer in the system.
+\textbf{LightGBM} is the tabular agent. Gradient-boosted decision trees consume a compact feature subset selected from the full candidate pool and emit a directional probability at every hourly bar. Treating each bar as an independent feature vector, it is operationally simple and interpretable, but in the final strict run it is a weak diversifying contributor rather than the leading standalone strategy.
 
 \vspace{3mm}
 
@@ -72,6 +72,6 @@ For comparison, a more elaborate \textit{regime-gated coordinator} was also buil
 \section{Walk-Forward Evaluation Protocol}
 \label{sec:wfo_protocol}
 
-All agents that involve trained models are evaluated under a strict walk-forward protocol to prevent any form of look-ahead bias. The LightGBM agent uses a sliding two-year window that steps forward one month at a time, so the model always reflects recent market character; the Mamba agent uses an expanding window that grows from the start of the data and retrains every three months. In both cases each fold is trained only on data preceding the slice it predicts. The TCN and PatchTST agents use a single chronological three-way split (train / validation / test) with the test set reserved exclusively for final evaluation. The rule-based agents are not fitted to the data at all; only their ATR-bracket execution parameters are grid-searched on a pre-OOS validation window (2022--2024) and frozen before the hold-out is touched. The capital-allocation layer is itself causal: every weight is computed from trailing return statistics only, so no future information enters the fund.
+All agents that involve trained models are evaluated under strict chronological controls to prevent any form of look-ahead bias. The LightGBM agent uses a sliding two-year window that steps forward one month at a time, while the Mamba and TCN agents use expanding walk-forward retraining every three months. The PatchTST agent uses a fixed train/validation/test split with the test set reserved exclusively for final evaluation. The rule-based agents are not fitted to the data at all; only their ATR-bracket execution parameters are grid-searched on a pre-OOS validation window and frozen before the hold-out is touched. The capital-allocation layer is itself causal: every weight is computed from trailing return statistics only, so no future information enters the fund.
 
-This protocol means that every point in the final OOS equity curve is genuinely out-of-sample: the agent that generated it, and the weight it was given, were determined entirely from data preceding the bar in question. The unified hold-out window runs from 31 May 2024 to 31 May 2026.
+This protocol means that every point in the final OOS equity curve is genuinely out-of-sample: the agent that generated it, and the weight it was given, were determined entirely from data preceding the bar in question. The unified hold-out window runs from 1 June 2024 to 31 May 2026.
