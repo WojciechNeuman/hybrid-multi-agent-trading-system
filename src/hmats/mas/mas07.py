@@ -15,12 +15,11 @@ What makes this multi-agent rather than an ensemble of probabilities:
    trust in which market regime*.
 3. **The system tests several capital allocators.** The original regime-gated coordinator is
    retained as an ablation, while the final reported allocator is capped inverse-volatility risk
-   parity over the accepted agents.
-4. **It is honest about failed agents.** The cross-asset learner and the contrarian-sentiment rule
-   are excluded because their OOS returns are negative. The mean-reversion rule is excluded for the
-   same reason. The ``dominance_rotation`` rule is included as a *diversification* agent only — it
-   is OOS-profitable with a shallower drawdown than buy-and-hold, but its OOS return sits at the
-   95% boundary of the random-bracket null and is not claimed as alpha.
+   parity over a predeclared set of agents.
+4. **No final membership decision uses OOS performance.** Weak agents are retained in the fund and
+   can be down-weighted only by causal trailing risk/return statistics. The cross-asset learner is
+   outside the canonical 00-06 pipeline because it has no required standard artifact, not because of
+   its OOS score.
 
 Leakage discipline: an allocation decided with information up to bar ``t`` earns each agent's
 return over ``t -> t+1``; every trailing statistic uses a right-open window shifted by >= 1 bar
@@ -42,21 +41,19 @@ import pandas as pd
 # Configuration
 # ---------------------------------------------------------------------------
 
-# Learned agents (nonlinear models on the shared feature panel) + accepted rule agents. The rule
-# agents are structurally orthogonal: their edge is strategy logic, not another learned transform of
-# the same feature matrix. The mean-reversion rule and cross-asset learner remain in the repository
-    # as experiments, but are excluded from the final agent set for the reasons documented below.
+# Learned agents (nonlinear models on the shared feature panel) + all rule agents produced by
+# notebook 05. The final fund membership is fixed before looking at OOS performance; weak OOS
+# agents are allowed to receive low capital through the allocator instead of being removed after
+# seeing the test window.
 LEARNED_AGENTS = ["lgbm", "mamba", "tcn", "patch"]
-RULE_AGENTS = ["trend", "volbreak", "dominance_rotation"]
+RULE_AGENTS = ["trend", "meanrev", "volbreak", "sentiment_regime", "dominance_rotation"]
 EXCLUDED_AGENTS = {
-    "meanrev": "excluded from final agent set: negative OOS return",
-    "crossasset": "excluded from final agent set: weak OOS AUC and not significant vs random bracket null",
-    "sentiment_regime": "excluded from final agent set: negative OOS return (-29.9%) and below the "
-                        "random-bracket null (7th percentile) — contrarian Fear & Greed has no edge OOS",
+    "crossasset": "not part of the canonical 00-06 notebooks_v2 pipeline; no standard artifact is required",
 }
 AGENTS = LEARNED_AGENTS + RULE_AGENTS
 AGENT_DIR = {"lgbm": "01_lgbm", "mamba": "02_mamba", "tcn": "03_tcn", "patch": "04_patchtst",
-             "trend": "05_trend", "volbreak": "05_volbreak",
+             "trend": "05_trend", "meanrev": "05_meanrev", "volbreak": "05_volbreak",
+             "sentiment_regime": "05_sentiment_regime",
              "dominance_rotation": "05_dominance_rotation"}
 # Multiclass TBM agents emit two *independent* softmax channels (P-up, P-down) and decide
 # long on P-up and short on P-down. A single saved probability is the P-up channel only, so
@@ -69,19 +66,21 @@ PARADIGM = {
     "tcn": "dilated causal conv.",
     "patch": "patch transformer",
     "trend": "rule: trend-following",
+    "meanrev": "rule: mean-reversion",
     "volbreak": "rule: volatility breakout",
+    "sentiment_regime": "rule: contrarian sentiment (Fear & Greed)",
     "dominance_rotation": "rule: cross-asset dominance rotation",
 }
 
-OOS_START = pd.Timestamp("2024-05-31")
-OOS_END = pd.Timestamp("2026-05-31")
+OOS_START = pd.Timestamp("2024-06-01")
+OOS_END = pd.Timestamp("2026-05-31 23:00:00")
 COMPETENCE_START = pd.Timestamp("2023-01-01")  # pre-OOS window common to all four agents
 
 REGIMES = ("chop", "bull", "bear")
 REGIME_DATES = {  # reporting-only OOS sub-periods; the live detector is feature-based
-    "chop": (pd.Timestamp("2024-05-31"), pd.Timestamp("2024-11-05")),
+    "chop": (pd.Timestamp("2024-06-01"), pd.Timestamp("2024-11-05")),
     "bull": (pd.Timestamp("2024-11-06"), pd.Timestamp("2025-10-31")),
-    "bear": (pd.Timestamp("2025-11-01"), pd.Timestamp("2026-05-31")),
+    "bear": (pd.Timestamp("2025-11-01"), pd.Timestamp("2026-05-31 23:00:00")),
 }
 
 # Fee model — identical to the base agents' backtests.
@@ -524,9 +523,8 @@ def capped_inverse_vol_weights(agents: dict[str, TradingAgent], panel: pd.DataFr
                                cap_mult: float = 2.0) -> pd.DataFrame:
     """Inverse-volatility allocation with a diversification cap.
 
-    The cap is ``cap_mult`` times equal weight. With seven accepted agents and ``cap_mult=2``, no
-    single agent can receive more than one third of capital. This prevents the low-volatility
-    allocator from assigning almost all capital to an inactive or stale agent.
+    The cap is ``cap_mult`` times equal weight. This prevents the low-volatility allocator from
+    assigning almost all capital to an inactive or stale agent in the predeclared agent set.
     """
     base = inverse_vol_weights(agents, panel)
     cap = cap_mult / len(agents)
@@ -648,8 +646,8 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
 
     out = dict(
         notebook="06_multi_agent_v1", created=pd.Timestamp.now().isoformat(),
-        design="hybrid multi-agent trading system over seven accepted agents: four learned models "
-               "and three rule-based agents. The original regime-gated coordinator is retained as "
+        design="hybrid multi-agent trading system over a predeclared agent set: four learned models "
+               "and five rule-based agents. No agent is removed using OOS performance. The original regime-gated coordinator is retained as "
                "an ablation; the final reported allocator is leak-free capped inverse-volatility "
                "risk parity over autonomous risk-managed agents.",
         accepted_agents=AGENTS,
@@ -668,7 +666,7 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
         competence.to_csv(arts / "competence.csv")
         weights.reindex(idx).to_csv(arts / "coordinator_weights_oos.csv")
         iv_w.reindex(idx).to_csv(arts / "capped_inverse_vol_weights_oos.csv")
-        np.save(arts / "oos_index.npy", idx.values.astype("int64"))
+        np.save(arts / "oos_index.npy", idx.astype("datetime64[ns]").astype(np.int64).values)
         np.save(arts / "final_equity.npy", iv_eq.values.astype(np.float32))
         np.save(arts / "coord_ablation_equity.npy", coord_eq_oos.values.astype(np.float32))
         if verbose:
@@ -690,7 +688,8 @@ def plot_results(out: dict, save: bool = True):
     eqs = out["_equities"]
     weights = out["_capped_inverse_vol_weights"].reindex(idx).fillna(0.0)
     colours = {"lgbm": "#F7931A", "mamba": "#7B1FA2", "tcn": "#00ACC1", "patch": "#EF5350",
-               "trend": "#43A047", "volbreak": "#5E35B1", "dominance_rotation": "#FB8C00"}
+               "trend": "#43A047", "meanrev": "#3949AB", "volbreak": "#5E35B1",
+               "sentiment_regime": "#8D6E63", "dominance_rotation": "#FB8C00"}
     main = "Final MAS fund (capped inverse-vol)"
 
     fig, ax1 = plt.subplots(figsize=(13.5, 6.2))

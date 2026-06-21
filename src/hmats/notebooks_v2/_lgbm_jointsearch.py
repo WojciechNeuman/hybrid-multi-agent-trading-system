@@ -36,7 +36,7 @@ ARTS_DIR = REPO / 'artifacts' / 'notebooks_v2' / '01_lgbm'
 ARTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── WFO / OOS (unified across notebooks_v2) ──────────────────────────────────
-OOS_START      = pd.Timestamp('2024-05-31')
+OOS_START      = pd.Timestamp('2024-06-01')
 GRID_VAL_START = pd.Timestamp('2022-01-01')
 GRID_VAL_END   = pd.Timestamp('2024-05-30')
 TRAIN_WINDOW_H = 8760
@@ -189,7 +189,7 @@ def _run_backtest(probs_arr, close_arr, high_arr, low_arr, atr_arr,
                     elif hold_cnt>=max_hold: exit_px=px;exited=True;reason='timeout';exit_fee=FUTURES_TAKER_FEE if with_fees else 0.
             if exited:
                 gross=((exit_px-entry_px)/entry_px if direction=='long' else (entry_px-exit_px)/entry_px)
-                net=gross-(entry_fee+exit_fee if with_fees else 0.)+funding
+                net=gross-(entry_fee+exit_fee if with_fees else 0.)-funding
                 cur=pos_eq*(1.+net); eq[i]=cur
                 trades.append({'direction':direction,'reason':reason,'gross':gross,'net':net,'hold':hold_cnt})
                 in_pos=False; cd_cnt=cooldown; funding=0.
@@ -211,7 +211,7 @@ def _run_backtest(probs_arr, close_arr, high_arr, low_arr, atr_arr,
     if in_pos:
         gross=((px-entry_px)/entry_px if direction=='long' else (entry_px-px)/entry_px)
         taker=SPOT_TAKER_FEE if direction=='long' else FUTURES_TAKER_FEE
-        net=gross-(entry_fee+(taker if with_fees else 0.))+funding; cur=pos_eq*(1.+net); eq[-1]=cur
+        net=gross-(entry_fee+(taker if with_fees else 0.))-funding; cur=pos_eq*(1.+net); eq[-1]=cur
     return eq, trades
 
 def _sharpe(eq):
@@ -305,9 +305,9 @@ def main():
     full_probs=best_probs
     oos_probs=full_probs[oos_mask]
     np.save(ARTS_DIR/'oos_probs.npy', oos_probs.values.astype(np.float32))
-    np.save(ARTS_DIR/'oos_index.npy', oos_df.index.values.astype('int64'))
+    np.save(ARTS_DIR/'oos_index.npy', oos_df.index.astype('datetime64[ns]').astype(np.int64).values)
     np.save(ARTS_DIR/'wfo_probs.npy', full_probs.values.astype(np.float32))
-    np.save(ARTS_DIR/'wfo_index.npy', full_probs.index.values.astype('int64'))
+    np.save(ARTS_DIR/'wfo_index.npy', full_probs.index.astype('datetime64[ns]').astype(np.int64).values)
 
     feats=fsets[(best_row['corr_threshold'], best_row['top_n_features'])]
     bt={k[3:]:best_row[k] for k in best_row if k.startswith('tr_')}

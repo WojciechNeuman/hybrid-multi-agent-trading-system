@@ -62,7 +62,7 @@ RULE_PARADIGM = {
 }
 
 GRID_VAL_START = pd.Timestamp("2022-01-01")
-GRID_VAL_END = pd.Timestamp("2024-05-30")   # ends just before OOS_START — frozen thereafter
+GRID_VAL_END = pd.Timestamp("2024-05-31")   # ends just before OOS_START — frozen thereafter
 
 # Trade-count guards on the validation window (mirror the learned agents): reject degenerate
 # (too few) or over-trading (overfit) configurations.

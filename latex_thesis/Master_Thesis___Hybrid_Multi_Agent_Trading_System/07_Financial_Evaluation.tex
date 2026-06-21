@@ -64,20 +64,20 @@ All backtests incorporate realistic transaction costs matching the fee structure
     \item \textbf{Taker orders} (0.05\%): market orders that execute immediately at the current price, crossing the spread and removing liquidity.
 \end{itemize}
 
-\noindent Stop-loss exits and timeout exits are modelled as taker orders. Take-profit exits are modelled as maker orders (the TP level acts as a resting limit). Short positions accrue a funding credit of $+0.00077\%$ per hour, reflecting the historically positive funding rate on BTC perpetual futures. Leverage does not alter these per-trade fee rates: fees are charged on notional position size, so the relative cost structure is invariant to the leverage multiplier; what dominates real-world execution cost beyond fees is \textit{slippage}, which the resting-limit-order design is intended to minimise.
+\noindent Stop-loss exits and timeout exits are modelled as taker orders. Take-profit exits are modelled as maker orders (the TP level acts as a resting limit). Short positions are charged a conservative funding cost of $0.00077\%$ per hour. Leverage does not alter these per-trade fee rates: fees are charged on notional position size, so the relative cost structure is invariant to the leverage multiplier; what dominates real-world execution cost beyond fees is \textit{slippage}, which the resting-limit-order design is intended to minimise.
 
 In the final configuration adopted for all agents, both long and short entries are placed as limit orders, filling at the maker rate when the limit is touched and reverting to taker only when the order must chase the market. Table~\ref{tab:fee_summary} summarises the fee model.
 
 \begin{table}[h!]
     \centering
-    \caption{Fee model applied to every agent in the long+short backtest. ``Maker'' = 0.00\%, ``Taker'' = 0.05\%, ``Funding'' = $+0.00077\%$/h received on short positions. Entries and take-profits are resting limit orders (maker if filled, taker if missed); stop-loss and timeout exits cross the spread (taker).}
+    \caption{Fee model applied to every agent in the long+short backtest. ``Maker'' = 0.00\%, ``Taker'' = 0.05\%, ``Funding'' = $0.00077\%$/h charged on short positions. Entries and take-profits are resting limit orders; stop-loss and timeout exits cross the spread (taker).}
     \label{tab:fee_summary}
     \begin{tabular}{llllll}
         \toprule
         \textbf{Side} & \textbf{Entry} & \textbf{SL exit} & \textbf{TP exit} & \textbf{Timeout} & \textbf{Funding} \\
         \midrule
         Long  & Maker/Taker & Spot taker  & Maker & Spot taker & --- \\
-        Short & Maker/Taker & Fut.\ taker & Maker & Fut.\ taker & $+0.00077\%$/h \\
+        Short & Maker/Taker & Fut.\ taker & Maker & Fut.\ taker & $0.00077\%$/h cost \\
         \bottomrule
     \end{tabular}
 \end{table}

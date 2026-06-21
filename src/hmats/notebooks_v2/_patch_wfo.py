@@ -27,7 +27,7 @@ def _repo():
 REPO=_repo(); ART=REPO/'artifacts'/'notebooks_v2'/'04_patchtst'; ART.mkdir(parents=True,exist_ok=True)
 
 # ── config (identical model/label spec to the notebook) ─────────────────────
-OOS_START=pd.Timestamp('2024-05-31'); WFO_START=pd.Timestamp('2022-06-01')
+OOS_START=pd.Timestamp('2024-06-01'); WFO_START=pd.Timestamp('2022-06-01')
 TRAIN_MONTHS=24; STEP_MONTHS=3; EMBARGO_H=12
 TBM_VOL_WINDOW=24; TBM_MULT=2.0; TBM_VERT_H=24; FRAC_D=0.4; FFD_THRES=1e-4
 SEQ_LEN=48; PATCH_LEN=8; PATCH_STRIDE=4; D_MODEL=64; N_HEADS=4; N_LAYERS=2; D_FF=128; TR_DROPOUT=0.20
@@ -170,10 +170,10 @@ def main():
     print(f'OOS prob mean={oos.mean():.3f}  Bull mean={bull.mean():.3f}')
     # save artifacts (probs only; backtest/grid done in notebook or follow-up)
     np.save(ART/'wfo_probs.npy', full_probs.values.astype(np.float32))
-    np.save(ART/'wfo_index.npy', full_probs.index.values.astype('int64'))
+    np.save(ART/'wfo_index.npy', full_probs.index.astype('datetime64[ns]').astype(np.int64).values)
     oosdf=df[df.index>=OOS_START]
     np.save(ART/'oos_probs.npy', full_probs.reindex(oosdf.index).values.astype(np.float32))
-    np.save(ART/'oos_index.npy', oosdf.index.values.astype('int64'))
+    np.save(ART/'oos_index.npy', oosdf.index.astype('datetime64[ns]').astype(np.int64).values)
     if last_m is not None: torch.save(last_m.state_dict(), ART/'model.pt')
     json.dump({'notebook':'04_patchtst','scheme':'walk-forward sliding 24mo/3mo','oos_auc_tbm':float(auc),
                'wfo_start':str(WFO_START.date()),'train_months':TRAIN_MONTHS,'temperature_last':last_T,

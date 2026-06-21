@@ -49,6 +49,9 @@ As discussed in Chapter~\ref{07_Financial_Evaluation}, the backtest assumes favo
 \paragraph{Signal strength versus risk management.}
 The agents' classification AUCs are modest (roughly $0.50$--$0.54$). The returns should therefore be understood as a combination of weak directional signal and effective ATR-bracket risk management, not as evidence of strong predictive accuracy. The random-bracket null test is included precisely to keep this distinction explicit.
 
+\paragraph{Specialist directional agents.}
+Some retained agents are intentionally asymmetric: their frozen trading profile may be primarily long-sided or short-sided if that was the configuration selected on the validation window. This is acceptable inside the multi-agent design because the fund allocator treats each stream as a specialist return source and assigns capital dynamically from trailing performance. It does, however, mean that the base agents should not be interpreted as complete standalone long/short trading systems.
+
 \paragraph{Reproducibility of the deep agents.}
 The deep sequence models do not yet fix every stochastic component (notably the Mamba training loop and \texttt{DataLoader} shuffling), so their walk-forward outputs vary between runs and the fund inherits this non-determinism. Full bitwise reproducibility is a prerequisite for treating any single agent's contribution as fixed and is treated as a blocking task in the project's remediation notes.
 

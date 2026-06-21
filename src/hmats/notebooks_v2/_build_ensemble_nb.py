@@ -55,9 +55,9 @@ def _repo_root():
 REPO=_repo_root(); A2=REPO/'artifacts'/'notebooks_v2'
 ARTS=A2/'06_ensemble'; ARTS.mkdir(parents=True, exist_ok=True)
 
-OOS_START=pd.Timestamp('2024-05-31'); OOS_END=pd.Timestamp('2026-05-16')
+OOS_START=pd.Timestamp('2024-06-01'); OOS_END=pd.Timestamp('2026-05-31 23:00:00')
 STEP_MONTHS=3; EMBARGO_H=48
-REGIME_CHOP=(pd.Timestamp('2024-05-31'),pd.Timestamp('2024-11-05'))
+REGIME_CHOP=(pd.Timestamp('2024-06-01'),pd.Timestamp('2024-11-05'))
 REGIME_BULL=(pd.Timestamp('2024-11-06'),pd.Timestamp('2025-10-31'))
 REGIME_BEAR=(pd.Timestamp('2025-11-01'),pd.Timestamp('2026-05-31'))
 # fee model (identical to base agents)
@@ -128,7 +128,7 @@ def _run_backtest(probs, close, high, low, atr, long_threshold, short_threshold,
                     elif hold>=max_hold: xpx=px;ex=True;xf=FUTURES_TAKER_FEE if with_fees else 0.
             if ex:
                 g=((xpx-entry_px)/entry_px if direction=='long' else (entry_px-xpx)/entry_px)
-                net=g-(entry_fee+xf if with_fees else 0.)+funding; cur=pos_eq*(1.+net); eq[i]=cur
+                net=g-(entry_fee+xf if with_fees else 0.)-funding; cur=pos_eq*(1.+net); eq[i]=cur
                 trades.append({'direction':direction,'net':net}); in_pos=False; cd=cooldown; funding=0.
         elif pend is not None:
             d,lim,ps,pt=pend
@@ -355,7 +355,7 @@ L.to_csv(ARTS/'leaderboard.csv', index=False)
 if len(beat):
     bp=cand[winner].reindex(oos.index)
     np.save(ARTS/'oos_probs.npy', bp.values.astype(np.float32))
-    np.save(ARTS/'oos_index.npy', oos.index.values.astype('int64'))
+    np.save(ARTS/'oos_index.npy', oos.index.astype('datetime64[ns]').astype(np.int64).values)
 print(verdict); print('Artifacts →', ARTS)""")
 
 nb['cells']=cells

@@ -1,0 +1,232 @@
+{
+  "notebook": "03_tcn_wfo_colab_v1",
+  "created": "2026-06-21T16:43:05.079668",
+  "model": "TCNMultiTask WFO (direction + forward-vol)",
+  "selection": "WFO probabilities; bracket selected on validation window only; OOS held out",
+  "splits": {
+    "grid_val_start": "2023-06-01",
+    "grid_val_end": "2024-05-31",
+    "oos_start": "2024-06-01",
+    "oos_end": "2026-05-31 23:00:00"
+  },
+  "wfo": {
+    "scheme": "expanding",
+    "wfo_start": "2023-06-01",
+    "retrain_months": 3,
+    "embargo_h": 48,
+    "folds": [
+      {
+        "fold": 1,
+        "start": "2023-06-01 00:00:00",
+        "end": "2023-09-01 00:00:00",
+        "train_rows": 44382,
+        "best_val_loss": 0.69854258115475,
+        "best_val_auc": 0.5123461857732652,
+        "best_epoch": 15
+      },
+      {
+        "fold": 2,
+        "start": "2023-09-01 00:00:00",
+        "end": "2023-12-01 00:00:00",
+        "train_rows": 46197,
+        "best_val_loss": 0.6984372801250882,
+        "best_val_auc": 0.5342492818821527,
+        "best_epoch": 15
+      },
+      {
+        "fold": 3,
+        "start": "2023-12-01 00:00:00",
+        "end": "2024-03-01 00:00:00",
+        "train_rows": 47984,
+        "best_val_loss": 0.6956923987184253,
+        "best_val_auc": 0.531492618853067,
+        "best_epoch": 18
+      },
+      {
+        "fold": 4,
+        "start": "2024-03-01 00:00:00",
+        "end": "2024-06-01 00:00:00",
+        "train_rows": 49931,
+        "best_val_loss": 0.6919755657513936,
+        "best_val_auc": 0.5377109486312691,
+        "best_epoch": 16
+      },
+      {
+        "fold": 5,
+        "start": "2024-06-01 00:00:00",
+        "end": "2024-09-01 00:00:00",
+        "train_rows": 51894,
+        "best_val_loss": 0.6914084130717862,
+        "best_val_auc": 0.5490318808138756,
+        "best_epoch": 16
+      },
+      {
+        "fold": 6,
+        "start": "2024-09-01 00:00:00",
+        "end": "2024-12-01 00:00:00",
+        "train_rows": 53875,
+        "best_val_loss": 0.690460491925478,
+        "best_val_auc": 0.5558060675820355,
+        "best_epoch": 16
+      },
+      {
+        "fold": 7,
+        "start": "2024-12-01 00:00:00",
+        "end": "2025-03-01 00:00:00",
+        "train_rows": 55764,
+        "best_val_loss": 0.6921798081109019,
+        "best_val_auc": 0.5434119343502046,
+        "best_epoch": 15
+      },
+      {
+        "fold": 8,
+        "start": "2025-03-01 00:00:00",
+        "end": "2025-06-01 00:00:00",
+        "train_rows": 57692,
+        "best_val_loss": 0.6888876487227047,
+        "best_val_auc": 0.5619460982814454,
+        "best_epoch": 17
+      },
+      {
+        "fold": 9,
+        "start": "2025-06-01 00:00:00",
+        "end": "2025-09-01 00:00:00",
+        "train_rows": 59660,
+        "best_val_loss": 0.6914369685309274,
+        "best_val_auc": 0.5550289627315472,
+        "best_epoch": 17
+      },
+      {
+        "fold": 10,
+        "start": "2025-09-01 00:00:00",
+        "end": "2025-12-01 00:00:00",
+        "train_rows": 61661,
+        "best_val_loss": 0.6933886657158533,
+        "best_val_auc": 0.5519894506160474,
+        "best_epoch": 18
+      },
+      {
+        "fold": 11,
+        "start": "2025-12-01 00:00:00",
+        "end": "2026-03-01 00:00:00",
+        "train_rows": 63561,
+        "best_val_loss": 0.689782944164778,
+        "best_val_auc": 0.5582209626849328,
+        "best_epoch": 21
+      },
+      {
+        "fold": 12,
+        "start": "2026-03-01 00:00:00",
+        "end": "2026-06-01 00:00:00",
+        "train_rows": 65471,
+        "best_val_loss": 0.6943348905979059,
+        "best_val_auc": 0.5300794868651302,
+        "best_epoch": 13
+      }
+    ]
+  },
+  "tbm": {
+    "mult": 2.0,
+    "vol_window": 24,
+    "vert_h": 24
+  },
+  "architecture": {
+    "channels": [
+      64,
+      64,
+      64,
+      64
+    ],
+    "kernel": 3,
+    "dropout": 0.2,
+    "seq_len": 48,
+    "n_features": 32,
+    "n_params": 96003,
+    "receptive_field": 61
+  },
+  "training": {
+    "epochs": 80,
+    "patience": 10,
+    "lambda_vol": 0.5
+  },
+  "oos_auc_tbm_raw": 0.5363,
+  "oos_auc_tbm_signal": 0.5389,
+  "all_features": [
+    "stoch_k_14",
+    "ret_2h",
+    "rsi_divergence",
+    "close_vs_sma_7",
+    "bear_streak",
+    "close_vs_s1",
+    "macd_hist_5_13",
+    "ad_z_48h",
+    "ret_3h",
+    "ret_1h",
+    "rsi_14",
+    "vol_ratio_24h",
+    "bb_position_20",
+    "hour_sin",
+    "hour_cos",
+    "atr_14_pct",
+    "hurst_168h",
+    "trend_score",
+    "close_vs_sma_50",
+    "ma_bull_score",
+    "close_vs_true_vwap",
+    "hurst_24h",
+    "hurst_72h",
+    "tfi_pct",
+    "tfi_z_24h",
+    "bb_width_pct",
+    "sideways_flag",
+    "liq_vwap_dev_24h",
+    "volat_atr_20_pct",
+    "mtf_alignment",
+    "mtf_h4_rsi",
+    "ffd_log_price"
+  ],
+  "best_params": {
+    "long_threshold": 0.58,
+    "short_threshold": 0.42,
+    "entry_atr_mult": 0.0,
+    "sl_atr_mult": 1.0,
+    "tp_atr_mult": 2.5,
+    "min_hold": 6,
+    "max_hold": 24,
+    "cooldown": 2,
+    "trade_direction": "long_only"
+  },
+  "backtest_wfees": {
+    "n_trades": 740,
+    "n_long": 740,
+    "n_short": 0,
+    "win_rate": 0.4095,
+    "total_ret": 1.4798,
+    "sharpe": 1.2429,
+    "sortino": 1.2641,
+    "maxdd": -0.22
+  },
+  "backtest_0fee": {
+    "n_trades": 740,
+    "n_long": 740,
+    "n_short": 0,
+    "win_rate": 0.4162,
+    "total_ret": 2.3294,
+    "sharpe": 1.6497,
+    "sortino": 1.6845,
+    "maxdd": -0.2109
+  },
+  "monthly": {
+    "mean_pct": 3.843,
+    "positive_months": 15,
+    "total_months": 24
+  },
+  "artifacts": {
+    "oos_probs": "oos_probs.npy",
+    "oos_pdown": "oos_pdown.npy",
+    "oos_index": "oos_index.npy (int64 ns)",
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_pdown": "wfo_pdown.npy",
+    "model": "model_lastfold.pt"
+  }
+}

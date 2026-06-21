@@ -1,122 +1,116 @@
 {
   "notebook": "06_multi_agent_v1",
-  "created": "2026-06-21T15:36:19.937282",
-  "design": "hybrid multi-agent trading system over seven accepted agents: four learned models and three rule-based agents. The original regime-gated coordinator is retained as an ablation; the final reported allocator is leak-free capped inverse-volatility risk parity over autonomous risk-managed agents.",
+  "created": "2026-06-21T17:48:10.901765",
+  "design": "hybrid multi-agent trading system over a predeclared agent set: four learned models and five rule-based agents. No agent is removed using OOS performance. The original regime-gated coordinator is retained as an ablation; the final reported allocator is leak-free capped inverse-volatility risk parity over autonomous risk-managed agents.",
   "accepted_agents": [
     "lgbm",
     "mamba",
     "tcn",
     "patch",
     "trend",
+    "meanrev",
     "volbreak",
+    "sentiment_regime",
     "dominance_rotation"
   ],
   "excluded_agents": {
-    "meanrev": "excluded from final agent set: negative OOS return",
-    "crossasset": "excluded from final agent set: weak OOS AUC and not significant vs random bracket null",
-    "sentiment_regime": "excluded from final agent set: negative OOS return (-29.9%) and below the random-bracket null (7th percentile) \u2014 contrarian Fear & Greed has no edge OOS"
+    "crossasset": "not part of the canonical 00-06 notebooks_v2 pipeline; no standard artifact is required"
   },
   "oos_period": "2024-06-01 -> 2026-05-31",
   "competence": {
     "chop": {
-      "lgbm": 0.033,
-      "mamba": 0.5435,
-      "tcn": 0.3367,
+      "lgbm": 0.1685,
+      "mamba": 0.4218,
+      "tcn": 0.2613,
       "patch": 0.0,
-      "trend": 0.0747,
-      "volbreak": 0.012,
+      "trend": 0.058,
+      "meanrev": 0.0811,
+      "volbreak": 0.0093,
+      "sentiment_regime": 0.0,
       "dominance_rotation": 0.0
     },
     "bull": {
-      "lgbm": 0.4227,
-      "mamba": 0.2899,
-      "tcn": 0.169,
+      "lgbm": 0.3389,
+      "mamba": 0.3206,
+      "tcn": 0.1869,
       "patch": 0.0,
       "trend": 0.0,
-      "volbreak": 0.042,
-      "dominance_rotation": 0.0764
+      "meanrev": 0.0226,
+      "volbreak": 0.0464,
+      "sentiment_regime": 0.0,
+      "dominance_rotation": 0.0845
     },
     "bear": {
       "lgbm": 0.0,
       "mamba": 0.0,
-      "tcn": 0.2416,
-      "patch": 0.4928,
-      "trend": 0.1817,
+      "tcn": 0.1935,
+      "patch": 0.3946,
+      "trend": 0.1455,
+      "meanrev": 0.0426,
       "volbreak": 0.0,
-      "dominance_rotation": 0.0839
+      "sentiment_regime": 0.1567,
+      "dominance_rotation": 0.0671
     }
   },
   "mean_weights_oos": {
-    "lgbm": 0.2073,
-    "mamba": 0.2207,
-    "tcn": 0.1273,
-    "patch": 0.1817,
-    "trend": 0.0417,
-    "volbreak": 0.0353,
-    "dominance_rotation": 0.186
+    "lgbm": 0.1214,
+    "mamba": 0.2363,
+    "tcn": 0.1094,
+    "patch": 0.2216,
+    "trend": 0.0385,
+    "meanrev": 0.0538,
+    "volbreak": 0.0268,
+    "sentiment_regime": 0.0493,
+    "dominance_rotation": 0.143
   },
   "mean_capped_inverse_vol_weights_oos": {
-    "lgbm": 0.1778,
-    "mamba": 0.1528,
-    "tcn": 0.138,
-    "patch": 0.233,
-    "trend": 0.0932,
-    "volbreak": 0.1142,
-    "dominance_rotation": 0.091
+    "lgbm": 0.122,
+    "mamba": 0.1205,
+    "tcn": 0.1096,
+    "patch": 0.1794,
+    "trend": 0.0735,
+    "meanrev": 0.0717,
+    "volbreak": 0.0902,
+    "sentiment_regime": 0.1615,
+    "dominance_rotation": 0.0717
   },
   "final": {
     "name": "Final MAS fund (capped inverse-vol)",
-    "ret": 0.6402347221019433,
-    "sharpe": 2.538593882665691,
-    "sortino": 3.1926573475219424,
-    "maxdd": -0.040361973201140454,
-    "alpha": 0.5512734425341332
+    "ret": 0.32496711019059243,
+    "sharpe": 1.5932000339522783,
+    "sortino": 2.0206432200557045,
+    "maxdd": -0.048328940444143154,
+    "alpha": 0.23600583062278235
   },
   "coordinator_ablation": {
     "name": "Coordinator ablation (Sharpe x regime)",
-    "ret": 0.28192850973177586,
-    "sharpe": 0.5649057833650664,
-    "sortino": 0.6723735110393855,
-    "maxdd": -0.25453673273515803,
-    "alpha": 0.19296723016396577
+    "ret": 0.10358303552442738,
+    "sharpe": 0.24075285138017777,
+    "sortino": 0.28350388337817706,
+    "maxdd": -0.2514331660400289,
+    "alpha": 0.0146217559566173
   },
   "regime_breakdown": [
     {
       "regime": "chop",
-      "ret": "+6.5%",
-      "sharpe": "1.72",
-      "maxdd": "-3.4%"
+      "ret": "+4.7%",
+      "sharpe": "1.29",
+      "maxdd": "-4.8%"
     },
     {
       "regime": "bull",
-      "ret": "+32.4%",
-      "sharpe": "2.86",
-      "maxdd": "-4.0%"
+      "ret": "+12.9%",
+      "sharpe": "1.38",
+      "maxdd": "-4.2%"
     },
     {
       "regime": "bear",
-      "ret": "+16.2%",
-      "sharpe": "2.53",
-      "maxdd": "-3.8%"
+      "ret": "+12.2%",
+      "sharpe": "2.21",
+      "maxdd": "-2.8%"
     }
   ],
   "leaderboard": [
-    {
-      "name": "Final MAS fund (capped inverse-vol)",
-      "ret": 0.6402347221019433,
-      "sharpe": 2.538593882665691,
-      "sortino": 3.1926573475219424,
-      "maxdd": -0.040361973201140454,
-      "alpha": 0.5512734425341332
-    },
-    {
-      "name": "Naive EW fund",
-      "ret": 0.6608475472885167,
-      "sharpe": 2.1966561921615413,
-      "sortino": 2.75885717431776,
-      "maxdd": -0.04727880490501636,
-      "alpha": 0.5718862677207066
-    },
     {
       "name": "patch",
       "ret": 0.7781879575046455,
@@ -126,12 +120,20 @@
       "alpha": 0.6892266779368355
     },
     {
-      "name": "lgbm",
-      "ret": 1.174927714600844,
-      "sharpe": 1.5079537046247944,
-      "sortino": 1.1092823984689728,
-      "maxdd": -0.1786304191725451,
-      "alpha": 1.085966435033034
+      "name": "Final MAS fund (capped inverse-vol)",
+      "ret": 0.32496711019059243,
+      "sharpe": 1.5932000339522783,
+      "sortino": 2.0206432200557045,
+      "maxdd": -0.048328940444143154,
+      "alpha": 0.23600583062278235
+    },
+    {
+      "name": "Naive EW fund",
+      "ret": 0.3225953742267522,
+      "sharpe": 1.3676838792901356,
+      "sortino": 1.7229312670909123,
+      "maxdd": -0.06436137720662027,
+      "alpha": 0.23363409465894214
     },
     {
       "name": "S&P 500 Buy & Hold",
@@ -166,20 +168,28 @@
       "alpha": 0.5355405422553841
     },
     {
-      "name": "Coordinator ablation (Sharpe x regime)",
-      "ret": 0.28192850973177586,
-      "sharpe": 0.5649057833650664,
-      "sortino": 0.6723735110393855,
-      "maxdd": -0.25453673273515803,
-      "alpha": 0.19296723016396577
-    },
-    {
       "name": "volbreak",
       "ret": 0.3472330825366312,
       "sharpe": 0.44298011604638887,
       "sortino": 0.43632466289464794,
       "maxdd": -0.23656930638544194,
       "alpha": 0.25827180296882113
+    },
+    {
+      "name": "Coordinator ablation (Sharpe x regime)",
+      "ret": 0.10358303552442738,
+      "sharpe": 0.24075285138017777,
+      "sortino": 0.28350388337817706,
+      "maxdd": -0.2514331660400289,
+      "alpha": 0.0146217559566173
+    },
+    {
+      "name": "lgbm",
+      "ret": 0.09581336263969242,
+      "sharpe": 0.1401667941900044,
+      "sortino": 0.11642265860157613,
+      "maxdd": -0.2170464692313572,
+      "alpha": 0.006852083071882342
     },
     {
       "name": "tcn",
@@ -196,6 +206,22 @@
       "sortino": 0.1172531115405478,
       "maxdd": -0.5008379402841711,
       "alpha": -7.993605777301127e-15
+    },
+    {
+      "name": "meanrev",
+      "ret": -0.10516939954546689,
+      "sharpe": -0.12865895486475007,
+      "sortino": -0.1511550801895503,
+      "maxdd": -0.34804534199602455,
+      "alpha": -0.19413067911327697
+    },
+    {
+      "name": "sentiment_regime",
+      "ret": -0.21151764254591543,
+      "sharpe": -0.542819439587701,
+      "sortino": -0.3397393316270729,
+      "maxdd": -0.3429997053475575,
+      "alpha": -0.3004789221137255
     }
   ]
 }
