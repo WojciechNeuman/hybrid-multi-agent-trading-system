@@ -15,7 +15,7 @@ Method (leak-free, identical protocol to the learned agents):
 * **Execution**: the agent's ATR-bracket params are grid-searched on 2022-01→2024-05 only, frozen
   for OOS, and run through `mas07.bracket_run`.
 
-Artifacts -> `artifacts/notebooks_v2/09_crossasset/` in the standard format (drop-in for `mas07`).
+Artifacts -> `artifacts/notebooks_v2/05_crossasset/` in the standard format (drop-in for `mas07`).
 """
 from __future__ import annotations
 
@@ -171,7 +171,7 @@ def run_pipeline(save=True, verbose=True) -> dict:
         return int(((np.sign(pos) > 0) & f).sum()), int(((np.sign(pos) < 0) & f).sum())
     nl, ns = flips(posf)
     results = {
-        "notebook": "09_crossasset_v1", "agent": "crossasset",
+        "notebook": "05_crossasset_v1", "agent": "crossasset",
         "paradigm": "learned: cross-asset / sentiment / flow", "created": pd.Timestamp.now().isoformat(),
         "model": "LightGBM expanding-window WFO on orthogonal features",
         "features": FEATURES, "seed": SEED,
@@ -182,7 +182,7 @@ def run_pipeline(save=True, verbose=True) -> dict:
         "backtest_0fee": {"total_ret": round(float(eq0[-1] - 1), 4), "sharpe": round(sharpe(eq0), 4)},
     }
     if save:
-        arts = repo_root() / "artifacts" / "notebooks_v2" / "09_crossasset"
+        arts = repo_root() / "artifacts" / "notebooks_v2" / "05_crossasset"
         arts.mkdir(parents=True, exist_ok=True)
         np.save(arts / "oos_probs.npy", p_oos.astype(np.float32))
         np.save(arts / "oos_index.npy", oos_idx.astype("datetime64[ns]").astype(np.int64).values)

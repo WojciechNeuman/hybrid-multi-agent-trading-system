@@ -31,7 +31,7 @@ Design discipline (why this is leak-free):
 
 Artifacts are written in the standard agent format
 (``oos_probs.npy`` / ``oos_index.npy`` / ``wfo_probs.npy`` / ``wfo_index.npy`` / ``results.json``)
-to ``artifacts/notebooks_v2/08_<name>/`` so each agent is a drop-in for ``mas07``.
+to ``artifacts/notebooks_v2/05_<name>/`` so each agent is a drop-in for ``mas07``.
 """
 from __future__ import annotations
 
@@ -51,8 +51,8 @@ from .mas07 import (ANN, OOS_END, OOS_START, bracket_run, maxdd, repo_root,
 # ---------------------------------------------------------------------------
 
 RULE_AGENTS = ["trend", "meanrev", "volbreak", "sentiment_regime", "dominance_rotation"]
-RULE_DIR = {"trend": "08_trend", "meanrev": "08_meanrev", "volbreak": "08_volbreak",
-            "sentiment_regime": "08_sentiment_regime", "dominance_rotation": "08_dominance_rotation"}
+RULE_DIR = {"trend": "05_trend", "meanrev": "05_meanrev", "volbreak": "05_volbreak",
+            "sentiment_regime": "05_sentiment_regime", "dominance_rotation": "05_dominance_rotation"}
 RULE_PARADIGM = {
     "trend": "rule: trend-following",
     "meanrev": "rule: mean-reversion",
@@ -282,7 +282,7 @@ def build_agent(name: str, df: pd.DataFrame, save: bool = True, verbose: bool = 
         sub["atr_14_pct"].values, with_fees=False, **best)
 
     results = {
-        "notebook": "08_rule_agents_v1", "agent": name, "paradigm": RULE_PARADIGM[name],
+        "notebook": "05_rule_agents_v1", "agent": name, "paradigm": RULE_PARADIGM[name],
         "created": pd.Timestamp.now().isoformat(),
         "model": f"rule-based ({RULE_PARADIGM[name]}), parameter-free causal signal",
         "grid_val": f"{GRID_VAL_START.date()}→{GRID_VAL_END.date()}",
@@ -324,7 +324,7 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
     t0 = time.time()
     out = {a: build_agent(a, df, save=save, verbose=verbose) for a in RULE_AGENTS}
     if verbose:
-        print(f"\nDone in {time.time()-t0:.0f}s → artifacts/notebooks_v2/08_*")
+        print(f"\nDone in {time.time()-t0:.0f}s → artifacts/notebooks_v2/05_*")
     out["_df"] = df
     return out
 

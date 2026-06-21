@@ -1,10 +1,10 @@
 {
   "name": "BTCUSDT_1h_unified_v1",
   "output_file": "data/features/BTCUSDT_1h_unified.parquet",
-  "built_at": "2026-06-18T16:47:45.450875+00:00",
+  "built_at": "2026-06-21T10:36:35.625449+00:00",
   "shape": {
-    "rows": 77013,
-    "columns": 292
+    "rows": 77036,
+    "columns": 291
   },
   "date_range": {
     "start": "2017-08-17",
@@ -218,7 +218,7 @@
     },
     "v3_external": {
       "file": "data/features/BTCUSDT_1h_v3_features.parquet",
-      "n_columns": 21,
+      "n_columns": 20,
       "columns": [
         "cross_eth_btc_ratio",
         "cross_eth_btc_mom_24h",
@@ -229,7 +229,6 @@
         "mkt_btc_dominance",
         "mkt_btc_dominance_chg_7d",
         "mkt_eth_dominance",
-        "mkt_total_mcap_chg_24h",
         "mkt_stablecoin_pct",
         "sent_fear_greed",
         "sent_fear_greed_ma7",
@@ -243,7 +242,7 @@
         "mom_normalized_72h"
       ],
       "lag_fix_applied": true,
-      "lag_fix_note": "Daily data shifted 1 day forward before ffill to hourly. Fixes mkt_total_mcap_chg_24h leakage (was corr=+0.18)."
+      "lag_fix_note": "Daily data shifted 1 day forward before ffill to hourly. Prevents look-ahead leakage from end-of-day daily snapshots."
     },
     "v4_fractional_regime_tfi": {
       "file": "data/features/BTCUSDT_1h_v4_features.parquet",
@@ -554,7 +553,6 @@
     "mkt_btc_dominance",
     "mkt_btc_dominance_chg_7d",
     "mkt_eth_dominance",
-    "mkt_total_mcap_chg_24h",
     "mkt_stablecoin_pct",
     "sent_fear_greed",
     "sent_fear_greed_ma7",

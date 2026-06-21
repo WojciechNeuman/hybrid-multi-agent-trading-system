@@ -6,7 +6,7 @@ OOS signal) with a sliding 24-month / 3-month-step walk-forward, mirroring the
 Mamba protocol. Produces wfo_probs across 2022-06+ (genuine per-fold OOS) so the
 meta-learner gets a real signal, plus the 2-year unified OOS slice.
 
-Run: python _patch_wfo.py   (writes artifacts/notebooks_v2/05_patchtst/)
+Run: python _patch_wfo.py   (writes artifacts/notebooks_v2/04_patchtst/)
 """
 import itertools, json, math, random, time, warnings
 from pathlib import Path
@@ -24,7 +24,7 @@ def _repo():
         if (p/'pyproject.toml').exists(): return p
         p=p.parent
     raise RuntimeError('repo root')
-REPO=_repo(); ART=REPO/'artifacts'/'notebooks_v2'/'05_patchtst'; ART.mkdir(parents=True,exist_ok=True)
+REPO=_repo(); ART=REPO/'artifacts'/'notebooks_v2'/'04_patchtst'; ART.mkdir(parents=True,exist_ok=True)
 
 # ── config (identical model/label spec to the notebook) ─────────────────────
 OOS_START=pd.Timestamp('2024-05-31'); WFO_START=pd.Timestamp('2022-06-01')
@@ -175,7 +175,7 @@ def main():
     np.save(ART/'oos_probs.npy', full_probs.reindex(oosdf.index).values.astype(np.float32))
     np.save(ART/'oos_index.npy', oosdf.index.values.astype('int64'))
     if last_m is not None: torch.save(last_m.state_dict(), ART/'model.pt')
-    json.dump({'notebook':'05_patchtst','scheme':'walk-forward sliding 24mo/3mo','oos_auc_tbm':float(auc),
+    json.dump({'notebook':'04_patchtst','scheme':'walk-forward sliding 24mo/3mo','oos_auc_tbm':float(auc),
                'wfo_start':str(WFO_START.date()),'train_months':TRAIN_MONTHS,'temperature_last':last_T,
                'note':'Converted from static <=2022 split to walk-forward retraining.'},
               open(ART/'results_wfo.json','w'),indent=2,default=float)

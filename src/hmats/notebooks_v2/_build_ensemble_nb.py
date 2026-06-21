@@ -75,7 +75,7 @@ def load(d):
     p=np.load(f/'wfo_probs.npy'); idx=pd.to_datetime(np.load(f/'wfo_index.npy'),unit='ns')
     return pd.Series(p,index=idx)
 AG=['lgbm','mamba','tcn','patch']
-RAW={'lgbm':load('01_lgbm'),'mamba':load('02_mamba'),'tcn':load('03_tcn'),'patch':load('05_patchtst')}
+RAW={'lgbm':load('01_lgbm'),'mamba':load('02_mamba'),'tcn':load('03_tcn'),'patch':load('04_patchtst')}
 P=pd.DataFrame(RAW).reindex(df.index)
 P['y']=(df['close'].shift(-1)>df['close']).astype(int)           # combiner target = next-bar direction
 for c in ['close','high','low','atr_14_pct','hurst_168h','bb_width_pct','vol_ratio_24h']:

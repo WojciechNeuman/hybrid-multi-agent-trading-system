@@ -1,0 +1,42 @@
+{
+  "notebook": "05_rule_agents_v1",
+  "agent": "meanrev",
+  "paradigm": "rule: mean-reversion",
+  "created": "2026-06-21T15:34:33.393204",
+  "model": "rule-based (rule: mean-reversion), parameter-free causal signal",
+  "grid_val": "2022-01-01\u21922024-05-31",
+  "oos_period": "2024-06-01\u21922026-05-31",
+  "best_params": {
+    "long_threshold": 0.55,
+    "short_threshold": 0.45,
+    "entry_atr_mult": 0.0,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 2.0,
+    "min_hold": 12,
+    "max_hold": 24,
+    "cooldown": 3,
+    "min_sl": 0.01
+  },
+  "backtest_wfees": {
+    "n_trades": 770,
+    "n_long": 360,
+    "n_short": 410,
+    "total_ret": -0.1242,
+    "sharpe": -0.1534,
+    "maxdd": -0.3489
+  },
+  "backtest_0fee": {
+    "n_trades": 770,
+    "n_long": 360,
+    "n_short": 410,
+    "total_ret": 0.1581,
+    "sharpe": 0.1698,
+    "maxdd": -0.2974
+  },
+  "artifacts": {
+    "oos_probs": "oos_probs.npy",
+    "oos_index": "oos_index.npy (int64 ns)",
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_index": "wfo_index.npy (int64 ns)"
+  }
+}

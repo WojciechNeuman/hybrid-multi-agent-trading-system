@@ -1,6 +1,6 @@
 {
   "notebook": "03_tcn_v1",
-  "created": "2026-06-18T22:41:09.043815",
+  "created": "2026-06-21T12:55:27.057860",
   "model": "TCNMultiTask (direction + forward-vol)",
   "splits": {
     "train_end": "2022-12-31",
@@ -31,7 +31,7 @@
     "best_epoch": 15,
     "best_val_loss": 0.69455
   },
-  "oos_auc_tbm": 0.5156,
+  "oos_auc_tbm": 0.5149,
   "all_features": [
     "stoch_k_14",
     "ret_2h",
@@ -77,25 +77,25 @@
     "cooldown": 2
   },
   "backtest_wfees": {
-    "n_trades": 416,
+    "n_trades": 415,
     "n_long": 3,
-    "n_short": 413,
-    "win_rate": 0.4663,
-    "total_ret": 0.2204,
-    "sharpe": 0.3491,
+    "n_short": 412,
+    "win_rate": 0.4651,
+    "total_ret": 0.2031,
+    "sharpe": 0.3243,
     "maxdd": -0.2084
   },
   "backtest_0fee": {
-    "n_trades": 416,
+    "n_trades": 415,
     "n_long": 3,
-    "n_short": 413,
-    "win_rate": 0.4712,
-    "total_ret": 0.3858,
-    "sharpe": 0.5736,
+    "n_short": 412,
+    "win_rate": 0.4699,
+    "total_ret": 0.3662,
+    "sharpe": 0.5487,
     "maxdd": -0.1939
   },
   "monthly": {
-    "mean_pct": 0.697,
+    "mean_pct": 0.64,
     "positive_months": 11,
     "total_months": 24
   },

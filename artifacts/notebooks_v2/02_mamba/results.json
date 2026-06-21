@@ -1,143 +1,105 @@
 {
   "notebook": "02_mamba_v1",
-  "created": "2026-06-18T20:22:17.620759",
+  "created": "2026-06-21T13:17:23.244187",
   "model": "Mamba SSM (pure-PyTorch, chunked scan)",
   "wfo": {
-    "type": "expanding_window",
-    "train_start": "2019-01-01",
+    "type": "expanding",
+    "train_start_floor": "2019-01-01",
+    "train_window_months": null,
     "retrain_months": 3,
     "folds": [
       {
         "fold": 0,
-        "val_auc": 0.5561,
-        "ep": 15,
-        "train": "2019-01-01\u21922021-12-31",
-        "oos": "2022-01-01\u21922022-04-01"
+        "val_auc": 0.5388,
+        "ep": 5,
+        "train": "2019-01-01\u21922023-05-31",
+        "oos": "2023-06-01\u21922023-09-01"
       },
       {
         "fold": 1,
-        "val_auc": 0.5635,
-        "ep": 8,
-        "train": "2019-01-01\u21922022-03-31",
-        "oos": "2022-04-01\u21922022-07-01"
+        "val_auc": 0.5172,
+        "ep": 6,
+        "train": "2019-01-01\u21922023-08-31",
+        "oos": "2023-09-01\u21922023-12-01"
       },
       {
         "fold": 2,
-        "val_auc": 0.5434,
-        "ep": 8,
-        "train": "2019-01-01\u21922022-06-30",
-        "oos": "2022-07-01\u21922022-10-01"
+        "val_auc": 0.5175,
+        "ep": 1,
+        "train": "2019-01-01\u21922023-11-30",
+        "oos": "2023-12-01\u21922024-03-01"
       },
       {
         "fold": 3,
-        "val_auc": 0.5515,
-        "ep": 7,
-        "train": "2019-01-01\u21922022-09-30",
-        "oos": "2022-10-01\u21922023-01-01"
+        "val_auc": 0.5164,
+        "ep": 8,
+        "train": "2019-01-01\u21922024-02-29",
+        "oos": "2024-03-01\u21922024-06-01"
       },
       {
         "fold": 4,
-        "val_auc": 0.5549,
-        "ep": 9,
-        "train": "2019-01-01\u21922022-12-31",
-        "oos": "2023-01-01\u21922023-04-01"
+        "val_auc": 0.5229,
+        "ep": 4,
+        "train": "2019-01-01\u21922024-05-31",
+        "oos": "2024-06-01\u21922024-09-01"
       },
       {
         "fold": 5,
-        "val_auc": 0.555,
-        "ep": 14,
-        "train": "2019-01-01\u21922023-03-31",
-        "oos": "2023-04-01\u21922023-07-01"
+        "val_auc": 0.5224,
+        "ep": 1,
+        "train": "2019-01-01\u21922024-08-31",
+        "oos": "2024-09-01\u21922024-12-01"
       },
       {
         "fold": 6,
-        "val_auc": 0.5623,
+        "val_auc": 0.5344,
         "ep": 7,
-        "train": "2019-01-01\u21922023-06-30",
-        "oos": "2023-07-01\u21922023-10-01"
+        "train": "2019-01-01\u21922024-11-30",
+        "oos": "2024-12-01\u21922025-03-01"
       },
       {
         "fold": 7,
-        "val_auc": 0.5568,
-        "ep": 9,
-        "train": "2019-01-01\u21922023-09-30",
-        "oos": "2023-10-01\u21922024-01-01"
+        "val_auc": 0.54,
+        "ep": 8,
+        "train": "2019-01-01\u21922025-02-28",
+        "oos": "2025-03-01\u21922025-06-01"
       },
       {
         "fold": 8,
-        "val_auc": 0.5535,
-        "ep": 11,
-        "train": "2019-01-01\u21922023-12-31",
-        "oos": "2024-01-01\u21922024-04-01"
+        "val_auc": 0.5321,
+        "ep": 4,
+        "train": "2019-01-01\u21922025-05-31",
+        "oos": "2025-06-01\u21922025-09-01"
       },
       {
         "fold": 9,
-        "val_auc": 0.5585,
-        "ep": 10,
-        "train": "2019-01-01\u21922024-03-31",
-        "oos": "2024-04-01\u21922024-07-01"
+        "val_auc": 0.5316,
+        "ep": 3,
+        "train": "2019-01-01\u21922025-08-31",
+        "oos": "2025-09-01\u21922025-12-01"
       },
       {
         "fold": 10,
-        "val_auc": 0.5585,
-        "ep": 9,
-        "train": "2019-01-01\u21922024-06-30",
-        "oos": "2024-07-01\u21922024-10-01"
+        "val_auc": 0.5366,
+        "ep": 3,
+        "train": "2019-01-01\u21922025-11-30",
+        "oos": "2025-12-01\u21922026-03-01"
       },
       {
         "fold": 11,
-        "val_auc": 0.5553,
-        "ep": 9,
-        "train": "2019-01-01\u21922024-09-30",
-        "oos": "2024-10-01\u21922025-01-01"
-      },
-      {
-        "fold": 12,
-        "val_auc": 0.5525,
-        "ep": 9,
-        "train": "2019-01-01\u21922024-12-31",
-        "oos": "2025-01-01\u21922025-04-01"
-      },
-      {
-        "fold": 13,
-        "val_auc": 0.546,
-        "ep": 10,
-        "train": "2019-01-01\u21922025-03-31",
-        "oos": "2025-04-01\u21922025-07-01"
-      },
-      {
-        "fold": 14,
-        "val_auc": 0.5479,
+        "val_auc": 0.5055,
         "ep": 8,
-        "train": "2019-01-01\u21922025-06-30",
-        "oos": "2025-07-01\u21922025-10-01"
-      },
-      {
-        "fold": 15,
-        "val_auc": 0.5528,
-        "ep": 8,
-        "train": "2019-01-01\u21922025-09-30",
-        "oos": "2025-10-01\u21922026-01-01"
-      },
-      {
-        "fold": 16,
-        "val_auc": 0.5395,
-        "ep": 6,
-        "train": "2019-01-01\u21922025-12-31",
-        "oos": "2026-01-01\u21922026-04-01"
-      },
-      {
-        "fold": 17,
-        "val_auc": 0.5288,
-        "ep": 5,
-        "train": "2019-01-01\u21922026-03-31",
-        "oos": "2026-04-01\u21922026-07-01"
+        "train": "2019-01-01\u21922026-02-28",
+        "oos": "2026-03-01\u21922026-06-01"
       }
     ]
   },
-  "grid_val": "2022-01-01\u21922024-05-31",
+  "signal_transform": "fold_validation_percentile_score",
+  "grid_val": "2023-06-01\u21922024-05-31",
   "oos_period": "2024-06-01\u21922026-05-31",
-  "oos_auc": 0.5257,
+  "oos_auc": 0.5129,
+  "oos_auc_raw": 0.5129,
+  "oos_auc_signal_rank": 0.5084,
   "architecture": {
     "d_model": 64,
     "d_state": 16,
@@ -433,44 +395,49 @@
     "sampen_48"
   ],
   "best_params": {
-    "long_threshold": 0.58,
-    "short_threshold": 0.42,
-    "entry_atr_mult": 0.6,
+    "long_threshold": 0.85,
+    "short_threshold": 0.15,
+    "entry_atr_mult": 0.3,
     "sl_atr_mult": 1.5,
     "tp_atr_mult": 3.0,
     "min_sl": 0.01,
     "min_hold": 8,
-    "max_hold": 48,
-    "cooldown": 3
+    "max_hold": 24,
+    "cooldown": 3,
+    "trade_direction": "long_only",
+    "signal_quantile": 0.15
   },
   "backtest_wfees": {
-    "n_trades": 281,
-    "n_long": 117,
-    "n_short": 164,
-    "win_rate": 0.4093,
-    "total_ret": 0.2612,
-    "sharpe": 0.4263,
-    "maxdd": -0.3757
+    "n_trades": 345,
+    "n_long": 345,
+    "n_short": 0,
+    "win_rate": 0.4928,
+    "total_ret": 0.6737,
+    "sharpe": 0.9889,
+    "maxdd": -0.2589
   },
   "backtest_0fee": {
-    "n_trades": 281,
-    "n_long": 117,
-    "n_short": 164,
-    "win_rate": 0.4199,
-    "total_ret": 0.5699,
-    "sharpe": 0.8319,
-    "maxdd": -0.3371
+    "n_trades": 345,
+    "n_long": 345,
+    "n_short": 0,
+    "win_rate": 0.5072,
+    "total_ret": 1.152,
+    "sharpe": 1.474,
+    "maxdd": -0.1979
   },
   "monthly": {
-    "mean_pct": 1.108,
-    "positive_months": 11,
+    "mean_pct": 2.161,
+    "positive_months": 14,
     "total_months": 24
   },
   "artifacts": {
-    "oos_probs": "oos_probs.npy",
+    "oos_probs": "oos_probs.npy (fold percentile score)",
+    "oos_probs_raw": "oos_probs_raw.npy",
     "oos_index": "oos_index.npy (int64 ns)",
-    "wfo_probs": "wfo_probs.npy",
+    "wfo_probs": "wfo_probs.npy (fold percentile score)",
+    "wfo_probs_raw": "wfo_probs_raw.npy",
     "wfo_index": "wfo_index.npy (int64 ns)",
+    "grid_leaderboard": "trading_grid_leaderboard.csv",
     "model": "model_lastfold.pt"
   }
 }

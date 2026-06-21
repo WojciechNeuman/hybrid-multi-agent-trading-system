@@ -238,3 +238,4 @@ models/*
 
 # Claude
 .claude/
+*.parquet.bak_*

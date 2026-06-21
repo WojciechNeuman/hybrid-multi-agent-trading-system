@@ -1,0 +1,42 @@
+{
+  "notebook": "05_rule_agents_v1",
+  "agent": "dominance_rotation",
+  "paradigm": "rule: cross-asset dominance rotation",
+  "created": "2026-06-21T15:34:42.506766",
+  "model": "rule-based (rule: cross-asset dominance rotation), parameter-free causal signal",
+  "grid_val": "2022-01-01\u21922024-05-31",
+  "oos_period": "2024-06-01\u21922026-05-31",
+  "best_params": {
+    "long_threshold": 0.6,
+    "short_threshold": 0.4,
+    "entry_atr_mult": 0.0,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 3.0,
+    "min_hold": 12,
+    "max_hold": 24,
+    "cooldown": 3,
+    "min_sl": 0.01
+  },
+  "backtest_wfees": {
+    "n_trades": 699,
+    "n_long": 418,
+    "n_short": 281,
+    "total_ret": 1.5771,
+    "sharpe": 1.0968,
+    "maxdd": -0.2624
+  },
+  "backtest_0fee": {
+    "n_trades": 699,
+    "n_long": 418,
+    "n_short": 281,
+    "total_ret": 2.4506,
+    "sharpe": 1.4357,
+    "maxdd": -0.2421
+  },
+  "artifacts": {
+    "oos_probs": "oos_probs.npy",
+    "oos_index": "oos_index.npy (int64 ns)",
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_index": "wfo_index.npy (int64 ns)"
+  }
+}

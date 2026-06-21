@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "created_utc": "2026-05-30T20:27:31Z",
+  "created_utc": "2026-06-21T10:36:16Z",
   "description": "Structural features for BTCUSDT 1h \u2014 adapted from 5m pipeline.",
   "source_timeframe": "1h",
   "source_assets": [
@@ -9,10 +9,10 @@
   "output_parquet": "/Users/wojciech.neuman/Documents/hybrid-multi-agent-trading-system/data/features/BTCUSDT_1h_structural.parquet",
   "burn_in_bars": 200,
   "total_features": 39,
-  "row_count": 76582,
+  "row_count": 76680,
   "date_range": {
     "start": "2017-09-01 00:00:00+00:00",
-    "end": "2026-05-27 21:00:00+00:00"
+    "end": "2026-05-31 23:00:00+00:00"
   },
   "window_params": {
     "swing_order_minor": 12,

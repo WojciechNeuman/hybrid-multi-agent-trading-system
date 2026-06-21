@@ -1,0 +1,42 @@
+{
+  "notebook": "05_rule_agents_v1",
+  "agent": "trend",
+  "paradigm": "rule: trend-following",
+  "created": "2026-06-21T15:34:29.724667",
+  "model": "rule-based (rule: trend-following), parameter-free causal signal",
+  "grid_val": "2022-01-01\u21922024-05-31",
+  "oos_period": "2024-06-01\u21922026-05-31",
+  "best_params": {
+    "long_threshold": 0.6,
+    "short_threshold": 0.4,
+    "entry_atr_mult": 0.0,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 3.0,
+    "min_hold": 12,
+    "max_hold": 48,
+    "cooldown": 3,
+    "min_sl": 0.01
+  },
+  "backtest_wfees": {
+    "n_trades": 537,
+    "n_long": 142,
+    "n_short": 395,
+    "total_ret": 0.6315,
+    "sharpe": 0.5888,
+    "maxdd": -0.2863
+  },
+  "backtest_0fee": {
+    "n_trades": 537,
+    "n_long": 142,
+    "n_short": 395,
+    "total_ret": 0.9791,
+    "sharpe": 0.8218,
+    "maxdd": -0.2808
+  },
+  "artifacts": {
+    "oos_probs": "oos_probs.npy",
+    "oos_index": "oos_index.npy (int64 ns)",
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_index": "wfo_index.npy (int64 ns)"
+  }
+}

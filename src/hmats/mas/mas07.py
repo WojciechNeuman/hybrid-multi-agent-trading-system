@@ -55,9 +55,9 @@ EXCLUDED_AGENTS = {
                         "random-bracket null (7th percentile) — contrarian Fear & Greed has no edge OOS",
 }
 AGENTS = LEARNED_AGENTS + RULE_AGENTS
-AGENT_DIR = {"lgbm": "01_lgbm", "mamba": "02_mamba", "tcn": "03_tcn", "patch": "05_patchtst",
-             "trend": "08_trend", "volbreak": "08_volbreak",
-             "dominance_rotation": "08_dominance_rotation"}
+AGENT_DIR = {"lgbm": "01_lgbm", "mamba": "02_mamba", "tcn": "03_tcn", "patch": "04_patchtst",
+             "trend": "05_trend", "volbreak": "05_volbreak",
+             "dominance_rotation": "05_dominance_rotation"}
 # Multiclass TBM agents emit two *independent* softmax channels (P-up, P-down) and decide
 # long on P-up and short on P-down. A single saved probability is the P-up channel only, so
 # these agents must be backtested with their P-down channel too — otherwise the binary engine
@@ -140,14 +140,15 @@ def maxdd(eq: np.ndarray) -> float:
 
 def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
                 entry_atr_mult, sl_atr_mult, tp_atr_mult, min_hold, max_hold, cooldown,
-                min_sl=0.01, with_fees=True, prob_dn=None, **_ignored):
+                min_sl=0.01, trade_direction="both", with_fees=True, prob_dn=None, **_ignored):
     """Single-pass ATR-bracket backtester (identical logic to the base agents).
 
     Returns three full-length arrays: the equity curve ``eq``, the held position ``pos`` in
     ``{-1, 0, +1}``, and a held ``conf`` in ``[0, 1]`` (entry-probability strength carried for
     the life of the trade). Equity is net of the maker/taker fee model and short funding.
 
-    ``prob_dn`` selects the entry convention:
+    ``trade_direction`` can be ``both``, ``long_only`` or ``short_only`` and is honoured for
+    both binary and dual-channel agents. ``prob_dn`` selects the entry convention:
 
     * ``None`` — binary single-probability agent (LightGBM, Mamba): long when
       ``prob > long_threshold``, short when ``prob < short_threshold``.
@@ -203,10 +204,12 @@ def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
         elif not np.isnan(prob[i]) and i + 1 < n:
             a = max(atr[i], min_sl)
             if prob_dn is None:
-                go_long, go_short = prob[i] > long_threshold, prob[i] < short_threshold
+                go_long = trade_direction in ("both", "long_only") and prob[i] > long_threshold
+                go_short = trade_direction in ("both", "short_only") and prob[i] < short_threshold
                 pc_long = pc_short = float(np.clip(2 * abs(prob[i] - 0.5), 0, 1))
             else:
-                go_long, go_short = prob[i] > long_threshold, prob_dn[i] > short_threshold
+                go_long = trade_direction in ("both", "long_only") and prob[i] > long_threshold
+                go_short = trade_direction in ("both", "short_only") and prob_dn[i] > short_threshold
                 pc_long = float(np.clip(2 * abs(prob[i] - 0.5), 0, 1))
                 pc_short = float(np.clip(2 * abs(prob_dn[i] - 0.5), 0, 1))
             if go_long:

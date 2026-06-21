@@ -1,0 +1,42 @@
+{
+  "notebook": "05_rule_agents_v1",
+  "agent": "sentiment_regime",
+  "paradigm": "rule: contrarian sentiment (Fear & Greed)",
+  "created": "2026-06-21T15:34:40.604913",
+  "model": "rule-based (rule: contrarian sentiment (Fear & Greed)), parameter-free causal signal",
+  "grid_val": "2022-01-01\u21922024-05-31",
+  "oos_period": "2024-06-01\u21922026-05-31",
+  "best_params": {
+    "long_threshold": 0.7,
+    "short_threshold": 0.3,
+    "entry_atr_mult": 0.0,
+    "sl_atr_mult": 1.5,
+    "tp_atr_mult": 3.0,
+    "min_hold": 12,
+    "max_hold": 24,
+    "cooldown": 3,
+    "min_sl": 0.01
+  },
+  "backtest_wfees": {
+    "n_trades": 203,
+    "n_long": 121,
+    "n_short": 82,
+    "total_ret": -0.2111,
+    "sharpe": -0.5416,
+    "maxdd": -0.343
+  },
+  "backtest_0fee": {
+    "n_trades": 203,
+    "n_long": 121,
+    "n_short": 82,
+    "total_ret": -0.1389,
+    "sharpe": -0.3421,
+    "maxdd": -0.3017
+  },
+  "artifacts": {
+    "oos_probs": "oos_probs.npy",
+    "oos_index": "oos_index.npy (int64 ns)",
+    "wfo_probs": "wfo_probs.npy",
+    "wfo_index": "wfo_index.npy (int64 ns)"
+  }
+}

@@ -40,9 +40,9 @@
     "mfi_21",
     "mtf_alignment",
     "supertrend_dist_15",
-    "ma_ribbon_width",
-    "golden_cross",
     "ad_z_168h",
+    "golden_cross",
+    "ma_ribbon_width",
     "sma50_vs_sma100",
     "hurst_24h",
     "mkt_btc_dominance",
@@ -54,8 +54,8 @@
   "best_model": {
     "top_n_features": 50,
     "corr_threshold": 0.85,
-    "num_leaves": 31,
-    "min_child_samples": 50,
-    "learning_rate": 0.02
+    "num_leaves": 63,
+    "min_child_samples": 30,
+    "learning_rate": 0.01
   }
 }
