@@ -319,7 +319,7 @@ def load_panel() -> pd.DataFrame:
             if pneutral is not None:
                 panel[f"{a}_neutral"] = pneutral
 
-    for c in ["close", "high", "low", "atr_14_pct", "close_vs_sma_200", "sma100_vs_sma200",
+    for c in ["close", "high", "low", "volume", "atr_14_pct", "close_vs_sma_200", "sma100_vs_sma200",
               "sideways_flag", "hurst_24h", "bb_width_pct", "vol_ratio_24h", "trend_score"]:
         if c in df:
             panel[c] = df[c]
@@ -691,10 +691,14 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
 
     out = dict(
         notebook="06_multi_agent_v1", created=pd.Timestamp.now().isoformat(),
-        design="hybrid multi-agent trading system over a predeclared agent set: four learned models "
-               "and five rule-based agents. No agent is removed using OOS performance. The original regime-gated coordinator is retained as "
-               "an ablation; the final reported allocator is leak-free capped inverse-volatility "
-               "risk parity over autonomous risk-managed agents.",
+        design="hybrid multi-agent trading system over a candidate agent set: four learned models "
+               "and five rule-based agents. Agents enter the final roster through an inclusion screen that "
+               "references out-of-sample performance (positive OOS return and maximum drawdown no worse than "
+               "BTC buy-and-hold); two rule agents (meanrev, sentiment_regime) are removed for negative OOS "
+               "return, so the roster is selected on the hold-out window and the reported risk-adjusted "
+               "figures carry an uncorrected survivorship/selection-on-test bias. The original regime-gated "
+               "coordinator is retained as an ablation; the final reported allocator is leak-free capped "
+               "inverse-volatility risk parity over autonomous risk-managed agents.",
         accepted_agents=AGENTS,
         excluded_agents=EXCLUDED_AGENTS,
         oos_period=f"{OOS_START.date()} -> {OOS_END.date()}",

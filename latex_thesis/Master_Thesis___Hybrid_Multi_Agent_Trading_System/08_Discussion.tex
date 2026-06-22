@@ -16,6 +16,8 @@ The individual agents form a different hierarchy after the stricter artifact reb
 
 A deliberate design decision throughout is that each agent consumes a \textit{different} feature subset matched to its learning mechanism. This is validated by the low Spearman correlations between the learned agents' probability series (Table~\ref{tab:spearman_corr}): the cross-paradigm pairs are near zero, and even the TCN and PatchTST --- which share an identical feature diet --- correlate at only $0.47$, their differing inductive biases producing materially distinct rankings. The rule agents extend this diversity further, since their signals come from fixed economic logic and, for the dominance agent, from a cross-asset information source that no price-feature model touches.
 
+\vspace{3mm}
+
 From the perspective of ensemble theory, uncorrelated errors are precisely what allow a combination to reduce variance without sacrificing expected return~\cite{dietterich2000ensemble}. Diversity, however, is a \textit{necessary but not sufficient} condition: it is what makes the risk-parity allocator effective, but it does not by itself guarantee that a more elaborate combination rule will help --- as the coordinator ablation shows.
 
 \section{Why the Adaptive Coordinator Did Not Help}
@@ -41,7 +43,10 @@ The system is trained and evaluated on Bitcoin alone, and this is a considered c
 \label{sec:limitations}
 
 \paragraph{Single asset, single venue, single path.}
-All models are trained and evaluated on BTC/USDT and costed on one exchange's fee schedule. The out-of-sample window, though deliberately multi-regime, is a single contiguous two-year path through one asset's history. This is sufficient to demonstrate architectural feasibility and promising evidence, but not to establish robustness across assets, venues, and longer macro cycles.
+All models are trained and evaluated on BTC/USDT and costed on one exchange's fee schedule. The out-of-sample window, though deliberately multi-regime, is a single contiguous two-year path through one asset's history. This is sufficient to demonstrate architectural feasibility and promising evidence, but not to establish reliable generalisation across assets, venues, and longer macro cycles.
+
+\paragraph{Roster selection on the hold-out (survivorship).}
+The final seven-agent roster is chosen by a screen that references out-of-sample performance: an agent is admitted only if its hold-out return is positive and its maximum drawdown is no worse than Bitcoin buy-and-hold, and the mean-reversion ($-12.4\%$) and contrarian-sentiment ($-21.1\%$) agents are excluded on exactly that basis. The roster is therefore selected on the test window, and the fund's reported risk-adjusted figures are upward-biased relative to a roster frozen on pre-OOS information alone --- a survivorship/selection-on-test bias that this thesis does not correct. The bias is bounded, but not removed, by three properties of the design: only two clearly loss-making agents are dropped, the equal-weight baseline over the same surviving roster is reported alongside the allocator, and every exclusion is stated with its reason rather than silently discarded. A fully pre-registered protocol would freeze the candidate roster before the hold-out is touched and report whatever it produced; quantifying how much of the headline Sharpe survives that stricter test is left to future work.
 
 \paragraph{Execution realism.}
 As discussed in Chapter~\ref{07_Financial_Evaluation}, the backtest assumes favourable passive limit fills and near-zero maker fees, and the fund's aggregate turnover is high despite per-agent position caps. Stricter fill and slippage assumptions would absorb part of the apparent edge; with only two years of data, such sensitivity tests are inherently noisy. A stronger validation would need historical order-book or sub-hourly data, which was beyond the budget available for this thesis.

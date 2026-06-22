@@ -74,4 +74,6 @@ For comparison, a more elaborate \textit{regime-gated coordinator} was also buil
 
 All agents that involve trained models are evaluated under strict chronological controls to prevent any form of look-ahead bias. The LightGBM agent uses a sliding two-year window that steps forward one month at a time, while the Mamba and TCN agents use expanding walk-forward retraining every three months. The PatchTST agent uses a fixed train/validation/test split with the test set reserved exclusively for final evaluation. The rule-based agents are not fitted to the data at all; only their ATR-bracket execution parameters are grid-searched on a pre-OOS validation window and frozen before the hold-out is touched. The capital-allocation layer is itself causal: every weight is computed from trailing return statistics only, so no future information enters the fund.
 
+\vspace{3mm}
+
 This protocol means that every point in the final OOS equity curve is genuinely out-of-sample: the agent that generated it, and the weight it was given, were determined entirely from data preceding the bar in question. The unified hold-out window runs from 1 June 2024 to 31 May 2026.
