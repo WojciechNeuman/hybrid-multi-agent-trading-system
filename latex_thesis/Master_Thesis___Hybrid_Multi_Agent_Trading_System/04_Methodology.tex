@@ -70,7 +70,7 @@ All feature data for this research is stored in a single, consistently indexed p
 
 \vspace{3mm}
 
-A note on the cost and value of breadth is in order here, because feature construction proved to be one of the most demanding parts of the project. The one-hour resolution is a real constraint --- it is too coarse to expose order-book microstructure, yet fine enough that a vast number of indicators can be computed from it. This made it easy to \textit{generate} features and hard to generate \textit{useful} ones: the candidate pool grew to several hundred columns, of which only a minority carried any stable predictive content. Moving beyond the handful of features that can be derived directly from raw OHLCV --- into multi-timeframe structure, microstructure proxies, cross-asset flow, and sentiment --- was the step that made it possible to train anything meaningful at all. On the supervisor's advice, a disciplined, advanced feature-selection stage was therefore treated as essential rather than cosmetic, and is described in Section~\ref{sec:lgbm_feature_selection}. The breadth of the problem had a compensating benefit: it forced an exploration of a wide range of state-of-the-art time-series methods, from gradient boosting to selective state-space models, which is itself one of the contributions of this thesis.
+Feature breadth became one of the main engineering challenges of the project. The one-hour resolution is a real constraint --- it is too coarse to expose order-book microstructure, yet fine enough that a vast number of indicators can be computed from it. This made it easy to \textit{generate} features and hard to generate \textit{useful} ones: the candidate pool grew to several hundred columns, of which only a minority carried any stable predictive content. Moving beyond the handful of features that can be derived directly from raw OHLCV --- into multi-timeframe structure, microstructure proxies, cross-asset flow, and sentiment --- was the step that made it possible to train anything meaningful at all. On the supervisor's advice, a disciplined, advanced feature-selection stage was therefore treated as essential rather than cosmetic, and is described in Section~\ref{sec:lgbm_feature_selection}. This broad feature space also forced the project to test several modern time-series methods, from gradient boosting to selective state-space models, which is itself one of the contributions of this thesis.
 
 \vspace{3mm}
 
@@ -93,7 +93,7 @@ Among the risks in a project of this kind, the hardest to catch is a feature tha
 
 \vspace{3mm}
 
-A systematic forward-leakage audit is run as the final phase of the ingestion pipeline. For each candidate feature, the Pearson correlation with the next-bar log-return $r_{t+1}$ is computed over the full history. A feature is flagged if $|\rho(x_t, r_{t+1})| > 0.05$. This threshold is conservative: for a series with $n \approx 74{,}000$ observations, the 99\% confidence interval for an uncorrelated pair is $|\rho| < 0.01$, so the threshold provides a substantial buffer above noise.
+The pipeline runs a forward-leakage audit as the final phase of ingestion. For each candidate feature, the Pearson correlation with the next-bar log-return $r_{t+1}$ is computed over the full history. A feature is flagged if $|\rho(x_t, r_{t+1})| > 0.05$. This threshold is conservative: for a series with $n \approx 74{,}000$ observations, the 99\% confidence interval for an uncorrelated pair is $|\rho| < 0.01$, so the threshold provides a substantial buffer above noise.
 
 \vspace{3mm}
 
@@ -217,7 +217,7 @@ The \textit{structural} library (39 columns) captures market-microstructure geom
 \vspace{3mm}
 
 \textbf{Agent-specific feature selection pipelines.}
-A key architectural decision in the system is that each agent operates on a \textit{different subset} of the shared feature library, selected according to the agent's learning mechanism, capacity, and role in the ensemble. This deliberate heterogeneity serves two purposes: it avoids redundancy between agents that would reduce the diversity of the ensemble, and it allows each agent to use only the features that are well-matched to its inductive bias. Table~\ref{tab:agent_feature_sets} summarises the per-agent feature diets.
+Each agent operates on a \textit{different subset} of the shared feature library, selected according to the agent's learning mechanism, capacity, and role in the ensemble. Using different feature subsets reduces redundancy across agents and better matches each model's strengths, since each agent uses only the features well-suited to its inductive bias. Table~\ref{tab:agent_feature_sets} summarises the per-agent feature diets.
 
 \begin{table}[h!]
     \centering

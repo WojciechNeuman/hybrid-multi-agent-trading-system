@@ -1,9 +1,9 @@
 \chapter{Theoretical Background}
 \label{02_Theoretical_Background}
 \thispagestyle{empty}
-Before presenting the proposed system, it is necessary to introduce the theoretical background related to financial time series and their analysis using artificial intelligence methods. This thesis focuses on the application of AI techniques to financial data, which requires understanding both the properties of time series and the models used to process them.
+This chapter introduces the background needed for the proposed system: financial time series and their analysis using artificial intelligence methods. The application of AI techniques to financial data requires understanding both the properties of time series and the models used to process them.
 \vspace{3mm}
-The following subsections describe the main characteristics of financial time series, the role of feature engineering, and selected artificial intelligence methods used in algorithmic trading. The chapter also introduces ensemble methods and decision fusion, as well as the concept of agents and multi-agent systems, which form the basis of the proposed approach.
+The chapter first discusses the main characteristics of financial time series, the role of feature engineering, and selected artificial intelligence methods used in algorithmic trading. The chapter also introduces ensemble methods and decision fusion, as well as the concept of agents and multi-agent systems, which form the basis of the proposed approach.
 
 \subsection*{Financial Markets and Time Series Characteristics}
 
@@ -30,7 +30,7 @@ Beyond aggregated price data, financial markets also generate more detailed info
 \end{figure}
 
 \vspace{3mm}
-Financial time series exhibit several properties that make modeling and prediction challenging. Returns typically show weak autocorrelation, meaning that past price changes provide limited direct information about future movements, while volatility measures, such as absolute or squared returns, often exhibit significant persistence. In addition, financial data is non-stationary, with statistical properties such as mean and variance changing over time, and displays volatility clustering, where periods of high variability tend to persist. Return distributions are also heavy-tailed, meaning that extreme events occur more frequently than expected under normal assumptions. Finally, nonlinear dependencies and long memory effects further complicate modeling, motivating the use of more advanced data-driven approaches  ~\cite{sewell2011characterization}. These characteristics highlight the complexity of financial time series and the challenges associated with their modeling, which require careful feature design and appropriate modeling approaches.
+Financial time series exhibit several properties that make modeling and prediction challenging. Returns typically show weak autocorrelation, meaning that past price changes provide limited direct information about future movements, while volatility measures, such as absolute or squared returns, often exhibit significant persistence. In addition, financial data is non-stationary, with statistical properties such as mean and variance changing over time, and displays volatility clustering, where periods of high variability tend to persist. Return distributions are also heavy-tailed, meaning that extreme events occur more frequently than expected under normal assumptions. Finally, nonlinear dependencies and long memory effects further complicate modeling, motivating the use of more advanced data-driven approaches  ~\cite{sewell2011characterization}. Because of these properties, financial time series require careful feature design and appropriate modeling approaches.
 % \vspace{3mm} while this is 
 % - Financial Markets and Time Series Characteristics
 % Market properties:
@@ -47,7 +47,7 @@ Financial time series exhibit several properties that make modeling and predicti
 % low signal-to-noise ratio
 \subsection*{Feature Engineering in Financial Data}
 
-Raw OHLCV data alone is rarely sufficient as direct input to a predictive model. Feature engineering turns this raw signal into a richer representation, bringing out the structure, momentum, and volatility that otherwise stay buried in the bare price and volume series~\cite{sonkavde2023forecasting}.
+In practice, raw OHLCV data does not provide enough structure for the models used here. Feature engineering turns this raw signal into a richer representation, bringing out the structure, momentum, and volatility that otherwise stay buried in the bare price and volume series~\cite{sonkavde2023forecasting}.
 
 \paragraph{Technical indicators.}
 The most widely used features in algorithmic trading are technical indicators computed directly from OHLCV data. \textit{Trend} indicators such as Simple Moving Averages (\gloss{SMA}) and Exponential Moving Averages (\gloss{EMA}) smooth the price series and express the current price relative to its recent history; expressing close price as a ratio to, for example, the 200-period SMA separates the long-run trend from short-run fluctuations. \textit{Momentum} indicators capture the rate and direction of recent price changes: the Relative Strength Index (RSI) normalises average gains and losses over a rolling window to produce an oscillator bounded between 0 and 100; the Moving Average Convergence Divergence (MACD) histogram measures the difference between a fast and a slow EMA, highlighting shifts in momentum. \textit{Volatility} indicators such as the Average True Range (\gloss{ATR}) and Bollinger Bands quantify the range of price variation, which is essential both for risk management (setting stop-loss distances) and as a regime signal (periods of low volatility often precede explosive moves).
