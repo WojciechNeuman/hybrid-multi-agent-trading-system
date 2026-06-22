@@ -168,9 +168,14 @@
 
 % \include{02_Acknowledgment}  % include your Acknowledgement file
 
-\begin{spacing}{1.2}%To make the table of contents, figures, and tables single spaced, as required by the formatting guidelines, pg. 24.
+\begin{spacing}{1.0}%To make the table of contents, figures, and tables single spaced, as required by the formatting guidelines, pg. 24.
 
 %\renewcommand{\contentsname}{\textbf{{\large TABLE OF CONTENTS}}}
+\setcounter{tocdepth}{2}% list chapters/sections/subsections only; keep run-in \paragraph headings out of the ToC
+% Tighten the vertical gap LaTeX inserts before each chapter entry so the ToC fits in two pages.
+\makeatletter
+\patchcmd{\l@chapter}{\addvspace{1.0em \@plus\p@}}{\addvspace{0.35em \@plus\p@}}{}{}
+\makeatother
 \tableofcontents
 
 

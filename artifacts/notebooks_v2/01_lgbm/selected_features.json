@@ -54,8 +54,8 @@
   "best_model": {
     "top_n_features": 50,
     "corr_threshold": 0.85,
-    "num_leaves": 63,
+    "num_leaves": 31,
     "min_child_samples": 30,
-    "learning_rate": 0.01
+    "learning_rate": 0.02
   }
 }

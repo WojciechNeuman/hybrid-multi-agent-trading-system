@@ -7,8 +7,6 @@ whose edge comes from *strategy logic*, not from fitting the feature panel:
 
 * ``trend``    — trend-following: long when the moving-average / SuperTrend / MACD structure is
                  bullish, short when bearish. Designed to earn in directional (bull/bear) regimes.
-* ``meanrev``  — mean-reversion: fade oscillator extremes (RSI / Stoch / Williams / MFI / Bollinger
-                 position). Designed to earn in choppy / range-bound regimes.
 * ``volbreak`` — volatility breakout: trade the direction of a range break (24h breakout flags).
 * ``sentiment_regime`` — contrarian Fear & Greed: fade sentiment extremes (extreme fear -> long,
                  extreme greed -> short), confirmed by the 7-day sentiment trend. Its only inputs are
@@ -50,19 +48,18 @@ from .mas07 import (ANN, OOS_END, OOS_START, bracket_run, maxdd, repo_root,
 # Configuration
 # ---------------------------------------------------------------------------
 
-RULE_AGENTS = ["trend", "meanrev", "volbreak", "sentiment_regime", "dominance_rotation"]
-RULE_DIR = {"trend": "05_trend", "meanrev": "05_meanrev", "volbreak": "05_volbreak",
+RULE_AGENTS = ["trend", "volbreak", "sentiment_regime", "dominance_rotation"]
+RULE_DIR = {"trend": "05_trend", "volbreak": "05_volbreak",
             "sentiment_regime": "05_sentiment_regime", "dominance_rotation": "05_dominance_rotation"}
 RULE_PARADIGM = {
     "trend": "rule: trend-following",
-    "meanrev": "rule: mean-reversion",
     "volbreak": "rule: volatility breakout",
     "sentiment_regime": "rule: contrarian sentiment (Fear & Greed)",
     "dominance_rotation": "rule: cross-asset dominance rotation",
 }
 
 GRID_VAL_START = pd.Timestamp("2022-01-01")
-GRID_VAL_END = pd.Timestamp("2024-05-30")   # ends just before OOS_START — frozen thereafter
+GRID_VAL_END = pd.Timestamp("2024-05-31")   # ends just before OOS_START — frozen thereafter
 
 # Trade-count guards on the validation window (mirror the learned agents): reject degenerate
 # (too few) or over-trading (overfit) configurations.
@@ -105,20 +102,6 @@ def trend_signal(df: pd.DataFrame) -> pd.Series:
         df["ma_bull_score"] >= 2,          # MA-ribbon score (0..4) majority-bullish
     ]
     return _vote_mean(votes).rename("trend")
-
-
-def meanrev_signal(df: pd.DataFrame) -> pd.Series:
-    """Fade oscillator extremes: oversold -> long (p>0.5), overbought -> short (p<0.5).
-
-    Neutral (0.5) when no oscillator is at an extreme — the agent only acts on dislocations.
-    """
-    osc = {"rsi": df["rsi_14"], "stoch": df["stoch_k_14"], "williams": df["williams_r"],
-           "mfi": df["mfi_14"], "bb": df["bb_position_20"]}
-    lo = {"rsi": 0.30, "stoch": 0.20, "williams": 0.20, "mfi": 0.20, "bb": 0.10}
-    hi = {"rsi": 0.70, "stoch": 0.80, "williams": 0.80, "mfi": 0.80, "bb": 0.90}
-    long_votes = _vote_mean([osc[k] < lo[k] for k in osc])    # oversold fraction
-    short_votes = _vote_mean([osc[k] > hi[k] for k in osc])   # overbought fraction
-    return (0.5 + 0.5 * (long_votes - short_votes)).clip(0, 1).rename("meanrev")
 
 
 def volbreak_signal(df: pd.DataFrame) -> pd.Series:
@@ -191,7 +174,7 @@ def dominance_rotation_signal(df: pd.DataFrame) -> pd.Series:
     return (0.5 + 0.5 * (long_votes - short_votes)).clip(0, 1).rename("dominance_rotation")
 
 
-SIGNALS = {"trend": trend_signal, "meanrev": meanrev_signal, "volbreak": volbreak_signal,
+SIGNALS = {"trend": trend_signal, "volbreak": volbreak_signal,
            "sentiment_regime": sentiment_regime_signal,
            "dominance_rotation": dominance_rotation_signal}
 

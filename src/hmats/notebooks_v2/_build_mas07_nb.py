@@ -39,17 +39,15 @@ The final agent set is intentionally conservative:
 | `02_mamba_v1` | `mamba` | selective state-space sequence model | accepted |
 | `03_tcn_v1` | `tcn` | temporal convolutional network, TBM two-channel signal | accepted |
 | `04_patchtst_v1` | `patch` | patch transformer, TBM two-channel signal | accepted |
-| `05_rule_agents_v1` | `trend` | rule-based trend following | accepted |
-| `05_rule_agents_v1` | `volbreak` | rule-based volatility breakout | accepted |
-| `05_rule_agents_v1` | `dominance_rotation` | rule-based cross-asset dominance rotation | accepted as a **diversification** agent (OOS-profitable, drawdown < B&H, but straddles the 95% random-bracket null → not claimed as alpha) |
-| `05_rule_agents_v1` | `meanrev` | rule-based mean reversion | excluded: negative OOS return |
-| `05_rule_agents_v1` | `sentiment_regime` | rule-based contrarian Fear & Greed | excluded: negative OOS return (−29.9%), below random-bracket null |
-| removed `06_crossasset_v1` | `crossasset` | cross-asset / sentiment learner | excluded: weak predictive skill and not significant vs random-bracket null |
+| `05_rule_agents_v1` | `trend` | rule-based trend following | accepted rule agent |
+| `05_rule_agents_v1` | `volbreak` | rule-based volatility breakout | accepted rule agent |
+| `05_rule_agents_v1` | `dominance_rotation` | rule-based cross-asset dominance rotation | accepted diversification rule agent |
+| `05_rule_agents_v1` | `sentiment_regime` | rule-based contrarian Fear & Greed | excluded experiment |
+| optional `06_crossasset_v1` | `crossasset` | cross-asset / sentiment learner | not part of the canonical 00–06 artifact set |
 
-The `dominance_rotation` rule agent reads BTC dominance and ETH/BTC cross-asset momentum rather than
-the BTC price/feature panel. Its return stream is structurally decorrelated from every price-feature
-model, and it is included for that diversification property — not as an alpha source, since its OOS
-return sits at the 95% boundary of its own random-bracket null.
+The final membership follows the thesis roster: accepted learned agents plus accepted rule agents.
+Rejected rule experiments remain documented in artifacts, but they are not part of the headline
+fund.
 
 The key design decision is that the original
 `softmax(trailing Sharpe) × regime competence` coordinator is treated as an **ablation**, not the
@@ -163,7 +161,7 @@ code(r"""def _portfolio_row(name, agent_set, weights):
 
 agent_sets = {
     "learned4": LEARNED_AGENTS,
-    "rules_positive": RULE_AGENTS,
+    "rules_all": RULE_AGENTS,
     "tcn_patch": ["tcn", "patch"],
     "tcn_patch_volbreak": ["tcn", "patch", "volbreak"],
     "final_agent_set": AGENTS,

@@ -1,0 +1,29 @@
+{
+  "roster": [
+    "lgbm",
+    "mamba",
+    "tcn",
+    "trend",
+    "dominance_rotation"
+  ],
+  "real_sharpe": 1.5005,
+  "real_ret": 0.5362,
+  "equal_weight_sharpe": 1.5501,
+  "random_alloc_null": {
+    "n": 5000,
+    "mean": 1.213,
+    "p95": 1.603,
+    "maxv": 1.74,
+    "real_percentile": 0.8666
+  },
+  "block_bootstrap": {
+    "n": 5000,
+    "block_h": 168,
+    "sharpe_ci95": [
+      0.461,
+      2.562
+    ],
+    "p_gt0": 0.9974,
+    "p_gt1": 0.8218
+  }
+}

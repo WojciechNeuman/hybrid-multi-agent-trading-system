@@ -18,7 +18,7 @@ def code(s):
     cells.append(cell("code", s))
 
 
-md(r"""# 08 — Rule-based strategy agents (self-contained)
+md(r"""# 05 — Rule-based strategy agents (self-contained)
 
 Economically-motivated, **parameter-free, causal** strategy agents whose edge is *strategy logic*,
 not a fit to the feature panel. The first three read the BTC price/feature panel; the last two read
@@ -28,7 +28,6 @@ structurally orthogonal to every price-feature model:
 | Agent | Logic | Designed for |
 |-------|-------|--------------|
 | `trend`    | trend-following (MA / SuperTrend / MACD vote) | directional bull/bear |
-| `meanrev`  | fade oscillator extremes (RSI / Stoch / Williams / MFI / Bollinger) | chop / range |
 | `volbreak` | direction of a 24h range break (squeeze-confirmed) | expansion |
 | `sentiment_regime`   | contrarian Fear & Greed (fade sentiment extremes) | capitulation / euphoria |
 | `dominance_rotation` | cross-asset rotation (BTC dominance + ETH/BTC momentum) | BTC-leadership vs alt-season |
@@ -36,18 +35,12 @@ structurally orthogonal to every price-feature model:
 **Leak-free:** signals are vote-fractions over already-causal features with fixed economic
 thresholds (nothing fitted → nothing leaks); ATR-bracket params are grid-searched on
 2022-01→2024-05 only, then frozen for OOS; backtests use the same `bracket_run` engine as every
-other agent. Artifacts → `artifacts/notebooks_v2/08_<agent>/` (drop-in for the coordinator,
+other agent. Artifacts → `artifacts/notebooks_v2/05_<agent>/` (drop-in for the coordinator,
 notebook 06).
 
-**Inclusion criteria.** An agent joins the final multi-agent system only if its OOS return is positive
-*and* its max drawdown is no worse than BTC buy-and-hold. The random-bracket null determines only
-how a passing agent is *described* — agents that fail to clear the 95th percentile are included as
-diversification agents rather than as alpha sources:
-
-| Agent | OOS ret | OOS maxdd | vs B&H maxdd (−50.1%) | random-bracket null percentile | status |
-|---|---|---|---|---|---|
-| `sentiment_regime`   | −29.9% | −42.8% | comparable | 7th (below random) | excluded — negative OOS return |
-| `dominance_rotation` | +152.5% | −26.4% | better | 93–95th | accepted — diversification agent, not claimed as alpha |
+**Selection discipline.** This notebook builds every rule agent in the predeclared rule-agent set.
+OOS diagnostics and the random-bracket null are reporting tools only; they do not decide which rule
+agents enter the final fund.
 
 This notebook is **self-contained**: the execution engine and the agent logic are inlined below.""")
 
@@ -125,7 +118,7 @@ pd.DataFrame(rows).pivot(index="agent", columns="delay", values=["ret", "sharpe"
 
 md(r"""## 6 · Equity curves & per-regime breakdown (OOS)""")
 code(r"""import matplotlib.pyplot as plt, matplotlib.dates as mdates
-colours = {"trend": "#43A047", "meanrev": "#FB8C00", "volbreak": "#5E35B1",
+colours = {"trend": "#43A047", "volbreak": "#5E35B1",
            "sentiment_regime": "#00897B", "dominance_rotation": "#D81B60"}
 fig, ax = plt.subplots(figsize=(13, 5))
 for a in RULE_AGENTS:

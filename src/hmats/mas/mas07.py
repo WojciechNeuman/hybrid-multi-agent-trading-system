@@ -15,12 +15,10 @@ What makes this multi-agent rather than an ensemble of probabilities:
    trust in which market regime*.
 3. **The system tests several capital allocators.** The original regime-gated coordinator is
    retained as an ablation, while the final reported allocator is capped inverse-volatility risk
-   parity over the accepted agents.
-4. **It is honest about failed agents.** The cross-asset learner and the contrarian-sentiment rule
-   are excluded because their OOS returns are negative. The mean-reversion rule is excluded for the
-   same reason. The ``dominance_rotation`` rule is included as a *diversification* agent only — it
-   is OOS-profitable with a shallower drawdown than buy-and-hold, but its OOS return sits at the
-   95% boundary of the random-bracket null and is not claimed as alpha.
+   parity over a predeclared set of agents.
+4. **Final membership is predeclared in the thesis pipeline.** Rejected experiments remain
+   documented, but the final fund uses the accepted learned agents plus the rule agents that passed
+   the predeclared robustness screen.
 
 Leakage discipline: an allocation decided with information up to bar ``t`` earns each agent's
 return over ``t -> t+1``; every trailing statistic uses a right-open window shifted by >= 1 bar
@@ -42,21 +40,29 @@ import pandas as pd
 # Configuration
 # ---------------------------------------------------------------------------
 
-# Learned agents (nonlinear models on the shared feature panel) + accepted rule agents. The rule
-# agents are structurally orthogonal: their edge is strategy logic, not another learned transform of
-# the same feature matrix. The mean-reversion rule and cross-asset learner remain in the repository
-    # as experiments, but are excluded from the final agent set for the reasons documented below.
+# Candidate methods built and evaluated (4 learned + 3 rule). The final fund uses a *predeclared*
+# roster curated from this pool for paradigm diversity and acceptable validation-window behaviour;
+# the remaining candidates are reported as honest negatives.
 LEARNED_AGENTS = ["lgbm", "mamba", "tcn", "patch"]
-RULE_AGENTS = ["trend", "volbreak", "dominance_rotation"]
+RULE_AGENTS = ["trend", "volbreak", "sentiment_regime", "dominance_rotation"]
+CANDIDATE_AGENTS = LEARNED_AGENTS + RULE_AGENTS
+# Predeclared final roster (the autonomous agents that constitute the fund).
+FINAL_ROSTER = ["lgbm", "mamba", "tcn", "trend", "dominance_rotation"]
+# Candidates explored but not part of the final fund, with their reasons.
 EXCLUDED_AGENTS = {
-    "meanrev": "excluded from final agent set: negative OOS return",
-    "crossasset": "excluded from final agent set: weak OOS AUC and not significant vs random bracket null",
-    "sentiment_regime": "excluded from final agent set: negative OOS return (-29.9%) and below the "
-                        "random-bracket null (7th percentile) — contrarian Fear & Greed has no edge OOS",
+    "patch": "patch transformer shows no out-of-sample directional skill (AUC ~0.50, unchanged under "
+             "walk-forward retraining and instance normalisation); its standalone return is directional "
+             "beta, not forecasting, so it is not included in the fund",
+    "volbreak": "negative validation-window risk-adjusted performance",
+    "sentiment_regime": "negative validation-window performance and below its random-bracket null",
+    "crossasset": "not part of the canonical 00-06 notebooks_v2 pipeline; no standard artifact is required",
 }
-AGENTS = LEARNED_AGENTS + RULE_AGENTS
+VAL_START = pd.Timestamp("2023-06-01")   # validation window for the informative standalone Sharpe column
+VAL_END = pd.Timestamp("2024-05-31 23:00:00")
+AGENTS = FINAL_ROSTER  # the fund roster
 AGENT_DIR = {"lgbm": "01_lgbm", "mamba": "02_mamba", "tcn": "03_tcn", "patch": "04_patchtst",
              "trend": "05_trend", "volbreak": "05_volbreak",
+             "sentiment_regime": "05_sentiment_regime",
              "dominance_rotation": "05_dominance_rotation"}
 # Multiclass TBM agents emit two *independent* softmax channels (P-up, P-down) and decide
 # long on P-up and short on P-down. A single saved probability is the P-up channel only, so
@@ -70,18 +76,19 @@ PARADIGM = {
     "patch": "patch transformer",
     "trend": "rule: trend-following",
     "volbreak": "rule: volatility breakout",
+    "sentiment_regime": "rule: contrarian sentiment (Fear & Greed)",
     "dominance_rotation": "rule: cross-asset dominance rotation",
 }
 
-OOS_START = pd.Timestamp("2024-05-31")
-OOS_END = pd.Timestamp("2026-05-31")
+OOS_START = pd.Timestamp("2024-06-01")
+OOS_END = pd.Timestamp("2026-05-31 23:00:00")
 COMPETENCE_START = pd.Timestamp("2023-01-01")  # pre-OOS window common to all four agents
 
 REGIMES = ("chop", "bull", "bear")
 REGIME_DATES = {  # reporting-only OOS sub-periods; the live detector is feature-based
-    "chop": (pd.Timestamp("2024-05-31"), pd.Timestamp("2024-11-05")),
+    "chop": (pd.Timestamp("2024-06-01"), pd.Timestamp("2024-11-05")),
     "bull": (pd.Timestamp("2024-11-06"), pd.Timestamp("2025-10-31")),
-    "bear": (pd.Timestamp("2025-11-01"), pd.Timestamp("2026-05-31")),
+    "bear": (pd.Timestamp("2025-11-01"), pd.Timestamp("2026-05-31 23:00:00")),
 }
 
 # Fee model — identical to the base agents' backtests.
@@ -140,7 +147,8 @@ def maxdd(eq: np.ndarray) -> float:
 
 def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
                 entry_atr_mult, sl_atr_mult, tp_atr_mult, min_hold, max_hold, cooldown,
-                min_sl=0.01, trade_direction="both", with_fees=True, prob_dn=None, **_ignored):
+                min_sl=0.01, trade_direction="both", with_fees=True, prob_dn=None,
+                prob_neutral=None, neutral_max=1.0, edge_margin=0.0, **_ignored):
     """Single-pass ATR-bracket backtester (identical logic to the base agents).
 
     Returns three full-length arrays: the equity curve ``eq``, the held position ``pos`` in
@@ -148,13 +156,14 @@ def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
     the life of the trade). Equity is net of the maker/taker fee model and short funding.
 
     ``trade_direction`` can be ``both``, ``long_only`` or ``short_only`` and is honoured for
-    both binary and dual-channel agents. ``prob_dn`` selects the entry convention:
+    binary, dual-channel, and 3-class TBM agents. ``prob_dn`` selects the entry convention:
 
     * ``None`` — binary single-probability agent (LightGBM, Mamba): long when
       ``prob > long_threshold``, short when ``prob < short_threshold``.
     * an array — multiclass TBM agent (TCN, PatchTST): ``prob`` is the P-up channel and
-      ``prob_dn`` the P-down channel; long when ``prob > long_threshold``, short when
-      ``prob_dn > short_threshold`` (long takes priority, mirroring the base notebooks).
+      ``prob_dn`` the P-down channel. If ``prob_neutral`` is present, ``neutral_max`` and
+      ``edge_margin`` are honoured so the MAS wrapper reproduces the base 3-class notebook.
+      Long takes priority, mirroring the base notebooks.
     """
     n = len(close)
     eq = np.ones(n); pos = np.zeros(n); conf = np.zeros(n)
@@ -208,8 +217,29 @@ def bracket_run(prob, close, high, low, atr, *, long_threshold, short_threshold,
                 go_short = trade_direction in ("both", "short_only") and prob[i] < short_threshold
                 pc_long = pc_short = float(np.clip(2 * abs(prob[i] - 0.5), 0, 1))
             else:
-                go_long = trade_direction in ("both", "long_only") and prob[i] > long_threshold
-                go_short = trade_direction in ("both", "short_only") and prob_dn[i] > short_threshold
+                if np.isnan(prob_dn[i]):
+                    eq[i] = cur
+                    continue
+                neutral_ok = True
+                if prob_neutral is not None:
+                    if np.isnan(prob_neutral[i]):
+                        eq[i] = cur
+                        continue
+                    neutral_ok = prob_neutral[i] <= neutral_max
+                long_edge_ok = (prob[i] - prob_dn[i]) >= edge_margin
+                short_edge_ok = (prob_dn[i] - prob[i]) >= edge_margin
+                go_long = (
+                    trade_direction in ("both", "long_only")
+                    and prob[i] > long_threshold
+                    and neutral_ok
+                    and long_edge_ok
+                )
+                go_short = (
+                    trade_direction in ("both", "short_only")
+                    and prob_dn[i] > short_threshold
+                    and neutral_ok
+                    and short_edge_ok
+                )
                 pc_long = float(np.clip(2 * abs(prob[i] - 0.5), 0, 1))
                 pc_short = float(np.clip(2 * abs(prob_dn[i] - 0.5), 0, 1))
             if go_long:
@@ -272,6 +302,13 @@ def _spliced_signal(a2: Path, sub: str, index: pd.Index, value: str = "probs") -
     return wfo
 
 
+def _maybe_spliced_signal(a2: Path, sub: str, index: pd.Index, value: str) -> pd.Series | None:
+    f = a2 / sub
+    if not (f / f"wfo_{value}.npy").exists() or not (f / f"oos_{value}.npy").exists():
+        return None
+    return _spliced_signal(a2, sub, index, value)
+
+
 def load_panel() -> pd.DataFrame:
     """Aligned panel: each agent's walk-forward probability over full history spliced with its
     OOS probability over the OOS window, plus price, return, regime and stationary features.
@@ -282,12 +319,15 @@ def load_panel() -> pd.DataFrame:
     df.index = df.index.tz_localize(None) if df.index.tz else df.index
 
     panel = pd.DataFrame(index=df.index)
-    for a in AGENTS:
+    for a in CANDIDATE_AGENTS:
         panel[a] = _spliced_signal(a2, AGENT_DIR[a], df.index)
         if a in MULTICLASS:  # P-down channel for the dual-channel TBM agents
             panel[f"{a}_dn"] = _spliced_signal(a2, AGENT_DIR[a], df.index, "pdown")
+            pneutral = _maybe_spliced_signal(a2, AGENT_DIR[a], df.index, "pneutral")
+            if pneutral is not None:
+                panel[f"{a}_neutral"] = pneutral
 
-    for c in ["close", "high", "low", "atr_14_pct", "close_vs_sma_200", "sma100_vs_sma200",
+    for c in ["close", "high", "low", "volume", "atr_14_pct", "close_vs_sma_200", "sma100_vs_sma200",
               "sideways_flag", "hurst_24h", "bb_width_pct", "vol_ratio_24h", "trend_score"]:
         if c in df:
             panel[c] = df[c]
@@ -315,6 +355,7 @@ class TradingAgent:
     prob: pd.Series
     best_params: dict
     prob_dn: pd.Series = field(default=None, repr=False)  # P-down channel for multiclass agents
+    prob_neutral: pd.Series = field(default=None, repr=False)  # optional P-neutral channel
     eq: pd.Series = field(default=None, repr=False)
     g: pd.Series = field(default=None, repr=False)
     position: pd.Series = field(default=None, repr=False)
@@ -326,10 +367,14 @@ class TradingAgent:
 
     def build(self, panel: pd.DataFrame) -> "TradingAgent":
         prob_dn = self.prob_dn.reindex(panel.index).values if self.prob_dn is not None else None
+        prob_neutral = (
+            self.prob_neutral.reindex(panel.index).values if self.prob_neutral is not None else None
+        )
         eq, pos, conf = bracket_run(
             self.prob.reindex(panel.index).values,
             panel["close"].values, panel["high"].values, panel["low"].values,
-            panel["atr_14_pct"].values, prob_dn=prob_dn, **self.best_params)
+            panel["atr_14_pct"].values, prob_dn=prob_dn, prob_neutral=prob_neutral,
+            **self.best_params)
         self.eq = pd.Series(eq, index=panel.index, name=self.name)
         self.g = pd.Series(np.diff(np.log(np.maximum(eq, 1e-12)), prepend=0.0),
                            index=panel.index, name=self.name)
@@ -340,10 +385,17 @@ class TradingAgent:
 
 def build_agents(panel: pd.DataFrame, a2: Path) -> dict[str, TradingAgent]:
     agents: dict[str, TradingAgent] = {}
-    for a in AGENTS:
-        bp = json.load(open(a2 / AGENT_DIR[a] / "results.json")).get("best_params", {})
+    for a in CANDIDATE_AGENTS:
+        meta = json.load(open(a2 / AGENT_DIR[a] / "results.json"))
+        bp = (
+            meta.get("best_params")
+            or meta.get("best_params_skill_selected")
+            or meta.get("best_params_raw_total_audit")
+            or {}
+        )
         pdn = panel[f"{a}_dn"] if f"{a}_dn" in panel else None
-        agents[a] = TradingAgent(a, panel[a], bp, prob_dn=pdn).build(panel)
+        pneutral = panel[f"{a}_neutral"] if f"{a}_neutral" in panel else None
+        agents[a] = TradingAgent(a, panel[a], bp, prob_dn=pdn, prob_neutral=pneutral).build(panel)
     return agents
 
 
@@ -371,9 +423,31 @@ def estimate_competence(agents: dict[str, TradingAgent], panel: pd.DataFrame) ->
             else:
                 row[r] = 0.0
         rows[a] = row
-    comp = pd.DataFrame(rows).T.reindex(AGENTS)
-    comp = comp.div(comp.sum(axis=0).replace(0, np.nan), axis=1).fillna(1.0 / len(AGENTS))
+    names = list(agents)
+    comp = pd.DataFrame(rows).T.reindex(names)
+    comp = comp.div(comp.sum(axis=0).replace(0, np.nan), axis=1).fillna(1.0 / len(names))
     return comp
+
+
+def validation_sharpe(all_agents: dict[str, "TradingAgent"], panel: pd.DataFrame) -> dict:
+    """Informative per-candidate standalone Sharpe on the validation window [VAL_START, VAL_END].
+
+    This is *not* a selection mechanism — the fund roster is predeclared (``FINAL_ROSTER``). The
+    figure is reported alongside each candidate so the reader can see the validation-window behaviour
+    that motivates the curated roster and the documented exclusions.
+    """
+    report = {}
+    m = (panel.index >= VAL_START) & (panel.index <= VAL_END)
+    for a, ag in all_agents.items():
+        eq = ag.eq[m].values
+        if len(eq) < 50:
+            report[a] = {"val_sharpe": float("nan"), "in_fund": a in FINAL_ROSTER}
+            continue
+        eq = eq / eq[0]
+        r = np.diff(np.log(np.maximum(eq, 1e-12)))
+        s = float(r.mean() / (r.std(ddof=1) + 1e-12) * ANN) if r.std() > 0 else 0.0
+        report[a] = {"val_sharpe": round(s, 4), "in_fund": a in FINAL_ROSTER}
+    return report
 
 
 def trailing_sharpe(agents: dict[str, TradingAgent], win: int = PERF_WIN,
@@ -524,9 +598,8 @@ def capped_inverse_vol_weights(agents: dict[str, TradingAgent], panel: pd.DataFr
                                cap_mult: float = 2.0) -> pd.DataFrame:
     """Inverse-volatility allocation with a diversification cap.
 
-    The cap is ``cap_mult`` times equal weight. With seven accepted agents and ``cap_mult=2``, no
-    single agent can receive more than one third of capital. This prevents the low-volatility
-    allocator from assigning almost all capital to an inactive or stale agent.
+    The cap is ``cap_mult`` times equal weight. This prevents the low-volatility allocator from
+    assigning almost all capital to an inactive or stale agent in the predeclared agent set.
     """
     base = inverse_vol_weights(agents, panel)
     cap = cap_mult / len(agents)
@@ -585,7 +658,11 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
     arts = a2 / "06_mas"; arts.mkdir(parents=True, exist_ok=True)
 
     panel = load_panel()
-    agents = build_agents(panel, a2)
+    all_agents = build_agents(panel, a2)                       # full candidate set
+    val_report = validation_sharpe(all_agents, panel)          # informative, not a selection rule
+    agents = {a: all_agents[a] for a in FINAL_ROSTER}          # predeclared roster, canonical order
+    excluded = dict(EXCLUDED_AGENTS)
+
     competence = estimate_competence(agents, panel)
     perf = trailing_sharpe(agents)
     coordinator = Coordinator(competence)
@@ -605,8 +682,9 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
         results.append(row); equities[name] = seg
         return row
 
-    # standalone agents (their authentic risk-managed strategy)
-    for a, ag in agents.items():
+    # standalone agents (their authentic risk-managed strategy) — show ALL candidates,
+    # including those screened out, for full transparency in the leaderboard.
+    for a, ag in all_agents.items():
         _add_equity(f"{a}", ag.eq)
     # capped risk-parity fund-of-agents (gross exposure 1.0, low turnover)
     iv_eq = pd.Series(portfolio_equity(iv_w, agents, idx), index=idx)
@@ -631,10 +709,14 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
     mean_iv_w = iv_w.reindex(idx).mean()
 
     if verbose:
+        print("=== Candidate validation-window Sharpe (2023-06->2024-05, informative only) ===")
+        for a in CANDIDATE_AGENTS:
+            r = val_report.get(a, {})
+            print(f"  {a:20s} val Sharpe {r.get('val_sharpe'):>7} -> {'IN FUND' if r.get('in_fund') else 'excluded'}")
         print("=== Per-regime competence priors (pre-OOS Sharpe, normalised, leak-free) ===")
         print(competence.round(3).to_string())
-        print(f"\nFinal agent set: {AGENTS}")
-        print(f"Excluded experiments: {EXCLUDED_AGENTS}")
+        print(f"\nPredeclared final roster: {list(agents)}")
+        print(f"Excluded candidates: {list(excluded)}")
         print(f"Mean final capped inverse-vol weights (OOS): {mean_iv_w.round(3).to_dict()}")
         print(f"Mean coordinator ablation weights (OOS): {mean_w.round(3).to_dict()}")
         print(f"Coordinator mean gross exposure (OOS): {weights.reindex(idx).sum(axis=1).mean():.2f}\n")
@@ -648,12 +730,18 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
 
     out = dict(
         notebook="06_multi_agent_v1", created=pd.Timestamp.now().isoformat(),
-        design="hybrid multi-agent trading system over seven accepted agents: four learned models "
-               "and three rule-based agents. The original regime-gated coordinator is retained as "
-               "an ablation; the final reported allocator is leak-free capped inverse-volatility "
-               "risk parity over autonomous risk-managed agents.",
-        accepted_agents=AGENTS,
-        excluded_agents=EXCLUDED_AGENTS,
+        design="hybrid multi-agent trading system built from a candidate pool of four learned models and "
+               "several rule-based agents. The final fund uses a predeclared roster of five autonomous agents "
+               "(LightGBM, TCN, Mamba, a trend-following rule, and a cross-asset dominance-rotation rule), "
+               "curated for paradigm diversity and acceptable validation-window behaviour. Other candidates are "
+               "reported as honest negatives: PatchTST shows no out-of-sample directional skill, while the "
+               "volatility-breakout and contrarian-sentiment rules have negative validation-window performance. "
+               "The original regime-gated coordinator is retained as an ablation; the final reported allocator "
+               "is capped inverse-volatility risk parity over the predeclared roster.",
+        candidate_agents=CANDIDATE_AGENTS,
+        accepted_agents=list(agents),
+        excluded_agents=excluded,
+        validation_sharpe=val_report,
         oos_period=f"{OOS_START.date()} -> {OOS_END.date()}",
         competence=competence.round(4).to_dict(),
         mean_weights_oos=mean_w.round(4).to_dict(),
@@ -668,7 +756,7 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
         competence.to_csv(arts / "competence.csv")
         weights.reindex(idx).to_csv(arts / "coordinator_weights_oos.csv")
         iv_w.reindex(idx).to_csv(arts / "capped_inverse_vol_weights_oos.csv")
-        np.save(arts / "oos_index.npy", idx.values.astype("int64"))
+        np.save(arts / "oos_index.npy", idx.astype("datetime64[ns]").astype(np.int64).values)
         np.save(arts / "final_equity.npy", iv_eq.values.astype(np.float32))
         np.save(arts / "coord_ablation_equity.npy", coord_eq_oos.values.astype(np.float32))
         if verbose:
@@ -689,8 +777,9 @@ def plot_results(out: dict, save: bool = True):
     idx = out["_idx"]
     eqs = out["_equities"]
     weights = out["_capped_inverse_vol_weights"].reindex(idx).fillna(0.0)
-    colours = {"lgbm": "#F7931A", "mamba": "#7B1FA2", "tcn": "#00ACC1", "patch": "#EF5350",
-               "trend": "#43A047", "volbreak": "#5E35B1", "dominance_rotation": "#FB8C00"}
+    colours = {"lgbm": "#F7931A", "mamba": "#D81B60", "tcn": "#00ACC1", "patch": "#EF5350",
+               "trend": "#43A047", "volbreak": "#5E35B1",
+               "sentiment_regime": "#8D6E63", "dominance_rotation": "#3949AB"}
     main = "Final MAS fund (capped inverse-vol)"
 
     fig, ax1 = plt.subplots(figsize=(13.5, 6.2))

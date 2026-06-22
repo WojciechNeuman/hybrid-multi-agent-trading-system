@@ -2,7 +2,7 @@
   "notebook": "05_rule_agents_v1",
   "agent": "dominance_rotation",
   "paradigm": "rule: cross-asset dominance rotation",
-  "created": "2026-06-21T15:34:42.506766",
+  "created": "2026-06-22T23:55:34.325231",
   "model": "rule-based (rule: cross-asset dominance rotation), parameter-free causal signal",
   "grid_val": "2022-01-01\u21922024-05-31",
   "oos_period": "2024-06-01\u21922026-05-31",

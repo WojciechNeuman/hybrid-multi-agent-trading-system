@@ -4,88 +4,67 @@ digraph SystemOverview {
     rankdir=TB;
     bgcolor="white";
     splines=true;
-    nodesep=0.40;
-    ranksep=0.55;
+    compound=true;
+    nodesep=0.30;
+    ranksep=0.50;
     node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11,
-          color="#33485f", penwidth=1.4, margin="0.16,0.09"];
-    edge [color="#5b6b7a", arrowsize=0.8, penwidth=1.2];
+          color="#33485f", penwidth=1.4, margin="0.14,0.08", width=1.9];
+    edge [color="#5b6b7a", arrowsize=0.7, penwidth=1.1];
 
-    // ---- Data ingestion ----
-    DATA [label="Data Ingestion\nBTC/USDT OHLCV + taker flow,\nCoinGecko, Fear & Greed\n2017–2026, 1h candles",
-          fillcolor="#d7e3ef"];
+    DATA [label="Data Ingestion\nBTC/USDT OHLCV + taker flow, CoinGecko,\nFear & Greed · 2017–2026 · 1h candles",
+          fillcolor="#d7e3ef", width=4.6];
+    FEAT [label="Unified Feature Library\n~285 leakage-audited features (technical /\nexternal / microstructure / structural)",
+          fillcolor="#cfe0ec", width=4.6];
 
-    // ---- Unified feature library ----
-    FEAT [label="Unified Feature Library\n~285 leakage-audited candidate features\n(technical / external / microstructure / structural)",
-          fillcolor="#cfe0ec"];
-
-    // ---- Learned agents ----
+    // ---- Learned agents (2x2; rank constraints live INSIDE the cluster) ----
     subgraph cluster_learned {
-        label="Learned Agents — walk-forward out-of-sample signals";
-        labelloc="t";
-        fontname="Helvetica-Bold";
-        fontsize=12;
-        style="dashed,rounded";
-        color="#8a99a8";
-        margin=12;
-
-        LGBM   [label="LightGBM (gradient boosting)\nsliding 2-year WFO, monthly step\nrelevance–redundancy selection\n+89.7% · Sharpe 1.52",
-                fillcolor="#cdeccd"];
-        PATCH  [label="PatchTST (patch transformer)\nchronological split, temp-scaled\nTriple-Barrier labels\n+74.9% · Sharpe 1.59",
-                fillcolor="#f6cccc"];
-        MAMBA  [label="Mamba (state-space model)\nexpanding WFO from 2019\nselective long-range memory\n+20.7% · Sharpe 0.35",
-                fillcolor="#d7d0ec"];
-        TCN    [label="TCN (dilated causal conv.)\nchronological split\nmulti-task: direction + volatility\n+7.4% · Sharpe 0.13",
-                fillcolor="#bfe6e6"];
+        label="Learned agents — walk-forward OOS signals";
+        labelloc="t"; fontname="Helvetica-Bold"; fontsize=11;
+        style="dashed,rounded"; color="#8a99a8"; margin=10;
+        LGBM  [label="LightGBM\n+9.6% · Sh 0.14",  fillcolor="#cdeccd"];
+        MAMBA [label="Mamba\n+67.4% · Sh 0.99",    fillcolor="#d7d0ec"];
+        TCN   [label="TCN\n+36.4% · Sh 0.58",      fillcolor="#bfe6e6"];
+        PATCH [label="PatchTST  ✗ excluded\nAUC ≈ 0.50 · no skill", fillcolor="#ededed", color="#c0392b", penwidth=1.7];
+        { rank=same; LGBM; MAMBA; }
+        { rank=same; TCN;  PATCH; }
+        LGBM -> TCN [style=invis];  MAMBA -> PATCH [style=invis];
     }
 
-    // ---- Rule-based agents ----
+    // ---- Rule agents (2x2) ----
     subgraph cluster_rules {
-        label="Rule-Based Agents — fixed economic logic";
-        labelloc="t";
-        fontname="Helvetica-Bold";
-        fontsize=12;
-        style="dashed,rounded";
-        color="#8a99a8";
-        margin=12;
-
-        TREND  [label="Trend following\nMA / SuperTrend / MACD\n+63.5% · Sharpe 0.59",
-                fillcolor="#e9e2c8"];
-        VOLB   [label="Volatility breakout\nrange break + squeeze\n+33.1% · Sharpe 0.42",
-                fillcolor="#e9e2c8"];
-        DOM    [label="Dominance rotation\ncross-asset capital flow\n+152.8% (diversifier, not alpha)",
-                fillcolor="#e9e2c8"];
+        label="Rule-based agents — fixed economic logic";
+        labelloc="t"; fontname="Helvetica-Bold"; fontsize=11;
+        style="dashed,rounded"; color="#8a99a8"; margin=10;
+        TREND [label="Trend\n+62.5% · Sh 0.58",        fillcolor="#e9e2c8"];
+        DOM   [label="Dominance rotation\n+155.1% (diversifier)", fillcolor="#e9e2c8"];
+        VOLB  [label="Vol. breakout  ✗ excluded\nneg. validation", fillcolor="#ededed", color="#c0392b", penwidth=1.7];
+        SENT  [label="Sentiment  ✗ excluded\nneg. validation",     fillcolor="#ededed", color="#c0392b", penwidth=1.7];
+        { rank=same; TREND; DOM; }
+        { rank=same; VOLB;  SENT; }
+        TREND -> VOLB [style=invis];  DOM -> SENT [style=invis];
     }
 
-    // ---- Allocation layer ----
-    ALLOC  [label="Capped Inverse-Volatility Allocator (final)\nleak-free risk parity, cap 2/N\n+49.7% · Sharpe 1.92 · MaxDD -5.3%",
-            fillcolor="#cdeccd"];
-    COORD  [label="Regime-gated Coordinator (ablation)\nsoftmax(trailing Sharpe) × competence\n+22.8% · Sharpe 0.47",
-            fillcolor="#ead9d9"];
-
-    // ---- Execution ----
-    EXEC   [label="Execution & Evaluation\nshared ATR-bracket backtest (fees)\nOOS 2024-05-31 → 2026-05-31\nthree regimes: Chop / Bull / Bear",
-            fillcolor="#f6cccc"];
+    // ---- Allocation + execution ----
+    ALLOC [label="Capped Inverse-Volatility Allocator  (final)\npredeclared 5-agent roster · cap 2/N = 40%\n+53.7% · Sharpe 1.50 · MaxDD −9.2%",
+           fillcolor="#cdeccd", width=4.8];
+    COORD [label="Regime-gated Coordinator  (ablation)\n−10.2% · Sharpe −0.23",
+           fillcolor="#ead9d9", width=3.4];
+    EXEC  [label="Execution & Evaluation\nshared ATR-bracket backtest (fees)\nOOS 2024-06 → 2026-05 · Chop / Bull / Bear",
+           fillcolor="#f6cccc", width=4.8];
 
     // ---- Edges ----
     DATA -> FEAT;
-    FEAT -> LGBM;
-    FEAT -> PATCH;
-    FEAT -> MAMBA;
-    FEAT -> TCN;
-    FEAT -> TREND;
-    FEAT -> VOLB;
-    FEAT -> DOM;
+    // One arrow from the feature library to each agent family (keeps the top uncluttered).
+    FEAT -> MAMBA [lhead=cluster_learned];
+    FEAT -> TREND [lhead=cluster_rules];
 
-    LGBM  -> ALLOC;  PATCH -> ALLOC;  MAMBA -> ALLOC;  TCN -> ALLOC;
-    TREND -> ALLOC;  VOLB  -> ALLOC;  DOM   -> ALLOC;
-
-    LGBM  -> COORD [style=dotted];  PATCH -> COORD [style=dotted];
-    MAMBA -> COORD [style=dotted];  TCN   -> COORD [style=dotted];
-    TREND -> COORD [style=dotted];  VOLB  -> COORD [style=dotted];
-    DOM   -> COORD [style=dotted];
+    // Only the predeclared roster (5 agents) feeds the fund + coordinator ablation.
+    LGBM -> ALLOC; MAMBA -> ALLOC; TCN -> ALLOC; TREND -> ALLOC; DOM -> ALLOC;
+    LGBM -> COORD [style=dotted]; MAMBA -> COORD [style=dotted]; TCN -> COORD [style=dotted];
+    TREND -> COORD [style=dotted]; DOM -> COORD [style=dotted];
+    // Excluded candidates (greyed, ✗) are honest negatives — no downstream wiring.
 
     ALLOC -> EXEC;
     COORD -> EXEC [style=dotted];
-
     { rank=same; ALLOC; COORD; }
 }

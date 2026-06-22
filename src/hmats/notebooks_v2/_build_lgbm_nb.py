@@ -55,7 +55,7 @@ ARTS_DIR = REPO/'artifacts'/'notebooks_v2'/'01_lgbm'
 ARTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── WFO / OOS (unified across notebooks_v2) ──────────────────────────
-OOS_START      = pd.Timestamp('2024-05-31')
+OOS_START      = pd.Timestamp('2024-06-01')
 GRID_VAL_START = pd.Timestamp('2022-01-01')
 GRID_VAL_END   = pd.Timestamp('2024-05-30')
 TRAIN_WINDOW_H = 17520     # sliding 2-year window (M2Y) — spans a full bull→bear regime flip
@@ -96,7 +96,7 @@ EXCLUDE = {'open','high','low','close','volume', LABEL_COL,
 _tkeys   = list(TRADING_GRID); _tcombos = list(itertools.product(*TRADING_GRID.values()))
 _mkeys   = list(MODEL_GRID);   _mcombos = list(itertools.product(*MODEL_GRID.values()))
 print(f'Model grid: {len(_mcombos)} configs  |  Trading grid: {len(_tcombos)} combos')
-print(f'Selection: OOS Sharpe, min_trades>={MIN_TRADES_OOS}  |  OOS {OOS_START.date()} → 2-yr')""")
+print(f'Selection: validation Sharpe, OOS held out  |  OOS {OOS_START.date()} → 2-yr')""")
 
 code("""UNIFIED = REPO / 'data' / 'features' / 'BTCUSDT_1h_unified.parquet'
 if not UNIFIED.exists():
@@ -197,7 +197,7 @@ def _run_backtest(probs_arr, close_arr, high_arr, low_arr, atr_arr,
                     elif hold_cnt>=max_hold: exit_px=px;exited=True;reason='timeout';exit_fee=FUTURES_TAKER_FEE if with_fees else 0.
             if exited:
                 gross=((exit_px-entry_px)/entry_px if direction=='long' else (entry_px-exit_px)/entry_px)
-                net=gross-(entry_fee+exit_fee if with_fees else 0.)+funding
+                net=gross-(entry_fee+exit_fee if with_fees else 0.)-funding
                 cur=pos_eq*(1.+net); eq[i]=cur
                 trades.append({'direction':direction,'reason':reason,'gross':gross,'net':net,'hold':hold_cnt})
                 in_pos=False; cd_cnt=cooldown; funding=0.
@@ -219,7 +219,7 @@ def _run_backtest(probs_arr, close_arr, high_arr, low_arr, atr_arr,
     if in_pos:
         gross=((px-entry_px)/entry_px if direction=='long' else (entry_px-px)/entry_px)
         taker=SPOT_TAKER_FEE if direction=='long' else FUTURES_TAKER_FEE
-        net=gross-(entry_fee+(taker if with_fees else 0.))+funding; cur=pos_eq*(1.+net); eq[-1]=cur
+        net=gross-(entry_fee+(taker if with_fees else 0.))-funding; cur=pos_eq*(1.+net); eq[-1]=cur
     return eq, trades
 
 def _sharpe(eq):
@@ -231,7 +231,7 @@ def _sortino(eq):
     d=neg.std(ddof=1) if len(neg)>1 else 1e-12
     return float(r.mean()/(d+1e-12)*np.sqrt(24*365))
 
-REGIME_CHOP=(pd.Timestamp('2024-05-31'),pd.Timestamp('2024-11-05'))
+REGIME_CHOP=(pd.Timestamp('2024-06-01'),pd.Timestamp('2024-11-05'))
 REGIME_BULL=(pd.Timestamp('2024-11-06'),pd.Timestamp('2025-10-31'))
 REGIME_BEAR=(pd.Timestamp('2025-11-01'),pd.Timestamp('2026-05-31'))
 
