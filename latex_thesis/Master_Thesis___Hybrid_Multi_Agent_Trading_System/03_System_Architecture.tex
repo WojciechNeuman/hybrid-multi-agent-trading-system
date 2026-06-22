@@ -9,7 +9,7 @@ The proposed system is a \textit{heterogeneous and hybrid} multi-agent architect
 
 \vspace{3mm}
 
-Seven agents are retained in the final system: four \textit{learned} agents --- LightGBM, a Temporal Convolutional Network (TCN), a selective state-space model (Mamba), and a patch-based Transformer (PatchTST) --- and three \textit{rule-based} agents --- a trend follower, a volatility-breakout strategy, and a cross-asset dominance-rotation strategy. Each agent is fully autonomous: it carries its own feature subset, its own directional signal, and its own risk-managed execution rule, and it produces an independent stream of positions, confidence values, and realised returns. This autonomy is what makes the system a fund rather than a single model with auxiliary inputs.
+Eight agents are built as candidates --- four \textit{learned} (LightGBM, a Temporal Convolutional Network (TCN), a selective state-space model (Mamba), and a patch-based Transformer (PatchTST)) and four \textit{rule-based} (trend following, volatility breakout, contrarian sentiment, and cross-asset dominance rotation). The final fund uses a \textit{predeclared} roster of \textit{five} agents, curated from this pool for paradigm diversity and acceptable validation-window behaviour: three learned (LightGBM, TCN, Mamba) and two rule-based (trend following, dominance rotation). PatchTST, the volatility-breakout agent, and the sentiment agent are built and analysed but not included --- PatchTST in particular shows no out-of-sample directional skill. Each roster agent is fully autonomous: it carries its own feature subset, its own directional signal, and its own risk-managed execution rule, and it produces an independent stream of positions, confidence values, and realised returns. This autonomy is what makes the system a fund rather than a single model with auxiliary inputs.
 
 \vspace{3mm}
 
@@ -18,7 +18,7 @@ Figure~\ref{fig:system_overview} illustrates the high-level data flow. Raw marke
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{Images/system_overview.png}
-    \caption{High-level architecture of the hybrid multi-agent trading system. Raw OHLCV data and external feeds are processed into a unified feature library spanning four feature families (technical, external, microstructure, structural). Seven agents --- four learned (LightGBM, TCN, Mamba, PatchTST) and three rule-based (trend, volatility breakout, dominance rotation) --- each consume a distinct feature subset and produce an independent, risk-managed out-of-sample return stream through a shared ATR-bracket backtest. A leak-free capped inverse-volatility allocator combines these streams into the final fund equity curve; a learned regime-gated coordinator is retained as an ablation. All evaluation spans the three market regimes of the two-year hold-out window.}
+    \caption{High-level architecture of the hybrid multi-agent trading system. Raw OHLCV data and external feeds are processed into a unified feature library spanning four feature families (technical, external, microstructure, structural). Candidate agents --- learned (LightGBM, TCN, Mamba, PatchTST) and rule-based (trend, volatility breakout, sentiment, dominance rotation) --- each consume a distinct feature subset and produce an independent, risk-managed out-of-sample return stream through a shared ATR-bracket backtest. A predeclared roster of five agents is combined by a leak-free capped inverse-volatility allocator into the final fund equity curve; a learned regime-gated coordinator is retained as an ablation. All evaluation spans the three market regimes of the two-year hold-out window.}
     \label{fig:system_overview}
 \end{figure}
 
@@ -41,7 +41,7 @@ The system's four learned agents are deliberately drawn from four different fami
 
 \vspace{3mm}
 
-\textbf{The PatchTST agent} is the attention agent. It splits the input window into coarse patches and applies self-attention across them, relating non-adjacent market segments that a convolution cannot connect directly. It shares the TCN's feature diet, so the two agents differ by architecture alone, and its calibrated probabilities make it a selective, low-turnover contributor.
+\textbf{The PatchTST agent} is the attention agent. It splits the input window into coarse patches and applies self-attention across them, relating non-adjacent market segments that a convolution cannot connect directly. It shares the TCN's feature diet, so the two agents differ by architecture alone. In the event its out-of-sample directional accuracy proved no better than chance --- a result that held under walk-forward retraining and instance normalisation --- so it is \textit{not} part of the predeclared final roster; it is retained here as a documented negative result (Chapter~\ref{06_Experiments_and_Results}).
 
 \section{The Rule-Based Agents}
 \label{sec:rule_agents_arch}
@@ -54,7 +54,7 @@ The four learned agents are all non-linear models fitted to overlapping views of
 
 \vspace{3mm}
 
-\textbf{The volatility-breakout agent} trades the direction of a confirmed range break, with conviction reinforced when the break follows a volatility squeeze. Its edge is partly structural: the asymmetric take-profit/stop bracket gives it a convex pay-off when volatility expands.
+\textbf{The volatility-breakout agent} trades the direction of a confirmed range break, with conviction reinforced when the break follows a volatility squeeze. Its edge is partly structural: the asymmetric take-profit/stop bracket gives it a convex pay-off when volatility expands. It is a candidate with negative validation-window performance and is not part of the predeclared final roster.
 
 \vspace{3mm}
 

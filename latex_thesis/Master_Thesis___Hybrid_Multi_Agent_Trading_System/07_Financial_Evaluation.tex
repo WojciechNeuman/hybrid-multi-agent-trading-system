@@ -103,30 +103,30 @@ Table~\ref{tab:strategy_comparison} presents the side-by-side comparison of the 
         BTC Buy \& Hold          & $+8.9\%$ & $0.09$ & $0.12$ & $-50.1\%$ & --- \\
         S\&P~500 Buy \& Hold     & $+46.9\%$ & $1.16$ & $0.25$ & $-18.8\%$ & $+38.0$\,pp \\
         \midrule
-        Naive equal-weight fund  & $+55.7\%$ & $1.73$ & $2.18$ & $-6.9\%$ & $+46.8$\,pp \\
-        Coordinator ablation     & $+14.0\%$ & $0.33$ & $0.39$ & $-18.3\%$ & $+5.1$\,pp \\
+        Naive equal-weight fund  & $+56.1\%$ & $1.48$ & $1.82$ & $-8.8\%$ & $+47.2$\,pp \\
+        Coordinator ablation     & $-10.2\%$ & $-0.23$ & $-0.28$ & $-32.7\%$ & $-19.1$\,pp \\
         \midrule
-        \textbf{Final MAS fund}  & $+56.8\%$ & $2.02$ & $2.59$ & $-5.9\%$ & $+47.9$\,pp \\
+        \textbf{Final MAS fund}  & $+53.7\%$ & $1.50$ & $1.86$ & $-9.2\%$ & $+44.8$\,pp \\
         \bottomrule
     \end{tabular}}
 \end{table}
 
 \vspace{2mm}
 
-The financial picture confirms the conclusion of the experimental chapter. The fund does not chase the highest headline return --- the strongest individual agents return more in absolute terms --- but it delivers the best \textit{risk-adjusted} profile in the study: a Sharpe of $2.02$ and a maximum drawdown of just $-5.9\%$, against a Bitcoin benchmark that returned only $+8.9\%$ while suffering a $-50\%$ drawdown, and a broad-market S\&P~500 benchmark with a materially lower Sharpe. For a capital allocator, this is the relevant objective: a smoother equity curve at a comparable return is strictly preferable, because it can be levered or sized to taste while a high-drawdown curve cannot.
+The financial picture confirms the conclusion of the experimental chapter. The fund does not chase the highest headline return --- the strongest individual agents return more in absolute terms --- but it delivers the best \textit{risk-adjusted} profile among the strategies it comprises: a Sharpe of $1.50$ and a maximum drawdown of just $-9.2\%$, against a Bitcoin benchmark that returned only $+8.9\%$ while suffering a $-50\%$ drawdown, and a broad-market S\&P~500 benchmark with a lower Sharpe ($1.16$) at a deeper drawdown. For a capital allocator, this is the relevant objective: a smoother equity curve at a comparable return is strictly preferable, because it can be levered or sized to taste while a high-drawdown curve cannot. The margin over the equal-weight fund (Sharpe $1.48$) is slim, consistent with the random-weighting null of Chapter~\ref{sec:multi_agent}: almost all of the benefit comes from \textit{holding} the diversified roster, not from the specific allocation rule.
 
 \paragraph{Per-regime evaluation objectives.}
 Beyond the full-period aggregate, each strategy is assessed against the three market regimes of Table~\ref{tab:regimes}. The decomposition tests specific properties:
 
-\textbf{Regime 1 (Chop):} A well-designed strategy should remain approximately flat or slightly positive, avoiding over-trading and fee drag in a low-signal environment. The fund returns $+3.0\%$ here at a Sharpe of $0.63$; this is the weakest sub-period, but it still avoids the larger whipsaw losses visible in several individual agents.
+\textbf{Regime 1 (Chop):} A well-designed strategy should remain approximately flat, avoiding over-trading and fee drag in a low-signal environment. The fund returns $+1.0\%$ here at a Sharpe of $0.14$; this is the weakest sub-period --- essentially flat --- but it still avoids the larger whipsaw losses visible in several individual agents, and the shallow $-7.0\%$ drawdown confirms the chop regime is contained rather than damaging.
 
 \vspace{3mm}
 
-\textbf{Regime 2 (Bull):} The key metric is alpha versus buy-and-hold during a parabolic uptrend. The fund captures $+20.7\%$ while keeping its drawdown to $-4.9\%$, participating in the trend without taking the benchmark's full risk.
+\textbf{Regime 2 (Bull):} The key metric is alpha versus buy-and-hold during a parabolic uptrend. The fund captures $+23.2\%$ (Sharpe $1.54$) while holding its drawdown to $-9.2\%$, participating in the trend without taking the benchmark's full risk.
 
 \vspace{3mm}
 
-\textbf{Regime 3 (Bear):} This is the most decisive discriminator between strategies with and without a genuine short-side capability. Over a market that fell more than $50\%$ from its high, the fund returns $+24.8\%$ (Sharpe $3.43$), led by the short-specialist and trend-sensitive agents rather than by passive exposure.
+\textbf{Regime 3 (Bear):} This is the most decisive discriminator between strategies with and without a genuine short-side capability. Over a market that fell more than $50\%$ from its high, the fund returns $+22.0\%$ (Sharpe $2.45$), led by the trend-sensitive and both-sided agents rather than by passive exposure.
 
 \vspace{3mm}
 
@@ -152,26 +152,26 @@ It is worth being candid about \textit{why} a venue such as MEXC offers near-zer
 \label{sec:case_study}
 % ---------------------------------------------------------------------------
 
-Aggregate metrics say what the system earns, not how. To make the mechanism legible, the out-of-sample window is cut into calendar weeks and examined under fixed selection rules rather than by eye. The main case study is the most violent BTC drawdown week in the hold-out: 2--9 February 2026. BTC closes down $-9.5\%$ and suffers an intra-week drawdown of $-20.4\%$, while the fund finishes $+5.3\%$. This is the clearest example of what the hybrid architecture is meant to do: it does not predict the whole week correctly with one model, but allocates across agents that disagree, stop out, take profit, cool down, or stay flat at different times.
+Aggregate metrics say what the system earns, not how. To make the mechanism legible, the out-of-sample window is cut into calendar weeks and examined under fixed selection rules rather than by eye. The main case study is the most violent BTC drawdown week in the hold-out: 2--9 February 2026. BTC closes down $-9.5\%$ and suffers an intra-week drawdown of $-20.4\%$, while the fund finishes $+4.3\%$. This is the clearest example of what the hybrid architecture is meant to do: it does not predict the whole week correctly with one model, but allocates across agents that disagree, stop out, take profit, cool down, or stay flat at different times.
 
 \vspace{3mm}
 
-Figure~\ref{fig:xai_defence} resolves this week into six layers. The top panel gives the BTC path and the fund's \textit{net} exposure. This is a signed summary: long capital minus short capital. The second panel is therefore essential, because it decomposes the same book into gross capital states --- long, short, and flat/cash. Early in the week the fund can be simultaneously long and short because different agents are active on different sides; a large grey band shows that a substantial part of capital is not in a BTC position at all. The event strip then identifies which learned agent entered or exited, so a stop-loss marker is not misread as belonging to ``the short'' in general. In this week PatchTST, the only explicitly short-only final agent, repeatedly contributes short-side profits, while long-biased agents such as LightGBM and Mamba either stop out quickly or remain inactive. The rule-signal panel shows the deterministic trend, volatility-breakout, and dominance-rotation views that complement the learned probabilities. Finally, the bottom panel compares the fund, BTC, and each individual agent: the fund is not the best single line at every hour, but it is the one that converts disagreement into a controlled equity path.
+Figure~\ref{fig:xai_defence} resolves this week into six layers. The top panel gives the BTC path and the fund's \textit{net} exposure. This is a signed summary: long capital minus short capital. The second panel is therefore essential, because it decomposes the same book into gross capital states --- long, short, and flat/cash. Early in the week the fund can be simultaneously long and short because different agents are active on different sides; a large grey band shows that a substantial part of capital is not in a BTC position at all. The event strip then identifies which learned agent entered or exited, so a stop-loss marker is not misread as belonging to ``the short'' in general. In this week the short side is carried by the both-sided agents --- the TCN and the trend rule, which lean short into the decline --- while long-biased Mamba and the long-realised LightGBM either stop out quickly or remain inactive. The rule-signal panel shows the deterministic trend and dominance-rotation views that complement the learned probabilities. Finally, the bottom panel compares the fund, BTC, and each individual agent: the fund is not the best single line at every hour, but it is the one that converts disagreement into a controlled equity path.
 
 \begin{figure}[p]
     \centering
     \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{Images/xai_case_defence.png}
-    \caption{Main XAI case: the capital-defence week (2--9 February 2026). BTC closes $-9.5\%$ and reaches a $-20.4\%$ intra-week drawdown, while the final MAS fund closes $+5.3\%$. The figure shows BTC candles and net exposure, the long/flat/short capital split, learned-agent trade events, learned probabilities, rule-agent signals, and cumulative returns for the fund, BTC, and all individual agents. Generated by notebook \texttt{07\_xai\_v1}.}
+    \caption{Main XAI case: the capital-defence week (2--9 February 2026). BTC closes $-9.5\%$ and reaches a $-20.4\%$ intra-week drawdown, while the final MAS fund closes $+4.3\%$. The figure shows BTC candles and net exposure, the long/flat/short capital split, learned-agent trade events, learned probabilities, rule-agent signals, and cumulative returns for the fund, BTC, and all individual agents. Generated by notebook \texttt{07\_xai\_v1}.}
     \label{fig:xai_defence}
 \end{figure}
 
-The counter-case is a strong upside week, 7--14 April 2025, shown in Figure~\ref{fig:xai_trend}. BTC rises $+6.9\%$, while the fund returns $+3.5\%$. This is not a failure of the allocator; it is the other side of the same design. Mamba is long-only, PatchTST is short-only, and LightGBM, TCN, trend, volatility breakout, and dominance rotation can trade both sides depending on their thresholds. Cooldowns, ATR brackets, and the capital cap prevent the whole book from instantly becoming fully long during a fast rally. The framework is therefore deliberately more modest in high-volatility moves: it dampens large drops, but it also gives up part of large rises. This is the mechanism behind the high Sharpe ratio: not maximal participation in every favourable burst, but a smoother path through both tails.
+The counter-case is a strong upside week, 7--14 April 2025, shown in Figure~\ref{fig:xai_trend}. BTC rises $+6.9\%$, while the fund returns $+4.9\%$. This is not a failure of the allocator; it is the other side of the same design. Mamba is long-only, while LightGBM, TCN, trend, and dominance rotation can trade both sides depending on their thresholds. Cooldowns, ATR brackets, and the capital cap prevent the whole book from instantly becoming fully long during a fast rally. The framework is therefore deliberately more modest in high-volatility moves: it dampens large drops, but it also gives up part of large rises. This is the mechanism behind the high Sharpe ratio: not maximal participation in every favourable burst, but a smoother path through both tails.
 
 \begin{figure}[p]
     \centering
     \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{Images/xai_case_trend.png}
-    \caption{Counter-case XAI week: a strong BTC rally (7--14 April 2025). BTC gains $+6.9\%$ while the final fund gains $+3.5\%$. The capital-state and cumulative-return panels show the cost of drawdown control: the fund participates in the rally but remains diversified across long, short, and flat agents instead of taking full BTC beta. Generated by notebook \texttt{07\_xai\_v1}.}
+    \caption{Counter-case XAI week: a strong BTC rally (7--14 April 2025). BTC gains $+6.9\%$ while the final fund gains $+4.9\%$. The capital-state and cumulative-return panels show the cost of drawdown control: the fund participates in the rally but remains diversified across long, short, and flat agents instead of taking full BTC beta. Generated by notebook \texttt{07\_xai\_v1}.}
     \label{fig:xai_trend}
 \end{figure}
 
-These two cases are more informative than a single success story. In the defence week the fund is paid for heterogeneity: short-side specialists, rule-based trend signals, and flat capital offset damage to long-biased agents. In the trend week the same heterogeneity restrains upside capture. The system's character is therefore not ``always beat BTC'', but ``reduce the amplitude of BTC's extremes while extracting enough agent-specific return to keep the compounded path positive.'' That trade-off --- moderation in high-volatility declines and rallies alike --- is what the headline Sharpe of $2.02$ summarises.
+These two cases are more informative than a single success story. In the defence week the fund is paid for heterogeneity: short-capable agents, rule-based trend signals, and flat capital offset damage to long-biased agents. In the trend week the same heterogeneity restrains upside capture. The system's character is therefore not ``always beat BTC'', but ``reduce the amplitude of BTC's extremes while extracting enough agent-specific return to keep the compounded path positive.'' That trade-off --- moderation in high-volatility declines and rallies alike --- is what the headline Sharpe of $1.50$ summarises.

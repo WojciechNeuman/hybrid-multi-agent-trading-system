@@ -28,7 +28,6 @@ structurally orthogonal to every price-feature model:
 | Agent | Logic | Designed for |
 |-------|-------|--------------|
 | `trend`    | trend-following (MA / SuperTrend / MACD vote) | directional bull/bear |
-| `meanrev`  | fade oscillator extremes (RSI / Stoch / Williams / MFI / Bollinger) | chop / range |
 | `volbreak` | direction of a 24h range break (squeeze-confirmed) | expansion |
 | `sentiment_regime`   | contrarian Fear & Greed (fade sentiment extremes) | capitulation / euphoria |
 | `dominance_rotation` | cross-asset rotation (BTC dominance + ETH/BTC momentum) | BTC-leadership vs alt-season |
@@ -119,7 +118,7 @@ pd.DataFrame(rows).pivot(index="agent", columns="delay", values=["ret", "sharpe"
 
 md(r"""## 6 · Equity curves & per-regime breakdown (OOS)""")
 code(r"""import matplotlib.pyplot as plt, matplotlib.dates as mdates
-colours = {"trend": "#43A047", "meanrev": "#FB8C00", "volbreak": "#5E35B1",
+colours = {"trend": "#43A047", "volbreak": "#5E35B1",
            "sentiment_regime": "#00897B", "dominance_rotation": "#D81B60"}
 fig, ax = plt.subplots(figsize=(13, 5))
 for a in RULE_AGENTS:

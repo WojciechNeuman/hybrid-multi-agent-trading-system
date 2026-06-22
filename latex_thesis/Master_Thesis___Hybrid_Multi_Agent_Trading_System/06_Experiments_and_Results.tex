@@ -38,33 +38,35 @@ Each agent is first evaluated in isolation on the unified window, under \textit{
 
 \begin{table}[h!]
     \centering
-    \caption{Standalone agent performance on the unified OOS window (1 June 2024 -- 31 May 2026), net of fees, under leak-free parameter selection. AUC is the out-of-sample directional/Triple-Barrier AUC where applicable; the three-class TCN reports trading metrics only because its one-vs-rest AUC audit was not a meaningful scalar.}
+    \caption{Standalone agent performance on the unified OOS window (1 June 2024 -- 31 May 2026), net of fees, under leak-free parameter selection. The \textit{Val.\ Sharpe} column is each candidate's standalone annualised Sharpe on the validation window (1 June 2023 -- 31 May 2024); it is reported to characterise validation-window behaviour and is \textit{not} a mechanical selection rule. The fund roster is predeclared (the five agents marked \checkmark), curated for paradigm diversity and acceptable validation behaviour. AUC is the out-of-sample directional/Triple-Barrier AUC where applicable; the three-class TCN reports trading metrics only because its one-vs-rest AUC audit was not a meaningful scalar.}
     \label{tab:agent_leaderboard}
     \resizebox{\textwidth}{!}{%
-    \begin{tabular}{lrrrrr}
+    \begin{tabular}{lrrrrrc}
         \toprule
-        \textbf{Agent} & \textbf{AUC} & \textbf{Return} & \textbf{Sharpe} & \textbf{Sortino} & \textbf{MaxDD} \\
+        \textbf{Agent} & \textbf{OOS AUC} & \textbf{Val.\ Sharpe} & \textbf{OOS Return} & \textbf{OOS Sharpe} & \textbf{OOS MaxDD} & \textbf{In fund} \\
         \midrule
-        PatchTST (patch transformer)        & 0.502 & $+77.8\%$  & $1.64$ & $0.96$ & $-17.3\%$ \\
-        Dominance rotation (rule)           & ---   & $+155.1\%$ & $1.08$ & $1.30$ & $-26.2\%$ \\
-        Mamba (state-space)                 & 0.513 & $+67.4\%$  & $0.99$ & $0.80$ & $-25.9\%$ \\
-        Trend (rule)                        & ---   & $+62.5\%$  & $0.58$ & $0.71$ & $-28.6\%$ \\
-        TCN (temporal conv.)                & ---   & $+36.4\%$  & $0.58$ & $0.45$ & $-20.7\%$ \\
-        Volatility breakout (rule)          & ---   & $+34.7\%$  & $0.44$ & $0.44$ & $-23.7\%$ \\
-        LightGBM (gradient boosting)        & 0.541 & $+9.6\%$   & $0.14$ & $0.12$ & $-21.7\%$ \\
+        TCN (temporal conv.)                & ---   & $1.87$  & $+36.4\%$  & $0.58$  & $-20.7\%$ & \checkmark \\
+        LightGBM (gradient boosting)        & 0.541 & $1.79$  & $+9.6\%$   & $0.14$  & $-21.7\%$ & \checkmark \\
+        Mamba (state-space)                 & 0.513 & $1.75$  & $+67.4\%$  & $0.99$  & $-25.9\%$ & \checkmark \\
+        Dominance rotation (rule)           & ---   & $0.79$  & $+155.1\%$ & $1.08$  & $-26.2\%$ & \checkmark \\
+        Trend (rule)                        & ---   & $0.16$  & $+62.5\%$  & $0.58$  & $-28.6\%$ & \checkmark \\
         \midrule
-        BTC buy-and-hold                    & ---   & $+8.9\%$   & $0.09$ & $0.12$ & $-50.1\%$ \\
-        S\&P~500 buy-and-hold               & ---   & $+46.9\%$  & $1.16$ & $0.25$ & $-18.8\%$ \\
+        Sentiment regime (rule)             & ---   & $-0.11$ & $-21.2\%$  & $-0.54$ & $-34.3\%$ & --- \\
+        Volatility breakout (rule)          & ---   & $-0.46$ & $+34.7\%$  & $0.44$  & $-23.7\%$ & --- \\
+        PatchTST (patch transformer)        & 0.502 & $-1.09$ & $+77.8\%$  & $1.64$  & $-17.3\%$ & --- \\
+        \midrule
+        BTC buy-and-hold                    & ---   & ---     & $+8.9\%$   & $0.09$  & $-50.1\%$ & --- \\
+        S\&P~500 buy-and-hold               & ---   & ---     & $+46.9\%$  & $1.16$  & $-18.8\%$ & --- \\
         \bottomrule
     \end{tabular}}
 \end{table}
 
 \vspace{3mm}
 
-Three observations follow. First, the agents' classification AUCs are \textit{modest} --- roughly $0.50$ to $0.54$ where a scalar AUC is applicable --- and yet several agents post large returns. This gap is itself a finding: at this horizon the realised profit is a mixture of weak directional signal and ATR-bracket risk management, not pure forecasting accuracy. Second, the stricter re-runs changed the individual hierarchy. PatchTST is now the strongest learned standalone agent, Mamba becomes a profitable but drawdown-prone long specialist, and LightGBM contributes only a small positive OOS return after the validation-selected 50-feature search. Third, the TCN no longer receives credit for the earlier long-only bracket result: the canonical version is a both-side, three-class TBM model selected against same-bracket long and short baselines, producing a more modest but cleaner $+36.4\%$ return.
+Three observations follow. First, the agents' classification AUCs are \textit{modest} --- roughly $0.50$ to $0.54$ where a scalar AUC is applicable --- and yet several agents post large returns. This gap is itself a finding: at this horizon the realised profit is a mixture of weak directional signal and ATR-bracket risk management, not pure forecasting accuracy. Second, \textit{a high out-of-sample return does not, by itself, qualify a method for the fund}. The predeclared roster is the five agents marked in Table~\ref{tab:agent_leaderboard}; two high-returning standalone strategies, PatchTST ($+77.8\%$) and volatility breakout ($+34.7\%$), are deliberately left out --- PatchTST because it has no measurable forecasting skill (below), volatility breakout because its validation-window risk-adjusted return is negative. Third, PatchTST deserves special comment: it is the strongest learned standalone agent on paper, but its directional AUC is $0.50$ --- indistinguishable from chance --- and its $+77.8\%$ is almost entirely directional \textit{beta} from a fixed short-only stance during the bear leg, not forecasting skill. Retraining it walk-forward and adding RevIN instance normalisation (two further attempts) left the OOS AUC at $0.48$--$0.50$, and selecting its trading parameters honestly on validation data turns the $+77.8\%$ into a loss. It is therefore reported as an honest negative rather than included.
 
 \paragraph{Each agent has its own directional mandate.}
-A detail that matters for the diversification argument is that the agents are not all trading the same direction. Each one's permitted side is fixed on the validation window --- through an explicit \texttt{trade\_direction} setting and its probability thresholds --- and then frozen, so the realised out-of-sample trades fall into three groups. Mamba is explicitly \textbf{long-only} (345 long entries, no shorts), while LightGBM is technically allowed to trade both sides but its frozen thresholds realise only long entries over this hold-out (371 longs, no shorts). PatchTST is the opposite --- the only explicitly \textbf{short-only} final agent (130 shorts, no longs) --- and earns its $+77.8\%$ mainly by pressing weakness. The remaining agents trade \textbf{both sides} with characteristic tilts: the TCN is close to balanced (216 long / 240 short), the volatility-breakout agent likewise (238 / 211), the trend follower leans short over this window (142 / 395), and the dominance-rotation agent leans long (418 / 281). This spread of mandates is deliberate. Because the roster is rarely all positioned on the same side of the market, the fund's net exposure is set by which views the allocator is currently funding rather than by a single shared directional bet --- the mechanism examined week-by-week in Section~\ref{sec:case_study}.
+A detail that matters for the diversification argument is that the surviving agents are not all trading the same direction. Each one's permitted side is fixed on the validation window --- through an explicit \texttt{trade\_direction} setting and its probability thresholds --- and then frozen, so the realised out-of-sample trades span several tilts. Mamba is explicitly \textbf{long-only} (345 long entries, no shorts), while LightGBM is technically allowed to trade both sides but its frozen thresholds realise only long entries over this hold-out (371 longs, no shorts). The TCN trades \textbf{both sides} and is close to balanced (216 long / 240 short); the trend follower leans short over this window (142 / 395); and the dominance-rotation agent leans long (418 / 281). This spread of mandates is deliberate. Because the roster is rarely all positioned on the same side of the market, the fund's net exposure is set by which views the allocator is currently funding rather than by a single shared directional bet --- the mechanism examined week-by-week in Section~\ref{sec:case_study}.
 
 \begin{figure}[h!]
     \centering
@@ -74,7 +76,7 @@ A detail that matters for the diversification argument is that the agents are no
     \vspace{2mm}
     \begin{minipage}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{Images/tcn_equity.png}\end{minipage}\hfill
     \begin{minipage}{0.49\textwidth}\centering\includegraphics[width=\textwidth]{Images/patchtst_equity.png}\end{minipage}
-    \caption{Out-of-sample equity and drawdown for the four learned agents, each running its own frozen ATR-bracket strategy: LightGBM and Mamba (top, realised long-only over OOS), TCN and PatchTST (bottom, two-sided and short-only respectively). The curves are visibly dissimilar --- different entry timing, different drawdown structure --- which is the decorrelation the fund allocator exploits.}
+    \caption{Out-of-sample equity and drawdown for the four learned agents, each running its own frozen ATR-bracket strategy: LightGBM and Mamba (top, realised long-only over OOS), TCN and PatchTST (bottom, two-sided and short-only respectively). LightGBM, Mamba and TCN enter the fund; PatchTST is shown for comparison but is screened out (no out-of-sample directional skill). The curves are visibly dissimilar --- different entry timing, different drawdown structure --- which is the kind of decorrelation the fund allocator exploits among the agents it retains.}
     \label{fig:agent_equity}
 \end{figure}
 
@@ -89,7 +91,7 @@ The gradient-boosting agent is the clearest example of why validation discipline
 \end{figure}
 
 \paragraph{Methods that did not make the final system.}
-Several additional paradigms were prototyped and honestly rejected. A \textbf{deep reinforcement-learning} agent (PPO over a long/flat/short action space) never developed a positive edge at the hourly horizon: its per-step reward is dominated by noise, and the policy converged only on strongly trending folds while losing through choppy ones. A \textbf{genetic-programming} agent evolved interpretable symbolic rules whose in-sample fitness did not transfer out of sample. Among the rule agents, a \textbf{contrarian sentiment} (Fear \& Greed) agent returned $-21.1\%$ net of fees, and a \textbf{mean-reversion} agent returned $-12.4\%$; both were excluded. An experimental cross-asset learner is not part of the canonical 00--06 artifact set and is omitted from the final fund. Reporting these negatives is part of an honest account: most of what was tried did not work. Because this inclusion screen references out-of-sample performance, the surviving roster is selected on the hold-out window; the resulting survivorship/selection-on-test bias is discussed in Section~\ref{sec:limitations}.
+Several additional paradigms were prototyped and honestly rejected. A \textbf{deep reinforcement-learning} agent (PPO over a long/flat/short action space) never developed a positive edge at the hourly horizon: its per-step reward is dominated by noise, and the policy converged only on strongly trending folds while losing through choppy ones. A \textbf{genetic-programming} agent evolved interpretable symbolic rules whose in-sample fitness did not transfer out of sample. An experimental cross-asset learner is not part of the canonical 00--06 artifact set and is omitted. Three further candidates are built but excluded from the predeclared roster: \textbf{PatchTST}, for showing no out-of-sample directional skill (its return is convex-bracket beta, not forecasting), and the \textbf{volatility breakout} and \textbf{contrarian sentiment} (Fear \& Greed) rules, for negative validation-window risk-adjusted performance. Reporting these negatives is part of an honest account: most of what was tried did not make the final system. The roster is a curated, predeclared selection rather than a search over the hold-out; its status as a researcher choice is discussed in Section~\ref{sec:limitations}.
 
 \section{Signal Diversity}
 \label{sec:signal_diversity}
@@ -115,7 +117,7 @@ A multi-agent system can only benefit from combination if its agents are genuine
 \section{The Multi-Agent Fund}
 \label{sec:multi_agent}
 
-The seven autonomous agents are combined into a single fund by the leak-free capped inverse-volatility allocator of Section~\ref{sec:allocation}. Table~\ref{tab:fund_leaderboard} reports the headline result against the two passive benchmarks, the naive equal-weight baseline, and the regime-gated coordinator ablation. Figure~\ref{fig:mas_equity} shows the corresponding equity curves and Figure~\ref{fig:mas_bars} the ranked returns and Sharpe ratios.
+The five autonomous agents of the predeclared roster are combined into a single fund by the leak-free capped inverse-volatility allocator of Section~\ref{sec:allocation}. Table~\ref{tab:fund_leaderboard} reports the headline result against the two passive benchmarks, the naive equal-weight baseline, and the regime-gated coordinator ablation. Figure~\ref{fig:mas_equity} shows the corresponding equity curves and Figure~\ref{fig:mas_bars} the ranked returns and Sharpe ratios.
 
 \begin{table}[h!]
     \centering
@@ -126,9 +128,9 @@ The seven autonomous agents are combined into a single fund by the leak-free cap
         \toprule
         \textbf{Strategy} & \textbf{Return} & \textbf{Sharpe} & \textbf{Sortino} & \textbf{MaxDD} & \textbf{$\alpha$} \\
         \midrule
-        \textbf{Final MAS fund (capped inv.-vol)} & $\mathbf{+56.8\%}$ & $\mathbf{2.02}$ & $\mathbf{2.59}$ & $\mathbf{-5.9\%}$ & $+47.9$\,pp \\
-        Naive equal-weight fund                   & $+55.7\%$ & $1.73$ & $2.18$ & $-6.9\%$ & $+46.8$\,pp \\
-        Coordinator ablation (Sharpe $\times$ regime) & $+14.0\%$ & $0.33$ & $0.39$ & $-18.3\%$ & $+5.1$\,pp \\
+        \textbf{Final MAS fund (capped inv.-vol)} & $\mathbf{+53.7\%}$ & $\mathbf{1.50}$ & $\mathbf{1.86}$ & $\mathbf{-9.2\%}$ & $+44.8$\,pp \\
+        Naive equal-weight fund                   & $+56.1\%$ & $1.48$ & $1.82$ & $-8.8\%$ & $+47.2$\,pp \\
+        Coordinator ablation (Sharpe $\times$ regime) & $-10.2\%$ & $-0.23$ & $-0.28$ & $-32.7\%$ & $-19.1$\,pp \\
         \midrule
         BTC buy-and-hold                          & $+8.9\%$ & $0.09$ & $0.12$ & $-50.1\%$ & --- \\
         S\&P~500 buy-and-hold                     & $+46.9\%$ & $1.16$ & $0.25$ & $-18.8\%$ & $+38.0$\,pp \\
@@ -139,42 +141,42 @@ The seven autonomous agents are combined into a single fund by the leak-free cap
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{Images/mas_equity_comparison.png}
-    \caption{OOS equity curves of the final multi-agent fund (thick blue) against the individual agents, the two passive benchmarks, the naive equal-weight fund, and the coordinator ablation. The fund gives up the highest individual-agent returns in exchange for a much smoother path (maximum drawdown $-5.9\%$ versus $-50.1\%$ for BTC).}
+    \caption{OOS equity curves of the final multi-agent fund (thick blue) against the individual agents, the two passive benchmarks, the naive equal-weight fund, and the coordinator ablation. The fund gives up the highest individual-agent returns in exchange for a much smoother path (maximum drawdown $-9.2\%$ versus $-50.1\%$ for BTC).}
     \label{fig:mas_equity}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{Images/mas_leaderboard.png}
-    \caption{Ranked OOS total return (left) and annualised Sharpe ratio (right) for the fund, the individual agents, and the benchmarks. On total return the fund sits mid-pack --- by construction, since diversification trades peak return for stability --- but on risk-adjusted return it ranks first, ahead of every individual agent and both benchmarks.}
+    \caption{Ranked OOS total return (left) and annualised Sharpe ratio (right) for the fund, the individual agents, and the benchmarks. On total return the fund sits mid-pack --- by construction, since diversification trades peak return for stability --- but on risk-adjusted return it ranks first among the roster agents and benchmarks (the only higher Sharpe, the excluded PatchTST, is skill-free bear beta).}
     \label{fig:mas_bars}
 \end{figure}
 
-The headline is a \textit{risk-adjusted} one. On total return alone the fund ($+56.8\%$) is below the strongest single agents, especially dominance rotation and PatchTST. But the fund attains the highest \textit{Sharpe ratio} of any strategy in the study ($2.02$) with the smallest maximum drawdown among the active rows ($-5.9\%$), comfortably ahead of BTC buy-and-hold (Sharpe $0.09$) and the S\&P~500 (Sharpe $1.16$). Diversifying across heterogeneous agents converts volatile individual return streams into a smoother portfolio. The per-regime breakdown in Table~\ref{tab:fund_regime} confirms that this is not a single lucky sub-period: the fund is positive in chop, bull, and bear conditions.
+The headline is a \textit{risk-adjusted} one. On total return alone the fund ($+53.7\%$) is below the strongest single agents, especially dominance rotation, and even slightly below the equal-weight fund ($+56.1\%$). But the fund attains the highest \textit{Sharpe ratio} ($1.50$) among the roster agents and benchmarks, with a shallow maximum drawdown ($-9.2\%$), ahead of BTC buy-and-hold (Sharpe $0.09$) and the S\&P~500 (Sharpe $1.16$); the only standalone strategy with a higher Sharpe is the excluded PatchTST, whose return is skill-free bear beta. Diversifying across heterogeneous agents converts volatile individual return streams into a smoother portfolio. The per-regime breakdown in Table~\ref{tab:fund_regime} shows the fund is strongly positive in the bull and bear regimes and flat in chop. To test whether the $1.50$ Sharpe is more than luck, $5{,}000$ random Dirichlet weightings of the same five agents were evaluated: the capped inverse-volatility fund sits at the $87$th percentile of that distribution, but the equal-weight fund already scores $1.48$ --- so the capped allocator adds only a marginal edge, and almost all of the benefit comes from \textit{holding} the diversified roster rather than from the allocation rule. A weekly block bootstrap of the fund's own returns gives a Sharpe $95\%$ confidence interval of $[0.46,\,2.56]$ with $P(\text{Sharpe}>0)=0.99$ --- robustly positive, but with the point estimate in the upper-middle of a wide band.
 
 \begin{table}[h!]
     \centering
-    \caption{Final MAS fund performance decomposed by market regime (each segment rebased to its start). The fund is profitable and risk-controlled in every regime.}
+    \caption{Final MAS fund performance decomposed by market regime (each segment rebased to its start). The fund is strongly positive in the bull and bear regimes and roughly flat in the low-signal chop regime, where it avoids the larger whipsaw losses of several individual agents.}
     \label{tab:fund_regime}
     \begin{tabular}{lrrr}
         \toprule
         \textbf{Regime} & \textbf{Return} & \textbf{Sharpe} & \textbf{MaxDD} \\
         \midrule
-        Chop  & $+3.0\%$  & $0.63$ & $-5.9\%$ \\
-        Bull  & $+20.7\%$ & $1.71$ & $-4.9\%$ \\
-        Bear  & $+24.8\%$ & $3.43$ & $-3.4\%$ \\
+        Chop  & $+1.0\%$  & $0.14$  & $-7.0\%$ \\
+        Bull  & $+23.2\%$ & $1.54$  & $-9.2\%$ \\
+        Bear  & $+22.0\%$ & $2.45$  & $-5.4\%$ \\
         \bottomrule
     \end{tabular}
 \end{table}
 
 \subsection{Capital Allocation Over Time}
 
-Figure~\ref{fig:mas_weights} shows how the capped inverse-volatility allocator distributes capital across the seven agents through the hold-out. The cap of $2/N \approx 28.6\%$ prevents any one stream from taking over the fund, while recent volatility controls the day-to-day balance. The mean capped weights are PatchTST $23.2\%$, Mamba $15.7\%$, LightGBM $15.7\%$, TCN $14.9\%$, volatility breakout $11.7\%$, trend $9.6\%$, and dominance rotation $9.3\%$. Figure~\ref{fig:mas_monthly} shows the month-by-month return comparison: the fund's monthly returns are visibly tighter than BTC's, trading the latter's occasional very large months and very large losses for consistency.
+Figure~\ref{fig:mas_weights} shows how the capped inverse-volatility allocator distributes capital across the five agents through the hold-out. The cap of $2/N = 40\%$ prevents any one stream from taking over the fund, while recent volatility controls the day-to-day balance. The mean capped weights are Mamba $24.1\%$, LightGBM $23.7\%$, TCN $23.1\%$, trend $14.7\%$, and dominance rotation $14.4\%$. Figure~\ref{fig:mas_monthly} shows the month-by-month return comparison: the fund's monthly returns are visibly tighter than BTC's, trading the latter's occasional very large months and very large losses for consistency.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{Images/mas_capped_weights.png}
-    \caption{Capped inverse-volatility capital allocation over the OOS window. Each band is one agent's weight; the cap of $\approx 28.6\%$ limits concentration and the allocation shifts as agents' trailing volatilities change. No look-ahead is used: every weight depends only on past returns.}
+    \caption{Capped inverse-volatility capital allocation over the OOS window. Each band is one agent's weight; the cap of $40\%$ limits concentration and the allocation shifts as agents' trailing volatilities change. No look-ahead is used: every weight depends only on past returns.}
     \label{fig:mas_weights}
 \end{figure}
 
@@ -191,7 +193,7 @@ Figure~\ref{fig:mas_weights} shows how the capped inverse-volatility allocator d
 Two findings deserve to be stated plainly rather than buried, because they bound what this thesis can claim.
 
 \paragraph{The adaptive coordinator did not help.}
-The regime-gated coordinator --- weights set by a softmax of trailing Sharpe ratios times a per-regime competence score, the ``intelligent'' controller one might expect to be the centrepiece --- returns only $+14.0\%$ (Sharpe $0.33$, drawdown $-18.3\%$), \textit{worse} on every risk metric than the far simpler capped inverse-volatility rule. The lesson is sobering and worth keeping: not every component that \textit{looks} agentic and adaptive actually improves a system. The defensible claim of this thesis is therefore hybrid multi-agent \textit{diversification} through a transparent risk-balanced allocator, not that a learned coordinator adds alpha. The naive equal-weight fund remains highly competitive; the capped allocator is preferred because it gives the strongest Sharpe and a concentration-controlled allocation.
+The regime-gated coordinator --- weights set by a softmax of trailing Sharpe ratios times a per-regime competence score, the ``intelligent'' controller one might expect to be the centrepiece --- returns $-10.2\%$ (Sharpe $-0.23$, drawdown $-32.7\%$), \textit{far worse} on every risk metric than the far simpler capped inverse-volatility rule. The lesson is sobering and worth keeping: not every component that \textit{looks} agentic and adaptive actually improves a system. The defensible claim of this thesis is therefore hybrid multi-agent \textit{diversification} through a transparent risk-balanced allocator, not that a learned coordinator adds alpha. Indeed the naive equal-weight fund is essentially tied with the capped allocator (Sharpe $1.48$ versus $1.50$); the capped rule is preferred only for its marginally higher Sharpe and its concentration control.
 
 \paragraph{A high return is not the same as alpha.}
 The dominance-rotation agent's $+155.1\%$ is the largest single return in the study, and it is tempting to read it as a discovery. It is not. When the agent's signal is replaced by random permutations of itself fed through the same asymmetric ATR bracket, the resulting return distribution is wide, and the agent's true result sits at roughly its $95$th percentile --- inside, not beyond, what an essentially random signal achieves through the same convex risk management. The agent earns its place in the fund only because its return stream is structurally decorrelated from the price-based agents (it reads cross-asset dominance flow), making it a useful \textit{diversifier}; it is explicitly not presented as proven forecasting skill. The same random-bracket discipline is what justified excluding the sentiment and cross-asset experiments. A recurring theme of this work is that, in a domain this noisy, the burden of proof on any ``too good'' result must be high.

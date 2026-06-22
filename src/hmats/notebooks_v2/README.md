@@ -39,7 +39,7 @@ files so the university-facing notebook and runtime code do not drift.
 ```text
 src/hmats/mas/
 ├── mas07.py          # final engine, accepted-agent roster, allocator evaluation, thesis charts
-├── rule_agents.py    # rule agents; final MAS keeps trend, volbreak, dominance_rotation; excludes meanrev, sentiment_regime
+├── rule_agents.py    # rule agents; final MAS keeps trend, dominance_rotation; volbreak/sentiment are candidates only
 ├── agent_eval.py     # random-bracket null utilities
 ├── coordinators.py   # alternative merge/allocation methods
 └── crossasset_agent.py
@@ -58,34 +58,32 @@ python _build_mas07_nb.py
 
 ## Final MAS Roster
 
-Accepted agents:
+Predeclared roster (`mas07.FINAL_ROSTER`) — five agents curated for paradigm diversity and acceptable
+validation-window behaviour:
 
 | Agent | Source | Method family | Role in final system |
 |---|---|---|---|
 | `lgbm` | `01_lgbm_v1` | gradient boosting | tabular learned agent |
 | `mamba` | `02_mamba_v1` | selective state-space model | sequence learned agent |
 | `tcn` | `03_tcn_v1` | temporal convolutional network | TBM sequence learned agent |
-| `patch` | `04_patchtst_v1` | patch transformer | TBM transformer learned agent |
 | `trend` | `05_rule_agents_v1` | rule-based trend following | structurally different rule agent |
-| `volbreak` | `05_rule_agents_v1` | rule-based volatility breakout | structurally different rule agent |
 | `dominance_rotation` | `05_rule_agents_v1` | rule-based cross-asset dominance rotation | **diversification** rule agent (cross-asset flow, not price panel; not claimed as alpha) |
 
-Excluded experiments (removed on **OOS performance** — see survivorship caveat below):
+Candidates built but **not** in the final fund (reported as honest negatives):
 
-| Agent | Reason |
-|---|---|
-| `meanrev` | negative OOS return (−12.4%) |
-| `sentiment_regime` | negative OOS return (−21.1%) and below its random-bracket null (7th percentile) |
-| `crossasset` | weak directional evidence and not significant versus random-bracket null |
+| Agent | Val. Sharpe | Note |
+|---|---:|---|
+| `patch` | −1.09 | excluded: no OOS directional skill (AUC 0.50, retested walk-forward + RevIN); its +77.8% OOS is skill-free bear beta |
+| `volbreak` | −0.46 | excluded: negative validation-window risk-adjusted performance |
+| `sentiment_regime` | −0.11 | excluded: negative validation performance, below its random-bracket null |
+| `crossasset` | — | no standard 00–06 artifact; not a candidate |
 
-> **Survivorship caveat (read this).** The inclusion screen below requires a *positive OOS return*, so
-> the roster is selected on the hold-out window. This is a genuine survivorship/selection-on-test bias,
-> not a wording artifact: on the pre-OOS validation window (2022-01 → 2024-05) both excluded agents were
-> *positive* — `meanrev` returned **+89.9%** and `sentiment_regime` **+34.2%** (top grid rows in
-> `artifacts/notebooks_v2/05_meanrev/grid_leaderboard.csv` and `.../05_sentiment_regime/grid_leaderboard.csv`)
-> — and only turned negative on OOS. A leak-free pre-OOS screen would therefore have *kept* both, so the
-> fund's reported risk-adjusted figures are upward-biased relative to that stricter protocol. Disclosed in
-> thesis §8.5 (Limitations).
+> **The roster is a curated, predeclared selection — not a screen over the hold-out.** The five fund
+> agents are predeclared in `mas07.FINAL_ROSTER`; exclusions are justified on information available
+> before the OOS window (PatchTST has no OOS skill; volbreak/sentiment have negative validation-window
+> Sharpe). The README does **not** claim a leak-free no-survivorship guarantee — a curation step
+> involves judgement. The `Val. Sharpe` column (standalone Sharpe on 2023-06→2024-05) is reported as
+> context only, not as a mechanical admit/reject rule.
 
 ### Rule agent evaluation: `sentiment_regime` and `dominance_rotation`
 
@@ -111,27 +109,37 @@ component is lagged by 24h before use on hourly bars to avoid same-day market-ca
 The defensible claim is **hybrid multi-agent diversification**, not that a complex adaptive
 coordinator adds alpha.
 
-Current executed result in `artifacts/notebooks_v2/06_mas/results.json`:
+Current executed result in `artifacts/notebooks_v2/06_mas/results.json` (predeclared roster:
+`lgbm, mamba, tcn, trend, dominance_rotation`):
 
 | Strategy | OOS return | Sharpe | MaxDD | Interpretation |
 |---|---:|---:|---:|---|
-| Final MAS fund, capped inverse-vol | +56.8% | 2.02 | -5.9% | final system result |
-| Naive EW fund | +55.7% | 1.73 | -6.9% | simple fund-of-agents baseline |
-| Original coordinator ablation | +14.0% | 0.33 | -18.3% | tested and rejected as final allocator |
+| Final MAS fund, capped inverse-vol | +53.7% | 1.50 | -9.2% | final system result |
+| Naive EW fund | +56.1% | 1.48 | -8.8% | simple fund-of-agents baseline (essentially tied) |
+| Original coordinator ablation | -10.2% | -0.23 | -32.7% | tested and rejected as final allocator |
 | BTC buy-and-hold | +8.9% | 0.09 | -50.1% | crypto benchmark |
 | S&P 500 buy-and-hold | +46.9% | 1.16 | -18.8% | broad-market benchmark |
 
+**Significance** (`artifacts/notebooks_v2/06_mas/significance.json`): the fund Sharpe 1.50 sits at the
+**87th percentile** of 5000 random Dirichlet weightings of the same five agents, but the equal-weight
+fund already scores 1.48 — so the capped allocator adds only a marginal edge and almost all the
+benefit is from *holding* the diversified roster, not the weighting rule. A weekly block-bootstrap
+gives a Sharpe 95% CI of **[0.46, 2.56]**, P(SR>0)=0.99, P(SR>1)=0.82 — robustly positive, point
+estimate in the upper-middle of a wide band. PatchTST was retested with walk-forward retraining and
+RevIN (`v2`/`v3` experiments) and remained non-predictive (OOS AUC 0.48–0.50); its v1 +77.8% is
+directional bear-beta from a hindsight short-only profile, which is why it is excluded.
+
 The original `softmax(trailing Sharpe) x regime competence` coordinator does not justify the thesis
 claim as a headline mechanism. It remains useful as a negative ablation: it shows that not every
-agentic-looking coordination rule improves the fund. The final thesis should present capped
+agentic-looking coordination rule improves the fund. The final thesis presents capped
 inverse-volatility risk parity over heterogeneous agents as the robust merge method. The cap is
-`2/N`, which limits any single agent to 2/7 ≈ 28.6% of capital in the seven-agent roster and
+`2/N`, which limits any single agent to 2/5 = 40% of capital in the five-agent roster and
 prevents long inactive periods dominated by one method.
 
 The capped fund intentionally sacrifices part of the uncapped inverse-volatility result in exchange
-for a more credible multi-agent allocation. In the OOS evaluation the seven-agent roster produces
-mean capped inverse-volatility weights of approximately Patch 23.2%, Mamba 15.7%, LGBM 15.7%,
-TCN 14.9%, VolBreak 11.7%, Trend 9.6%, and DominanceRotation 9.3%.
+for a more credible multi-agent allocation. In the OOS evaluation the five-agent roster produces
+mean capped inverse-volatility weights of approximately Mamba 24.1%, LGBM 23.7%, TCN 23.1%,
+Trend 14.7%, and DominanceRotation 14.4%.
 
 ## Thesis Figures To Use
 

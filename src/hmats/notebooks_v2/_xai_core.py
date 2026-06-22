@@ -32,9 +32,10 @@ ART = m.repo_root() / "artifacts" / "notebooks_v2"
 OUT = ART / "07_xai"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# Learned agents whose probability traces are interpretable on a single price panel.
-PROB_AGENTS = ["lgbm", "mamba", "tcn", "patch"]
-RULE_SIGNAL_AGENTS = ["trend", "volbreak", "dominance_rotation"]
+# Learned agents (in the final fund) whose probability traces are interpretable on a single price
+# panel. PatchTST was screened out of the fund (no OOS skill) and is no longer shown here.
+PROB_AGENTS = ["lgbm", "mamba", "tcn"]
+RULE_SIGNAL_AGENTS = ["trend", "dominance_rotation"]
 AGENT_LABEL = {
     "lgbm": "LightGBM", "mamba": "Mamba", "tcn": "TCN", "patch": "PatchTST",
     "trend": "Trend", "volbreak": "VolBreak", "dominance_rotation": "DomRot",

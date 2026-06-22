@@ -42,7 +42,6 @@ The final agent set is intentionally conservative:
 | `05_rule_agents_v1` | `trend` | rule-based trend following | accepted rule agent |
 | `05_rule_agents_v1` | `volbreak` | rule-based volatility breakout | accepted rule agent |
 | `05_rule_agents_v1` | `dominance_rotation` | rule-based cross-asset dominance rotation | accepted diversification rule agent |
-| `05_rule_agents_v1` | `meanrev` | rule-based mean reversion | excluded experiment |
 | `05_rule_agents_v1` | `sentiment_regime` | rule-based contrarian Fear & Greed | excluded experiment |
 | optional `06_crossasset_v1` | `crossasset` | cross-asset / sentiment learner | not part of the canonical 00–06 artifact set |
 
