@@ -1,6 +1,5 @@
 \chapter{Financial Evaluation}
 \label{07_Financial_Evaluation}
-\thispagestyle{empty}
 
 A predictive model with genuine directional accuracy is a necessary but not sufficient condition for a profitable trading strategy. Transaction costs, the timing and sizing of entries and exits, and the interaction between trade frequency and fee drag can turn a model with a positive AUC into an unprofitable strategy, or alternatively reveal that a strategy with a seemingly modest Sharpe ratio is already capturing a large fraction of the zero-cost theoretical maximum. This chapter formalises the financial evaluation framework used throughout the thesis and describes the multi-regime evaluation design.
 
@@ -66,7 +65,6 @@ All backtests incorporate realistic transaction costs matching the fee structure
 
 \noindent Stop-loss exits and timeout exits are modelled as taker orders. Take-profit exits are modelled as maker orders (the TP level acts as a resting limit). Short positions are charged a conservative funding cost of $0.00077\%$ per hour. Leverage does not alter these per-trade fee rates: fees are charged on notional position size, so the relative cost structure is invariant to the leverage multiplier; what dominates real-world execution cost beyond fees is \textit{slippage}, which the resting-limit-order design is intended to minimise.
 
-\vspace{3mm}
 
 In the final configuration adopted for all agents, both long and short entries are placed as limit orders, filling at the maker rate when the limit is touched and reverting to taker only when the order must chase the market. Table~\ref{tab:fee_summary} summarises the fee model.
 
@@ -120,15 +118,12 @@ Beyond the full-period aggregate, each strategy is assessed against the three ma
 
 \textbf{Regime 1 (Chop):} A well-designed strategy should remain approximately flat, avoiding over-trading and fee drag in a low-signal environment. The fund returns $+1.0\%$ here at a Sharpe of $0.14$; this is the weakest sub-period --- essentially flat --- but it still avoids the larger whipsaw losses visible in several individual agents, and the shallow $-7.0\%$ drawdown confirms the chop regime is contained rather than damaging.
 
-\vspace{3mm}
 
 \textbf{Regime 2 (Bull):} The key metric is alpha versus buy-and-hold during a parabolic uptrend. The fund captures $+23.2\%$ (Sharpe $1.54$) while holding its drawdown to $-9.2\%$, participating in the trend without taking the benchmark's full risk.
 
-\vspace{3mm}
 
 \textbf{Regime 3 (Bear):} This is the most decisive discriminator between strategies with and without a genuine short-side capability. Over a market that fell more than $50\%$ from its high, the fund returns $+22.0\%$ (Sharpe $2.45$), led by the trend-sensitive and both-sided agents rather than by passive exposure.
 
-\vspace{3mm}
 
 That the fund is positive in \textit{all three} regimes suggests that its performance is not a single directional bet.
 
@@ -139,11 +134,9 @@ That the fund is positive in \textit{all three} regimes suggests that its perfor
 
 The fee results make plain a design principle that academic strategy evaluation often underweights: the fee model should be fixed as a constraint, not treated as a post-hoc adjustment. Across the agents the gap between the zero-fee and with-fee equity curves is substantial, and it is driven almost entirely by trade frequency interacting with the maker/taker split. Two levers reduce this drag without abandoning activity: raising the trade-quality bar (higher thresholds, fewer but more confident entries) and maximising the fraction of passively-filled maker orders (limit entries and limit take-profits). The final configurations use both --- which is why the strategies are deliberately built around resting limit orders rather than market orders.
 
-\vspace{3mm}
 
 An honest caveat must accompany this. Even after the per-agent position caps, the system as a whole \textit{trades a great deal}: several agents turn over frequently, and the fund inherits their combined activity. On a venue with the assumed near-zero maker fees and reliable passive fills, this is sustainable; on a busier or less liquidity-friendly platform, the same turnover could erode much of the apparent edge. The backtest assumes that limit entries and take-profits are filled passively the great majority of the time, which is optimistic: real execution depends on queue position, spread, slippage, and changing funding rates, none of which a one-hour backtest can fully capture. Therefore, the results are best interpreted as an optimistic research backtest, not a production execution simulation; execution cost is one of the dominant remaining uncertainties, and is revisited in the limitations of Chapter~\ref{08_Discussion}.
 
-\vspace{3mm}
 
 There is a clear business reason why a venue such as MEXC offers near-zero maker fees in the first place. Generating trading volume on these markets is exactly what the platforms want: low headline fees attract the long tail of frequently-trading, often-overtrading retail participants, and the resting limit orders that minimal maker fees encourage deepen the order book and make the venue more attractive still. This market structure also creates risks for retail participants: the great majority lose money over time, while the exchanges earn substantial revenue from their collective activity. Cryptocurrency in particular has become a place where many people chase fast --- and sometimes dirty --- money, frequently with leverage they do not understand. Smaller venues like MEXC are generally less liquid, less regulated, and less safe than the largest exchanges or than the regulated instruments through which Bitcoin can also be traded. A systematic, risk-managed strategy of the kind developed here is, in part, an attempt to approach this environment with discipline rather than speculation --- but the same environment is the reason its real-world execution must be treated with caution.
 
@@ -154,14 +147,13 @@ There is a clear business reason why a venue such as MEXC offers near-zero maker
 
 Aggregate metrics do not explain the mechanism behind the returns. To make the mechanism legible, the out-of-sample window is cut into calendar weeks and examined under fixed selection rules rather than by eye. The main case study is the most violent BTC drawdown week in the hold-out: 2--9 February 2026. BTC closes down $-9.5\%$ and suffers an intra-week drawdown of $-20.4\%$, while the fund finishes $+4.3\%$. This is the clearest example of what the hybrid architecture is meant to do: it does not predict the whole week correctly with one model, but allocates across agents that disagree, stop out, take profit, cool down, or stay flat at different times.
 
-\vspace{3mm}
 
 Figure~\ref{fig:xai_defence} resolves this week into six layers. The top panel gives the BTC path and the fund's \textit{net} exposure. This is a signed summary: long capital minus short capital. The second panel is therefore essential, because it decomposes the same book into gross capital states --- long, short, and flat/cash. Early in the week the fund can be simultaneously long and short because different agents are active on different sides; a large grey band shows that a substantial part of capital is not in a BTC position at all. The event strip then identifies which learned agent entered or exited, so a stop-loss marker is not misread as belonging to ``the short'' in general. In this week the short side is carried by the both-sided agents --- the TCN and the trend rule, which lean short into the decline --- while long-biased Mamba and the long-realised LightGBM either stop out quickly or remain inactive. The rule-signal panel shows the deterministic trend and dominance-rotation views that complement the learned probabilities. Finally, the bottom panel compares the fund, BTC, and each individual agent: the fund is not the best single line at every hour, but it is the one that converts disagreement into a controlled equity path.
 
 \begin{figure}[p]
     \centering
     \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{Images/xai_case_defence.png}
-    \caption{Main XAI case: the capital-defence week (2--9 February 2026). BTC closes $-9.5\%$ and reaches a $-20.4\%$ intra-week drawdown, while the final MAS fund closes $+4.3\%$. The figure shows BTC candles and net exposure, the long/flat/short capital split, learned-agent trade events, learned probabilities, rule-agent signals, and cumulative returns for the fund, BTC, and all individual agents. Generated by notebook \texttt{07\_xai\_v1}.}
+    \caption{Main XAI case: the capital-defence week (2--9 February 2026). BTC closes $-9.5\%$ and reaches a $-20.4\%$ intra-week drawdown, while the final MAS fund closes $+4.3\%$. The figure shows BTC candles and net exposure, the long/flat/short capital split, learned-agent trade events, learned probabilities, rule-agent signals, and cumulative returns for the fund, BTC, and all individual agents. Generated by notebook~\texttt{07\_xai\_v1}.}
     \label{fig:xai_defence}
 \end{figure}
 
@@ -170,7 +162,7 @@ The counter-case is a strong upside week, 7--14 April 2025, shown in Figure~\ref
 \begin{figure}[p]
     \centering
     \includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{Images/xai_case_trend.png}
-    \caption{Counter-case XAI week: a strong BTC rally (7--14 April 2025). BTC gains $+6.9\%$ while the final fund gains $+4.9\%$. The capital-state and cumulative-return panels show the cost of drawdown control: the fund participates in the rally but remains diversified across long, short, and flat agents instead of taking full BTC beta. Generated by notebook \texttt{07\_xai\_v1}.}
+    \caption{Counter-case XAI week: a strong BTC rally (7--14 April 2025). BTC gains $+6.9\%$ while the final fund gains $+4.9\%$. The capital-state and cumulative-return panels show the cost of drawdown control: the fund participates in the rally but remains diversified across long, short, and flat agents instead of taking full BTC beta. Generated by notebook~\texttt{07\_xai\_v1}.}
     \label{fig:xai_trend}
 \end{figure}
 

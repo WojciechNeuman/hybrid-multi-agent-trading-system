@@ -1,22 +1,22 @@
 \chapter{Discussion}
 \label{08_Discussion}
-\thispagestyle{empty}
 
 \section{What the Fund Does, and What It Does Not}
 \label{sec:agent_contributions}
 
 The results indicate that the value of this system lies in \textit{diversification across heterogeneous agents}, realised through a transparent risk-balanced allocator, rather than in any single model or in a sophisticated learned controller. The final fund's defining property is not its headline return --- the strongest individual agents return more --- but its \textit{risk-adjusted} profile: the highest Sharpe in the study, a small drawdown, and positive returns in all three market regimes. A collection of volatile, individually unreliable return streams is converted into a smooth portfolio, which is exactly what a fund-of-agents is meant to achieve.
 
-\vspace{3mm}
 
 The individual-agent results show several distinct patterns. On raw out-of-sample return PatchTST looks like the strongest learned model, but this is a cautionary example rather than a success: its directional AUC is indistinguishable from chance ($\approx 0.50$, and no better under walk-forward retraining or instance normalisation), so its apparent edge is directional \textit{beta} from a fixed short stance during the bear leg, not forecasting skill --- and it is correctly screened out of the fund. Among the agents that do survive, Mamba is a profitable but volatile long-only sequence agent, and the revised TCN is less spectacular than earlier versions but cleaner, since its both-side three-class setup is selected against same-bracket long and short baselines. LightGBM remains valuable as a calibrated tabular signal, yet its validation-selected trading policy produces only a small OOS return. This is instructive in both directions: an agent can post the highest standalone return and still be discarded as skill-free, while another can have the best directional AUC in the study and still be weak as a traded strategy once costs, thresholds, and regime change are included.
+
+
+The standard external baselines sharpen this point. A textbook recurrent network (GRU/LSTM), built as a minimal variation of the Mamba agent so that only the encoder differs, posted the highest \textit{validation}-window Sharpe of any learned model yet lost money out of sample --- the cleanest illustration in this study that in-window performance is not skill. A classical ARIMA model forecast no better than a random walk (directional accuracy $\approx 51\%$) and did not trade profitably. That a plain recurrent net and a linear model both fail on the same data, labels, and execution is the strongest available evidence that the heterogeneous, nonlinear, risk-managed design is doing real work rather than merely adding complexity --- and it directly answers the reasonable objection that a simpler standard model might have sufficed.
 
 \section{The Role of Feature and Model Diversity}
 \label{sec:feature_diversity_discussion}
 
 A deliberate design decision throughout is that each agent consumes a \textit{different} feature subset matched to its learning mechanism. This is validated by the low Spearman correlations between the learned agents' probability series (Table~\ref{tab:spearman_corr}): the cross-paradigm pairs are near zero, and even the TCN and PatchTST --- which share an identical feature diet --- correlate at only $0.47$, their differing inductive biases producing materially distinct rankings. The rule agents extend this diversity further, since their signals come from fixed economic logic and, for the dominance agent, from a cross-asset information source that no price-feature model touches.
 
-\vspace{3mm}
 
 From the perspective of ensemble theory, uncorrelated errors are precisely what allow a combination to reduce variance without sacrificing expected return~\cite{dietterich2000ensemble}. Diversity, however, is a \textit{necessary but not sufficient} condition: it is what makes the risk-parity allocator effective, but it does not by itself guarantee that a more elaborate combination rule will help --- as the coordinator ablation shows.
 
@@ -25,7 +25,6 @@ From the perspective of ensemble theory, uncorrelated errors are precisely what 
 
 A particularly important negative result concerns the integration layer. The intuition behind a hybrid multi-agent system is that an intelligent controller should learn \textit{when to trust which agent} and so beat any mechanical combination. The regime-gated coordinator was built to do exactly this --- weighting agents by a softmax of their trailing Sharpe ratios times a per-regime competence score --- and it nonetheless underperformed the far simpler capped inverse-volatility rule on every risk metric ($-10.2\%$ at Sharpe $-0.23$ versus $+53.7\%$ at Sharpe $1.50$).
 
-\vspace{3mm}
 
 The likely reason is that adaptive weighting is unreliable when the underlying estimates are noisy. With only a two-year hold-out and a handful of regime transitions, trailing-Sharpe and competence estimates are themselves high-variance; weighting agents by them adds estimation noise faster than it adds skill, and concentrates capital into whichever agent was recently lucky. The simple inverse-volatility rule, by contrast, asks only for a stable quantity --- each agent's recent volatility --- and is correspondingly steady. This generalises an earlier finding in the project's development: an even more elaborate meta-labelling supervisor, which tried to learn a profitability classifier over the agents' signals, also failed to beat its best constituent, in that case because a near-monotonic calendar feature let it memorise \textit{when} it was trained rather than \textit{what} works. The recurring lesson is that, in this data regime, more complex coordinators require stronger evidence of improvement, and simple, transparent allocation is the more defensible choice. We therefore report hybrid \textit{diversification}, not learned coordination, as the contribution.
 
@@ -58,12 +57,12 @@ The agents' classification AUCs are modest (roughly $0.50$--$0.54$). The returns
 Some retained agents are intentionally asymmetric: their frozen trading profile may be primarily long-sided or short-sided if that was the configuration selected on the validation window. This is acceptable inside the multi-agent design because the fund allocator treats each stream as a specialist return source and assigns capital dynamically from trailing performance. It does, however, mean that the base agents should not be interpreted as complete standalone long/short trading systems.
 
 \paragraph{Reproducibility of the deep agents.}
-The deep sequence models do not yet fix every stochastic component (notably the Mamba training loop and \texttt{DataLoader} shuffling), so their walk-forward outputs vary between runs and the fund inherits this non-determinism. Full bitwise reproducibility is a prerequisite for treating any single agent's contribution as fixed and is treated as a blocking task in the project's remediation notes.
+The deep sequence models do not yet fix every stochastic component (notably the Mamba training loop and \texttt{DataLoader} shuffling), so their walk-forward outputs vary between runs and the fund inherits this non-determinism. Full bitwise reproducibility is treated as a blocking task in the project's remediation notes.
 
 \paragraph{Computational budget.}
-Training was performed on a personal laptop and a single cloud A100 GPU, so the deep agents ran under modest epoch and fold budgets. The reported results should be read as a lower bound on what the same architectures could achieve with larger budgets.
+Training ran on a personal laptop and a single cloud A100 GPU under modest epoch and fold budgets, so the reported results are a lower bound on what the same architectures could achieve with more compute.
 
 \section{Practical Usability}
 \label{sec:practical_usability}
 
-Of the components, LightGBM is the easiest to operate: it trains in minutes, produces usable probability estimates, and has a well-understood failure mode (probability compression toward $0.5$ in low-predictability regimes). It is not, however, the strongest surviving standalone agent; Mamba and the dominance-rotation rule produce larger OOS returns, while the fund relies on the diversity among all streams. The fund layer adds little latency, since the allocation is a simple causal computation over trailing returns. The principal obstacle to live deployment is not the models but the execution assumptions: moving from this backtest to paper trading would expose the strategy to the real slippage, latency, and partial fills that --- as argued throughout --- ultimately matter more than headline fees.
+Of the components, LightGBM is the easiest to operate: it trains in minutes, gives usable probabilities, and has a well-understood failure mode (probability compression toward $0.5$ in low-predictability regimes). It is not the strongest surviving agent --- Mamba and the dominance-rotation rule return more --- but the fund relies on the diversity among all streams, and its allocation layer adds little latency, being a simple causal computation over trailing returns. The principal obstacle to live deployment is not the models but the execution assumptions: moving from backtest to paper trading would expose the strategy to the real slippage, latency, and partial fills that --- as argued throughout --- ultimately matter more than headline fees.

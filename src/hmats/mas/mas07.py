@@ -56,6 +56,13 @@ EXCLUDED_AGENTS = {
     "volbreak": "negative validation-window risk-adjusted performance",
     "sentiment_regime": "negative validation-window performance and below its random-bracket null",
     "crossasset": "not part of the canonical 00-06 notebooks_v2 pipeline; no standard artifact is required",
+    "rnn_gru": "standard recurrent baseline (GRU) requested by the thesis advisor; built as a real "
+               "candidate (notebook 09, same TBM labels / WFO / ATR-bracket engine as Mamba). OOS "
+               "directional AUC ~0.51 and a negative standalone return after fees (-10.9%, Sharpe -0.22), "
+               "below the predeclared 10%/yr promotion gate -> reported as an honest negative, not in the fund",
+    "rnn_lstm": "standard recurrent baseline (LSTM), companion to rnn_gru. OOS AUC ~0.50 (chance) and a "
+                "negative standalone return after fees (-6.1%, Sharpe -0.12), below the 10%/yr gate -> "
+                "honest negative, not in the fund",
 }
 VAL_START = pd.Timestamp("2023-06-01")   # validation window for the informative standalone Sharpe column
 VAL_END = pd.Timestamp("2024-05-31 23:00:00")
@@ -63,7 +70,8 @@ AGENTS = FINAL_ROSTER  # the fund roster
 AGENT_DIR = {"lgbm": "01_lgbm", "mamba": "02_mamba", "tcn": "03_tcn", "patch": "04_patchtst",
              "trend": "05_trend", "volbreak": "05_volbreak",
              "sentiment_regime": "05_sentiment_regime",
-             "dominance_rotation": "05_dominance_rotation"}
+             "dominance_rotation": "05_dominance_rotation",
+             "rnn_gru": "09_gru", "rnn_lstm": "09_lstm"}
 # Multiclass TBM agents emit two *independent* softmax channels (P-up, P-down) and decide
 # long on P-up and short on P-down. A single saved probability is the P-up channel only, so
 # these agents must be backtested with their P-down channel too — otherwise the binary engine
@@ -78,6 +86,8 @@ PARADIGM = {
     "volbreak": "rule: volatility breakout",
     "sentiment_regime": "rule: contrarian sentiment (Fear & Greed)",
     "dominance_rotation": "rule: cross-asset dominance rotation",
+    "rnn_gru": "recurrent (GRU)",
+    "rnn_lstm": "recurrent (LSTM)",
 }
 
 OOS_START = pd.Timestamp("2024-06-01")
@@ -626,6 +636,24 @@ def load_sp500_benchmark(idx: pd.DatetimeIndex) -> pd.Series | None:
     return eq.reindex(idx).ffill().rename("S&P 500 Buy & Hold")
 
 
+def load_arima_benchmark(panel: pd.DataFrame) -> pd.Series | None:
+    """Classical ARIMA trading-baseline equity over OOS (long/short on the 1-step return forecast,
+    net of the same taker fee). Mirrors ``load_sp500_benchmark``: returns a full-history equity
+    Series (flat = 1.0 before OOS) or ``None`` if the dependency / cache is unavailable.
+
+    Uses the cached walk-forward forecast in ``data/external/arima_oos.parquet`` when present,
+    otherwise computes it from the panel close (slow). See ``hmats.mas.arima_benchmark``."""
+    try:
+        from hmats.mas import arima_benchmark as ab
+    except Exception:
+        return None
+    cache = repo_root() / "data" / "external" / "arima_oos.parquet"
+    try:
+        return ab.arima_equity(panel.index, close=panel["close"], use_cache=cache.exists())
+    except Exception:
+        return None
+
+
 def evaluate_equity(eq_full: pd.Series, idx: pd.DatetimeIndex, name: str) -> tuple[dict, np.ndarray]:
     seg = eq_full.reindex(idx).values
     seg = seg / seg[0]
@@ -701,6 +729,19 @@ def run_pipeline(save: bool = True, verbose: bool = True) -> dict:
         (1.0 + panel["ret"]).cumprod().values, index=panel.index))
     if sp500 is not None:
         _add_equity("S&P 500 Buy & Hold", sp500.reindex(panel.index).ffill().fillna(1.0))
+    arima = load_arima_benchmark(panel)
+    if arima is not None:
+        _add_equity(arima.name, arima.reindex(panel.index).ffill().fillna(1.0))
+    # Advisor-requested standard recurrent baselines (GRU, LSTM): built as real candidates but
+    # excluded from the fund (below the 10%/yr gate). Shown here for comparison only.
+    for disp, sub in [("GRU baseline", "rnn_gru"), ("LSTM baseline", "rnn_lstm")]:
+        try:
+            prob = _spliced_signal(a2, AGENT_DIR[sub], panel.index)
+            bp = json.load(open(a2 / AGENT_DIR[sub] / "results.json")).get("best_params", {})
+            rb = TradingAgent(disp, prob, bp).build(panel)
+            _add_equity(disp, rb.eq)
+        except Exception:
+            pass
 
     lb = pd.DataFrame(results).sort_values("sharpe", ascending=False).reset_index(drop=True)
     final_full = iv_eq.reindex(panel.index).ffill().fillna(1.0)
@@ -780,6 +821,8 @@ def plot_results(out: dict, save: bool = True):
     colours = {"lgbm": "#F7931A", "mamba": "#D81B60", "tcn": "#00ACC1", "patch": "#EF5350",
                "trend": "#43A047", "volbreak": "#5E35B1",
                "sentiment_regime": "#8D6E63", "dominance_rotation": "#3949AB"}
+    baseline_styles = {  # advisor-requested baselines (excluded from the fund), shown for comparison
+        "GRU baseline": "#7E57C2", "LSTM baseline": "#5C6BC0", "ARIMA(1, 1, 1)": "#C62828"}
     main = "Final MAS fund (capped inverse-vol)"
 
     fig, ax1 = plt.subplots(figsize=(13.5, 6.2))
@@ -798,6 +841,10 @@ def plot_results(out: dict, save: bool = True):
                      label=f"{name} ({eq[-1]-1:+.0%})")
         elif name.startswith("Coordinator ablation"):
             ax1.plot(idx, (eq - 1) * 100, lw=1.4, ls="-.", color="#8D6E63",
+                     label=f"{name} ({eq[-1]-1:+.0%})")
+        elif name in baseline_styles:
+            ax1.plot(idx, (eq - 1) * 100, lw=1.5, ls=(0, (3, 1, 1, 1)),
+                     color=baseline_styles[name],
                      label=f"{name} ({eq[-1]-1:+.0%})")
         else:
             ax1.plot(idx, (eq - 1) * 100, lw=1.0, alpha=0.42, color=colours.get(name),
@@ -830,17 +877,50 @@ def plot_results(out: dict, save: bool = True):
 
     lb = pd.DataFrame(out["leaderboard"]).copy()
     top = lb.sort_values("sharpe", ascending=True)
-    fig3, (ax3, ax4) = plt.subplots(1, 2, figsize=(13.5, 5.3), sharey=True)
-    colors = ["#005BBB" if x == main else "#90A4AE" for x in top["name"]]
+    fig3, (ax3, ax4) = plt.subplots(1, 2, figsize=(13.5, 6.1), sharey=True)
+
+    # Categorical colouring: one colour per role, with a SINGLE colour for the standard baselines.
+    cat_colour = {
+        "fund": "#1565C0",       # the final multi-agent fund
+        "roster": "#2E7D32",     # agents in the predeclared fund roster
+        "benchmark": "#455A64",  # passive benchmarks (BTC, S&P 500)
+        "baseline": "#EF6C00",   # standard recurrent (GRU/LSTM) + classical ARIMA baselines
+        "other": "#B0BEC5",      # excluded candidates, equal-weight fund, coordinator ablation
+    }
+    cat_label = {
+        "fund": "Final MAS fund", "roster": "Fund roster agent",
+        "benchmark": "Passive benchmark", "baseline": "Standard / classical baseline",
+        "other": "Other candidate / ablation",
+    }
+
+    def _category(x):
+        if x == main:
+            return "fund"
+        if x in baseline_styles:                       # GRU / LSTM / ARIMA
+            return "baseline"
+        if x in ("BTC Buy & Hold", "S&P 500 Buy & Hold"):
+            return "benchmark"
+        if x in FINAL_ROSTER:                          # lgbm, mamba, tcn, trend, dominance_rotation
+            return "roster"
+        return "other"
+
+    cats = [_category(x) for x in top["name"]]
+    colors = [cat_colour[c] for c in cats]
     ax3.barh(top["name"], top["ret"] * 100, color=colors)
     ax3.axvline(0, color="#9E9E9E", lw=0.8)
     ax3.set_xlabel("Total return (%)")
     ax3.set_title("OOS total return", fontweight="bold")
     ax4.barh(top["name"], top["sharpe"], color=colors)
     ax4.axvline(0, color="#9E9E9E", lw=0.8)
-    ax4.set_xlabel("Annualised Sharpe")
-    ax4.set_title("OOS risk-adjusted result", fontweight="bold")
-    fig3.tight_layout()
+    ax4.set_xlabel("Annualised Sharpe ratio")
+    ax4.set_title("OOS risk-adjusted return (Sharpe ratio)", fontweight="bold")
+
+    from matplotlib.patches import Patch
+    used = [c for c in ("fund", "roster", "benchmark", "baseline", "other") if c in set(cats)]
+    handles = [Patch(facecolor=cat_colour[c], label=cat_label[c]) for c in used]
+    fig3.legend(handles=handles, loc="lower center", ncol=len(used), fontsize=9,
+                frameon=False, bbox_to_anchor=(0.5, -0.02))
+    fig3.tight_layout(rect=(0, 0.05, 1, 1))
     if save:
         fig3.savefig(arts / "03_leaderboard_return_sharpe.png", dpi=180, bbox_inches="tight")
 
@@ -871,6 +951,37 @@ def plot_results(out: dict, save: bool = True):
     fig4.tight_layout()
     if save:
         fig4.savefig(arts / "04_monthly_returns_comparison.png", dpi=180, bbox_inches="tight")
+
+    # Standalone baselines figure: advisor-requested standard recurrent nets (GRU, LSTM) and the
+    # classical ARIMA, each net of fees, against BTC buy-and-hold. All three are flat-to-negative.
+    base_names = [n for n in ("GRU baseline", "LSTM baseline", "ARIMA(1, 1, 1)") if n in eqs]
+    if base_names:
+        fig5, ax6 = plt.subplots(figsize=(13.5, 5.2))
+        for name in base_names:
+            eq = eqs[name]
+            ax6.plot(idx, (eq - 1) * 100, lw=1.7, ls=(0, (3, 1, 1, 1)),
+                     color=baseline_styles[name], label=f"{name} ({eq[-1]-1:+.0%})")
+        bh_eq = eqs.get("BTC Buy & Hold")
+        if bh_eq is not None:
+            ax6.plot(idx, (bh_eq - 1) * 100, lw=1.5, ls=":", color="#757575",
+                     label=f"BTC Buy & Hold ({bh_eq[-1]-1:+.0%})")
+        main_eq = eqs.get(main)
+        if main_eq is not None:
+            ax6.plot(idx, (main_eq - 1) * 100, lw=2.4, color="#005BBB",
+                     label=f"{main} ({main_eq[-1]-1:+.0%})", zorder=6)
+        for r, c in [("chop", "#9E9E9E"), ("bull", "#26A69A"), ("bear", "#EF5350")]:
+            s, e = REGIME_DATES[r]
+            ax6.axvspan(s, min(e, idx[-1]), alpha=0.06, color=c)
+        ax6.axhline(0, color="#9E9E9E", lw=0.6, ls=":")
+        ax6.set_ylabel("Return (%)"); ax6.legend(fontsize=9)
+        ax6.set_title("Standard recurrent (GRU/LSTM) and classical (ARIMA) baselines vs the fund (OOS)",
+                      fontweight="bold")
+        ax6.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 4, 7, 10]))
+        ax6.xaxis.set_major_formatter(mdates.DateFormatter("%b %y"))
+        plt.setp(ax6.xaxis.get_majorticklabels(), rotation=30, ha="right")
+        fig5.tight_layout()
+        if save:
+            fig5.savefig(arts / "05_baselines.png", dpi=180, bbox_inches="tight")
     return fig
 
 

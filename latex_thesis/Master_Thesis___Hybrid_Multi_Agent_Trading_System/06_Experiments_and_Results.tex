@@ -1,6 +1,8 @@
 \chapter{Experiments and Results}
 \label{06_Experiments_and_Results}
-\thispagestyle{empty}
+
+This chapter reports the experimental results. It first sets out the evaluation framework --- the two-year out-of-sample window and its three market regimes --- and then presents the standalone performance of every agent, the standard and classical baselines, and the integrated fund, before turning to the diversification analysis and the ablations. Throughout, negative results are reported as plainly as positive ones, since establishing what does \textit{not} work is as much a part of the contribution as what does.
+
 
 \section{Evaluation Framework}
 \label{sec:eval_framework}
@@ -12,7 +14,7 @@ All agents are evaluated on a unified two-year held-out test period, \textbf{1 J
     \footnotesize
     \caption{Three market regimes within the two-year OOS evaluation period. Each regime presents a distinct challenge for active trading strategies.}
     \label{tab:regimes}
-    \begin{tabular}{@{}p{1.5cm}p{2.2cm}p{4.3cm}p{4.3cm}@{}}
+    \begin{tabular}{@{}P{1.5cm}P{2.2cm}P{4.3cm}P{4.3cm}@{}}
         \toprule
         \textbf{Regime} & \textbf{Dates} & \textbf{Market Condition} & \textbf{Strategy Challenge} \\
         \midrule
@@ -23,11 +25,9 @@ All agents are evaluated on a unified two-year held-out test period, \textbf{1 J
     \end{tabular}
 \end{table}
 
-\vspace{3mm}
 
 The choice of this particular window is itself deliberate, on three counts. It is long enough --- almost two years of hourly data --- to give a statistically meaningful number of trades rather than a handful of lucky ones. It contains three genuinely different market conditions, so a strategy must prove itself in more than one environment. And, just as importantly, it is \textit{not} one of the early Bitcoin periods in which simply buying and holding the coin would have returned several hundred percent: over those years Bitcoin was an exceptional asset whose appreciation would flatter almost any long-biased strategy and make for a dishonest baseline. Evaluating on a recent, mixed window keeps the buy-and-hold benchmark fair.
 
-\vspace{3mm}
 
 The multi-regime structure also tests whether the system's edge is genuine \textit{alpha} --- the ability to navigate all three conditions --- or merely the result of riding a directional trend during the bull sub-period. A strategy that beats buy-and-hold in the bull but also stays positive through the chop and the bear has shown genuine resilience across market conditions. Performance is reported both for the full window and per regime, using total return, annualised Sharpe and Sortino ratios, maximum drawdown, and alpha over the corresponding buy-and-hold segment (the financial metrics are defined in Chapter~\ref{07_Financial_Evaluation}).
 
@@ -38,7 +38,7 @@ Each agent is first evaluated in isolation on the unified window, under \textit{
 
 \begin{table}[h!]
     \centering
-    \caption{Standalone agent performance on the unified OOS window (1 June 2024 -- 31 May 2026), net of fees, under leak-free parameter selection. The \textit{Val.\ Sharpe} column is each candidate's standalone annualised Sharpe on the validation window (1 June 2023 -- 31 May 2024); it is reported to characterise validation-window behaviour and is \textit{not} a mechanical selection rule. The fund roster is predeclared (the five agents marked \checkmark), curated for paradigm diversity and acceptable validation behaviour. AUC is the out-of-sample directional/Triple-Barrier AUC where applicable; the three-class TCN reports trading metrics only because its one-vs-rest AUC audit was not a meaningful scalar.}
+    \caption{Standalone agent performance on the unified OOS window (1 June 2024 -- 31 May 2026), net of fees, under leak-free parameter selection. The \textit{Val.\ Sharpe} column is each candidate's standalone annualised Sharpe on the validation window (1 June 2023 -- 31 May 2024); it is reported to characterise validation-window behaviour and is \textit{not} a mechanical selection rule. The fund roster is predeclared (the five agents marked \checkmark), curated for paradigm diversity and acceptable validation behaviour. AUC is the out-of-sample directional/Triple-Barrier AUC where applicable; the three-class TCN reports trading metrics only because its one-vs-rest AUC audit was not a meaningful scalar. The advisor-requested standard recurrent baselines (GRU, LSTM) and the classical ARIMA$(1,1,1)$ baseline are included for comparison; all three are flat-to-negative out of sample.}
     \label{tab:agent_leaderboard}
     \resizebox{\textwidth}{!}{%
     \begin{tabular}{lrrrrrc}
@@ -54,16 +54,29 @@ Each agent is first evaluated in isolation on the unified window, under \textit{
         Sentiment regime (rule)             & ---   & $-0.11$ & $-21.2\%$  & $-0.54$ & $-34.3\%$ & --- \\
         Volatility breakout (rule)          & ---   & $-0.46$ & $+34.7\%$  & $0.44$  & $-23.7\%$ & --- \\
         PatchTST (patch transformer)        & 0.502 & $-1.09$ & $+77.8\%$  & $1.64$  & $-17.3\%$ & --- \\
+        GRU (recurrent baseline)            & 0.514 & $2.33$  & $-10.9\%$  & $-0.22$ & $-25.3\%$ & --- \\
+        LSTM (recurrent baseline)           & 0.496 & $2.56$  & $-6.1\%$   & $-0.12$ & $-34.9\%$ & --- \\
         \midrule
         BTC buy-and-hold                    & ---   & ---     & $+8.9\%$   & $0.09$  & $-50.1\%$ & --- \\
         S\&P~500 buy-and-hold               & ---   & ---     & $+46.9\%$  & $1.16$  & $-18.8\%$ & --- \\
+        ARIMA(1,1,1) baseline               & ---   & ---     & $-15.3\%$  & $-0.18$ & $-44.3\%$ & --- \\
         \bottomrule
     \end{tabular}}
 \end{table}
 
-\vspace{3mm}
 
 Three observations follow. First, the agents' classification AUCs are \textit{modest} --- roughly $0.50$ to $0.54$ where a scalar AUC is applicable --- and yet several agents post large returns. This gap is itself a finding: at this horizon the realised profit is a mixture of weak directional signal and ATR-bracket risk management, not pure forecasting accuracy. Second, \textit{a high out-of-sample return does not, by itself, qualify a method for the fund}. The predeclared roster is the five agents marked in Table~\ref{tab:agent_leaderboard}; two high-returning standalone strategies, PatchTST ($+77.8\%$) and volatility breakout ($+34.7\%$), are deliberately left out --- PatchTST because it has no measurable forecasting skill (below), volatility breakout because its validation-window risk-adjusted return is negative. Third, PatchTST deserves special comment: it is the strongest learned standalone agent on paper, but its directional AUC is $0.50$ --- indistinguishable from chance --- and its $+77.8\%$ is almost entirely directional \textit{beta} from a fixed short-only stance during the bear leg, not forecasting skill. Retraining it walk-forward and adding RevIN instance normalisation (two further attempts) left the OOS AUC at $0.48$--$0.50$, and selecting its trading parameters honestly on validation data turns the $+77.8\%$ into a loss. It is therefore reported as an honest negative rather than included.
+
+\paragraph{Standard recurrent and classical baselines.} Two further baselines were added at the thesis advisor's request to test whether the system's heterogeneous, partly exotic learners (Mamba, TCN, PatchTST) are justified over textbook alternatives. The first is a \textbf{standard recurrent network} --- a two-layer GRU and a two-layer LSTM, trained through the \emph{identical} pipeline as the Mamba agent (same Triple-Barrier labels, expanding-window walk-forward retraining, $24$-bar sequences, fold-local percentile signal, and ATR-bracket trading grid), so the only thing that changes is the encoder. Their behaviour is instructive precisely because it inverts the usual worry: both recurrent nets post the \emph{highest} validation-window Sharpe of any learned agent ($2.33$ for GRU, $2.56$ for LSTM), yet both \emph{lose money out of sample} ($-10.9\%$ at Sharpe $-0.22$ and $-6.1\%$ at Sharpe $-0.12$ respectively), with out-of-sample directional AUC at $0.51$ and $0.50$ --- chance. This validation-to-hold-out collapse is the clearest single illustration in this work of why the roster is screened on out-of-sample behaviour and not on the validation window, and why a high in-window Sharpe is not evidence of skill. A promotion rule fixed \emph{before} the hold-out was inspected --- a standalone out-of-sample return of at least $10\%$/year --- was declared for these late-added candidates; both fall far short, so neither enters the fund. They join the deep reinforcement-learning and genetic-programming agents as honest negatives: a plain recurrent model, given the same data and the same execution, does not beat fees at this horizon.
+
+The second is a classical \textbf{ARIMA$(1,1,1)$} statistical baseline, with a naive \textbf{random walk} as the no-skill floor. Estimated walk-forward (weekly re-estimation, one-step-ahead forecasts on log-price), ARIMA's directional accuracy over the out-of-sample window is $51.4\%$ --- a coin flip --- and its one-step forecast error is \emph{not} smaller than the random walk's (a $-0.06\%$ ``improvement'' in RMSE, i.e.\ none). Traded with the same fee model under a conviction filter, it returns $-15.3\%$ (Sharpe $-0.18$). The reading is the one the advisor's question anticipated: there is no exploitable \emph{linear} structure in hourly Bitcoin returns, so a linear model collapses onto the random walk. That is exactly what justifies spending modelling effort on nonlinear, risk-managed agents and on combining them --- the value the fund adds (Sharpe $1.50$) sits far above any single linear or recurrent baseline, all of which are flat-to-negative.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{Images/baselines_equity.png}
+    \caption{Standard and classical baselines against the fund over the hold-out, all net of fees. The textbook recurrent networks (GRU $-10.9\%$, LSTM $-6.1\%$) and the classical ARIMA$(1,1,1)$ ($-15.3\%$) are flat-to-negative throughout, while the final multi-agent fund (thick blue, $+53.7\%$) compounds steadily above BTC buy-and-hold. Directly answering the question of whether the system's elaborate machinery is justified over standard alternatives: on the same data, labels, and fee-charged execution, none of the standard baselines is competitive.}
+    \label{fig:baselines}
+\end{figure}
 
 \paragraph{Each agent has its own directional mandate.}
 A detail that matters for the diversification argument is that the surviving agents are not all trading the same direction. Each one's permitted side is fixed on the validation window --- through an explicit \texttt{trade\_direction} setting and its probability thresholds --- and then frozen, so the realised out-of-sample trades span several tilts. Mamba is explicitly \textbf{long-only} (345 long entries, no shorts), while LightGBM is technically allowed to trade both sides but its frozen thresholds realise only long entries over this hold-out (371 longs, no shorts). The TCN trades \textbf{both sides} and is close to balanced (216 long / 240 short); the trend follower leans short over this window (142 / 395); and the dominance-rotation agent leans long (418 / 281). This spread of mandates is deliberate. Because the roster is rarely all positioned on the same side of the market, the fund's net exposure is set by which views the allocator is currently funding rather than by a single shared directional bet --- the mechanism examined week-by-week in Section~\ref{sec:case_study}.
@@ -91,7 +104,7 @@ The gradient-boosting agent is the clearest example of why validation discipline
 \end{figure}
 
 \paragraph{Methods that did not make the final system.}
-Several additional paradigms were prototyped and honestly rejected. A \textbf{deep reinforcement-learning} agent (PPO over a long/flat/short action space) never developed a positive edge at the hourly horizon: its per-step reward is dominated by noise, and the policy converged only on strongly trending folds while losing through choppy ones. A \textbf{genetic-programming} agent evolved interpretable symbolic rules whose in-sample fitness did not transfer out of sample. An experimental cross-asset learner is not part of the canonical 00--06 artifact set and is omitted. Three further candidates are built but excluded from the predeclared roster: \textbf{PatchTST}, for showing no out-of-sample directional skill (its return is convex-bracket beta, not forecasting), and the \textbf{volatility breakout} and \textbf{contrarian sentiment} (Fear \& Greed) rules, for negative validation-window risk-adjusted performance. Reporting these negatives is part of an honest account: most of what was tried did not make the final system. The roster is a curated, predeclared selection rather than a search over the hold-out; its status as a researcher choice is discussed in Section~\ref{sec:limitations}.
+Several additional paradigms were prototyped and honestly rejected. A \textbf{deep reinforcement-learning} agent (PPO over a long/flat/short action space) never developed a positive edge at the hourly horizon: its per-step reward is dominated by noise, and the policy converged only on strongly trending folds while losing through choppy ones. A \textbf{genetic-programming} agent evolved interpretable symbolic rules whose in-sample fitness did not transfer out of sample. A \textbf{standard recurrent network} (GRU and LSTM), trained through the identical pipeline as the Mamba agent, posted the highest validation-window Sharpe of any learned model yet lost money out of sample (Table~\ref{tab:agent_leaderboard}); a classical \textbf{ARIMA$(1,1,1)$} forecaster was no more accurate than a random walk ($51.4\%$ directional accuracy) and also unprofitable. An experimental cross-asset learner is not part of the canonical 00--06 artifact set and is omitted. Three further candidates are built but excluded from the predeclared roster: \textbf{PatchTST}, for showing no out-of-sample directional skill (its return is convex-bracket beta, not forecasting), and the \textbf{volatility breakout} and \textbf{contrarian sentiment} (Fear \& Greed) rules, for negative validation-window risk-adjusted performance. Reporting these negatives is part of an honest account: most of what was tried did not make the final system. The roster is a curated, predeclared selection rather than a search over the hold-out; its status as a researcher choice is discussed in Section~\ref{sec:limitations}.
 
 \section{Signal Diversity}
 \label{sec:signal_diversity}
@@ -141,14 +154,14 @@ The five autonomous agents of the predeclared roster are combined into a single 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{Images/mas_equity_comparison.png}
-    \caption{OOS equity curves of the final multi-agent fund (thick blue) against the individual agents, the two passive benchmarks, the naive equal-weight fund, and the coordinator ablation. The fund gives up the highest individual-agent returns in exchange for a much smoother path (maximum drawdown $-9.2\%$ versus $-50.1\%$ for BTC).}
+    \caption{OOS equity curves of the final multi-agent fund (thick blue) against the individual agents, the two passive benchmarks, the naive equal-weight fund, the coordinator ablation, and the standard recurrent (GRU/LSTM) and classical ARIMA baselines (dash-dotted). The fund gives up the highest individual-agent returns in exchange for a much smoother path (maximum drawdown $-9.2\%$ versus $-50.1\%$ for BTC), and sits well above every standard baseline, all of which are flat-to-negative.}
     \label{fig:mas_equity}
 \end{figure}
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{Images/mas_leaderboard.png}
-    \caption{Ranked OOS total return (left) and annualised Sharpe ratio (right) for the fund, the individual agents, and the benchmarks. On total return the fund sits mid-pack --- by construction, since diversification trades peak return for stability --- but on risk-adjusted return it ranks first among the roster agents and benchmarks (the only higher Sharpe, the excluded PatchTST, is skill-free bear beta).}
+    \caption{Ranked OOS total return (left) and annualised Sharpe ratio (right), with bars coloured by role (legend): the final fund (blue), the five fund-roster agents (green), the passive benchmarks (slate), the standard recurrent and classical baselines (orange, GRU/LSTM and ARIMA), and the remaining candidates and ablations (grey). On total return the fund sits mid-pack --- by construction, since diversification trades peak return for stability --- but on risk-adjusted return it ranks first among the roster agents and benchmarks (the only higher Sharpe, the excluded PatchTST, is skill-free bear beta), while the GRU, LSTM and ARIMA baselines sit together at the negative-Sharpe bottom of the~ranking.}
     \label{fig:mas_bars}
 \end{figure}
 
@@ -198,6 +211,5 @@ The regime-gated coordinator --- weights set by a softmax of trailing Sharpe rat
 \paragraph{High return alone does not demonstrate forecasting skill.}
 The dominance-rotation agent's $+155.1\%$ is the largest single return in the study, and it is tempting to read it as a discovery. It is not. When the agent's signal is replaced by random permutations of itself fed through the same asymmetric ATR bracket, the resulting return distribution is wide, and the agent's true result sits at roughly its $95$th percentile --- inside, not beyond, what an essentially random signal achieves through the same convex risk management. The agent earns its place in the fund only because its return stream is structurally decorrelated from the price-based agents (it reads cross-asset dominance flow), making it a useful \textit{diversifier}; it is explicitly not presented as proven forecasting skill. The same random-bracket discipline is what justified excluding the sentiment and cross-asset experiments. A recurring theme of this work is that, in a domain this noisy, the burden of proof on any ``too good'' result must be high.
 
-\vspace{3mm}
 
 These results, together with a fuller red-team critique of the system's remaining limitations, are documented in the project's internal audit notes (see Chapter~\ref{08_Discussion}).

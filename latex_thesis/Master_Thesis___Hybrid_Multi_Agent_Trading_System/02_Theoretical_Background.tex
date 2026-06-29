@@ -1,35 +1,35 @@
 \chapter{Theoretical Background}
 \label{02_Theoretical_Background}
-\thispagestyle{empty}
 This chapter introduces the background needed for the proposed system: financial time series and their analysis using artificial intelligence methods. The application of AI techniques to financial data requires understanding both the properties of time series and the models used to process them.
-\vspace{3mm}
+
+
 The chapter first discusses the main characteristics of financial time series, the role of feature engineering, and selected artificial intelligence methods used in algorithmic trading. The chapter also introduces ensemble methods and decision fusion, as well as the concept of agents and multi-agent systems, which form the basis of the proposed approach.
 
-\subsection*{Financial Markets and Time Series Characteristics}
-
+\section{Financial Markets and Time Series Characteristics}
 
 A time series is a collection of observations indexed by the date of each observation ~\cite{hamilton2020time}. Most commonly, it is a sequence of values recorded at successive, equally spaced points in time, forming discrete-time data ~\cite{bangert2021machine}. Examples of such time series include environmental readings (e.g., temperature, rainfall), business data (e.g., sales, web traffic), and financial metrics such as asset prices. Time series are analyzed to uncover patterns, trends, and relationships that evolve over time, enabling informed decisions and predictions ~\cite{zhang2024deep}.
-\vspace{3mm} 
+
+
 In financial markets, observations of an asset’s price taken at equally spaced time intervals constitute a financial time series ~\cite{zhang2024deep}. These observations are typically represented in the form of \gloss{OHLCV} data, which includes the open, high, low, and close prices, as well as the traded volume within a given time interval. Depending on the chosen timeframe, such data can be recorded at different resolutions, ranging from high-frequency (e.g., tick or minute-level) to lower-frequency intervals such as daily or weekly data. A single interval is drawn as a \textit{candlestick} (Figure~\ref{fig:candle_anatomy}), whose body spans the open-to-close range and whose wicks reach the interval's high and low.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=0.40\textwidth]{Images/candlestick_scheme.png}
-    \caption{Anatomy of a single OHLC candlestick. The body covers the open-to-close range --- conventionally green (or hollow) when the close is above the open and red (or filled) otherwise --- while the upper and lower wicks mark the high and low traded within the interval. Source: Wikimedia Commons (public domain).}
+    \caption{Anatomy of a single OHLC candlestick. The body covers the open-to-close range --- conventionally green (or hollow) when the close is above the open and red (or filled) otherwise --- while the upper and lower wicks mark the high and low traded within the interval.}
     \label{fig:candle_anatomy}
 \end{figure}
 
-\vspace{3mm}
+
 Beyond aggregated price data, financial markets also generate more detailed information, such as limit order book (\gloss{LOB}) data, which captures the supply and demand dynamics of the market. While OHLCV data provides a compact representation of price movements, LOB data offers a more granular view of market activity and can be used to derive additional features for analysis ~\cite{tsantekidis2020using}. Read in sequence, candlesticks form the price chart on which discretionary traders identify support and resistance levels, trends, and recurring reversal patterns (Figure~\ref{fig:candle_patterns}) --- the same structure that the technical indicators introduced later in this chapter attempt to encode numerically.
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=0.92\textwidth]{Images/candlestick_patterns.jpg}
-    \caption{A candlestick price chart (EUR/USD, 2010) annotated with common technical-analysis structure --- trendlines, support and resistance, and reversal patterns. Sequences of candles, rather than any single bar, carry the signal that both human chartists and the feature pipeline of this thesis try to read. Source: Wikimedia Commons.}
+    \includegraphics[width=0.92\textwidth]{Images/candlestick_patterns.png}
+    \caption{A daily EUR/USD candlestick chart (September 2024 -- February 2025) annotated with common technical-analysis structure --- a downtrend line of lower highs, horizontal support and resistance, and a reversal. Sequences of candles, rather than any single bar, carry the signal that both human chartists and the feature pipeline of this thesis try to read.}
     \label{fig:candle_patterns}
 \end{figure}
 
-\vspace{3mm}
+
 Financial time series exhibit several properties that make modeling and prediction challenging. Returns typically show weak autocorrelation, meaning that past price changes provide limited direct information about future movements, while volatility measures, such as absolute or squared returns, often exhibit significant persistence. In addition, financial data is non-stationary, with statistical properties such as mean and variance changing over time, and displays volatility clustering, where periods of high variability tend to persist. Return distributions are also heavy-tailed, meaning that extreme events occur more frequently than expected under normal assumptions. Finally, nonlinear dependencies and long memory effects further complicate modeling, motivating the use of more advanced data-driven approaches  ~\cite{sewell2011characterization}. Because of these properties, financial time series require careful feature design and appropriate modeling approaches.
 % \vspace{3mm} while this is 
 % - Financial Markets and Time Series Characteristics
@@ -45,7 +45,7 @@ Financial time series exhibit several properties that make modeling and predicti
 % Challenges:
 % regime changes
 % low signal-to-noise ratio
-\subsection*{Feature Engineering in Financial Data}
+\section{Feature Engineering in Financial Data}
 
 In practice, raw OHLCV data does not provide enough structure for the models used here. Feature engineering turns this raw signal into a richer representation, bringing out the structure, momentum, and volatility that otherwise stay buried in the bare price and volume series~\cite{sonkavde2023forecasting}.
 
@@ -67,7 +67,7 @@ Defining the prediction target is as important as feature construction. Naive ne
 \paragraph{Multi-timeframe and calendar features.}
 Market participants operate on different horizons simultaneously. Features that capture multi-timeframe alignment — for instance, whether the 4-hour RSI, the daily trend, and the weekly momentum all point in the same direction — encode higher-level structure that single-timeframe indicators miss. Calendar features (hour of day, day of week, encoded as sine/cosine pairs to preserve periodicity) capture intraday and intraweek seasonality. For Bitcoin specifically, the approximately four-year halving cycle introduces macro-seasonal dynamics that can be encoded as a cycle-phase variable.
 
-\subsection*{Artificial Intelligence Methods in Algorithmic Trading}
+\section{Artificial Intelligence Methods in Algorithmic Trading}
 
 The growing availability of financial data and advances in computational
 power have driven the widespread adoption of artificial intelligence
@@ -153,15 +153,14 @@ sezer2020financial}, though neuroevolution approaches additionally offer
 the ability to evolve network architectures alongside weights when
 gradient information is unavailable or unreliable.
 
-\subsection*{Ensemble Methods and Decision Fusion}
+\section{Ensemble Methods and Decision Fusion}
 
 Ensemble methods improve predictive performance by combining multiple models whose errors are at least partially uncorrelated. The two classical approaches are \textit{bagging} (training the same model on different bootstrap samples of the data, reducing variance) and \textit{boosting} (training models sequentially, each correcting the residuals of its predecessors, reducing bias). Gradient boosting, as implemented in LightGBM, is the most prominent boosting framework in tabular machine learning.
 
-\vspace{3mm}
 
 \textit{Stacking} and \textit{meta-learning} generalise this idea: predictions from $K$ base models are used as features for a second-level model (the meta-learner), which learns how to weight or combine them conditional on the input. When the base models are heterogeneous — using different architectures and different views of the data — stacking can substantially outperform any individual component, because the meta-learner can learn when to trust each source. Sonkavde et al.~\cite{sonkavde2023forecasting} provide empirical evidence for this on financial data, finding that LSTM combined with gradient boosting outperformed either model alone. This observation directly motivates the hybrid multi-agent architecture of this thesis.
 
-\subsection*{Multi-Agent Systems}
+\section{Multi-Agent Systems}
 
 An \textit{agent} is a computer system situated in an environment that is capable of autonomous action in order to meet its design objectives~\cite{wooldridge1995intelligent}. More formally, an agent exhibits at least the following properties:
 \begin{itemize}
@@ -173,6 +172,5 @@ An \textit{agent} is a computer system situated in an environment that is capabl
 
 A \textit{multi-agent system} (\gloss{MAS}) consists of a network of such agents that interact to solve problems that are beyond the capacity or knowledge of any individual agent. MAS architectures are commonly classified as centralised (a single coordinating agent with global visibility), decentralised (agents act independently, with coordination emerging from local interactions), or hierarchical (agents are organised into layers, with higher-level agents aggregating signals from lower-level ones).
 
-\vspace{3mm}
 
 While the concept of intelligent agents dates back to the early 1990s~\cite{wooldridge1995intelligent}, multi-agent systems have more recently gained renewed attention due to the rapid proliferation of Large Language Models (LLMs), which act as flexible reasoning engines capable of delegating tasks, using tools, and collaborating with other agents. This thesis focuses on the classical, signal-aggregation interpretation of MAS rather than LLM-based orchestration: each agent implements a distinct AI method and produces a trading signal, which a supervisory agent then combines into a final decision. The key design principle is \textit{heterogeneity}: by coupling models with structurally different inductive biases --- a gradient boosting agent that excels at tabular feature selection, sequence models that capture temporal patterns, and rule-based agents that read economic structure directly --- the system can exploit complementary sources of edge while diversifying away method-specific weaknesses.

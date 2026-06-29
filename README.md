@@ -11,8 +11,6 @@ uncorrelated ways, the portfolio stays steadier than any one of them alone.
 
 > 📄 **Master's thesis (full write-up):**
 > [`latex_thesis/.../Thesis.pdf`](latex_thesis/Master_Thesis___Hybrid_Multi_Agent_Trading_System/Thesis.pdf)
-> A plain-language walkthrough (Polish, "with a cup of coffee") lives in
-> [`docs/historia_pracy_pl.md`](docs/historia_pracy_pl.md).
 
 ## Architecture
 
@@ -37,6 +35,7 @@ flowchart TD
     subgraph EXCL[Built but excluded · honest negatives]
         direction LR
         PATCH[PatchTST<br/>AUC ≈ 0.50]
+        RNN[GRU / LSTM<br/>recurrent baseline]
         VOL[Volatility breakout]
         SENT[Contrarian sentiment]
     end
@@ -54,8 +53,8 @@ flowchart TD
 **The five-agent predeclared roster:** LightGBM, TCN, Mamba (learned) + trend following
 and dominance rotation (rule-based). Each carries its own feature subset, directional
 signal, and risk-managed execution, and produces an independent return stream. PatchTST,
-volatility breakout, and contrarian sentiment were built and analysed but excluded for
-stated, pre-hold-out reasons.
+a standard recurrent net (GRU/LSTM), volatility breakout, and contrarian sentiment were built and
+analysed but excluded for stated, pre-hold-out reasons.
 
 ## Results
 
@@ -70,6 +69,7 @@ execution.
 | Regime-gated coordinator (ablation) | −10.2% | −0.23 | −32.7% |
 | Bitcoin buy-and-hold | — | 0.09 | −50% |
 | S&P 500 | — | 1.16 | — |
+| ARIMA(1,1,1) baseline | −15.3% | −0.18 | −44% |
 
 **What the numbers say**
 
@@ -84,6 +84,13 @@ execution.
   its own random-bracket null, so it is included as a *diversifier*, not as proven alpha.
 - **Robust but modest.** A block bootstrap gives a Sharpe 95% CI of `[0.46, 2.56]` with
   `P(Sharpe > 0) = 0.99`.
+- **Standard baselines confirm the edge is real, not an artifact of fancy models.** A textbook
+  recurrent net (GRU and LSTM, same Triple-Barrier labels / walk-forward / ATR-bracket engine as
+  Mamba) does *not* beat fees — GRU −10.9% (Sharpe −0.22), LSTM −6.1% (Sharpe −0.12), both below the
+  predeclared 10%/yr promotion gate, so both are reported as honest negatives alongside DRL and GP.
+  A classical **ARIMA(1,1,1)** loses −15.3% (Sharpe −0.18) and its 1-step forecast is no more
+  accurate than a **random walk** (directional accuracy 51.4%, RMSE not improved) — i.e. there is no
+  exploitable *linear* structure, which is exactly what motivates the nonlinear, risk-managed agents.
 
 This is **promising research evidence under limited data access, not a strategy proven ready
 to trade** — the main remaining uncertainty is real-world execution (slippage, latency, fills).
@@ -94,22 +101,13 @@ to trade** — the main remaining uncertainty is real-world execution (slippage,
 |---|---|
 | `src/hmats/` | Core package — `agents/`, `coordinator/`, `mas/`, `features/`, `evaluation/`, `data/`, `viz/` |
 | `artifacts/` | Per-experiment run outputs (models, backtests, notebooks) |
-| `docs/` | Design notes, feature reference, red-team audits, analysis write-ups |
-| `latex_thesis/` | LaTeX source and compiled `Thesis.pdf` |
+| `latex_thesis/` | LaTeX source and compiled `Thesis.pdf` — the full write-up |
 | `lab/`, `local/` | Exploratory notebooks and archived experiments |
 
 ## Documentation
 
-- [`docs/features.md`](docs/features.md) — **Read before training any model.** All feature
-  sets and the 4-stage selection pipeline (Variance+Corr → MI Top-60 → Walk-forward
-  stability → Permutation pruning), with per-experiment backtest results.
-- [`docs/system_architecture.md`](docs/system_architecture.md) — System architecture detail.
-- [`docs/strategy_evaluation.md`](docs/strategy_evaluation.md) — Evaluation methodology.
-- [`docs/glossary.md`](docs/glossary.md) — Key terms.
-- [`docs/historia_pracy_pl.md`](docs/historia_pracy_pl.md) — Plain-language story of the
-  whole thesis (Polish), with simple worked examples and a glossary.
-- [`docs/audit_redteam.md`](docs/audit_redteam.md), [`docs/audit_redteam_2.md`](docs/audit_redteam_2.md) —
-  Adversarial ("red-team") audits of the system's claims.
+The full write-up — design, methodology, experiments, and results — is the master's thesis in
+[`latex_thesis/`](latex_thesis/Master_Thesis___Hybrid_Multi_Agent_Trading_System/Thesis.pdf).
 
 ## Getting started
 

@@ -3,31 +3,24 @@
 
 \chapter{Concluding Remarks}
 \label{09_Concluding_Remarks}
-\thispagestyle{empty}
 
 This thesis set out to design and evaluate a \textit{hybrid multi-agent} trading system for cryptocurrency markets, built from heterogeneous artificial-intelligence paradigms, and to answer a single guiding question: can combining structurally different methods produce more stable and reliable trading decisions than any individual method on its own? Eight autonomous agents were developed --- four learned models (a gradient-boosting model, a temporal convolutional network, a selective state-space model, and a patch-based Transformer) and four rule-based agents (trend following, volatility breakout, contrarian sentiment, and cross-asset dominance rotation) --- each consuming a feature subset matched to its inductive bias and executing through a shared, realistic ATR-bracket engine. The final fund is a predeclared roster of five, curated for paradigm diversity and acceptable validation behaviour (the three learned models LightGBM, TCN and Mamba, plus the trend and dominance-rotation rules), with PatchTST excluded for showing no out-of-sample skill and the volatility-breakout and sentiment rules excluded for negative validation performance. All were evaluated under a strict, leak-free walk-forward protocol on a two-year out-of-sample window spanning a choppy range, a parabolic bull market, and a macro capitulation.
 
-\vspace{3mm}
 
 The answer is a qualified ``yes,'' with the emphasis on \textit{how} the combination is performed. Pooled into a fund by a transparent, leak-free capped inverse-volatility allocator over a leak-free-selected roster, the heterogeneous agents produced the strongest risk-adjusted result among the strategies the fund comprises: a $+53.7\%$ return at an annualised Sharpe of $1.50$ and a maximum drawdown of $-9.2\%$, strongly positive in the bull and bear regimes and flat in chop. This sits ahead of both a Bitcoin buy-and-hold benchmark (Sharpe $0.09$, drawdown $-50\%$) and, on risk-adjusted terms, a broad-market S\&P~500 benchmark (Sharpe $1.16$). The fund does not maximise headline return; it converts a set of volatile, individually unreliable agents into a smoother portfolio that stays steadier across regimes. That, rather than the sophistication of any one model, is the contribution --- though, as the near-tie with the equal-weight baseline shows, the value lies in the diversity of the roster more than in the allocation rule.
 
-\vspace{3mm}
 
 Equally important is what \textit{did not} work, reported here as honestly as what did. A learned, regime-gated coordinator, the kind of adaptive controller one expects to be the centrepiece of an ``intelligent'' system, failed to beat the far simpler risk-parity rule, because in a two-year sample its adaptive estimates are too noisy to add skill. An earlier meta-labelling supervisor failed for a related reason. The dominance-rotation agent posts the highest single return in the study, yet a random-bracket null test shows that return to be convex risk-management behaviour rather than forecasting skill, so it is kept only as a diversifier. And the great majority of paradigms that were tried, among them deep reinforcement learning, genetic programming, a patch-based Transformer with no measurable out-of-sample skill, a contrarian sentiment agent, a volatility-breakout rule, and a cross-asset experiment, did not make the final fund. These attempts are not failures to be hidden; they are documented in full in the project repository and are part of the scientific record of the work.
 
-\vspace{3mm}
 
 One practical lesson from the project is how genuinely \textit{difficult} quantitative trading is as a discipline. It sits at the intersection of statistics, machine learning, software engineering, market microstructure, and financial economics, and it punishes optimism at every turn. Feature engineering was a microcosm of this. The one-hour data pipeline is limited, yet from it several hundred candidate features could be constructed, on the order of $285$ in the final pool, of which only a small minority carried any stable predictive content. It was only after moving well beyond the handful of indicators derivable from raw OHLCV, and then applying the disciplined, advanced feature-selection stage recommended by the thesis supervisor, that it became possible to train anything meaningful. Most dangerous of all were features that quietly looked into the future: among the original candidates were a few that leaked forward information and, at the midpoint of the project, produced strikingly promising but entirely false results. Every feature was ultimately audited to guarantee that the final numbers are reliable. This broad feature space also had a benefit: it forced a hands-on exploration of a wide range of modern time-series methods, which is itself one of the lasting benefits of the work. In this sense the thesis brought together, and built upon, the years of study on the Computer Science and Intelligent Systems programme with its specialisation in Artificial Intelligence and Data Analysis.
 
-\vspace{3mm}
 
 The limitations that bound these conclusions are stated plainly in Chapter~\ref{08_Discussion} and were independently scrutinised in an adversarial red-team review (its conclusions, produced with the help of a separate automated coding agent, are recorded in the project's internal audit notes). In short: the evidence is a single-asset, single two-year path; the execution model is optimistic about passive fills and slippage, and the system trades heavily despite per-agent caps; and the agents' directional accuracy is modest, so the returns are a mixture of weak signal and effective risk management. The honest framing is that this is promising research evidence gathered under limited data access, not a strategy proven ready to trade live.
 
-\vspace{3mm}
 
 Several directions follow naturally from the findings:
 
-\vspace{3mm}
 
 \begin{itemize}
     \item \textbf{Other assets.} The pipeline could, in large part, be replicated for other continuously traded crypto assets and beyond. Their higher volatility would make forecasting harder and execution costlier, but could equally offer larger returns; the other coins entered this thesis only to approximate the market-wide capitalisation used for Bitcoin dominance.
@@ -36,10 +29,8 @@ Several directions follow naturally from the findings:
     \item \textbf{Broader validation.} Multiple non-overlapping out-of-sample windows, older history, and ideally order-book or sub-hourly data would turn promising evidence into a generalisation claim.
 \end{itemize}
 
-\vspace{3mm}
 
 For all these caveats, the central empirical observation is encouraging and, within the evaluated period, clear: the agents do carry an edge, and over a long enough horizon and a statistically meaningful number of trades, the diversified fund's profit is real and its risk well controlled. The deeper contribution is methodological: a demonstration that, in a domain this noisy, the value of a multi-agent system lies less in the cleverness of any single model than in the \textit{discipline of their combination} and the honesty of their evaluation.
 
-\vspace{3mm}
 
-\noindent\textbf{Source code.} The complete implementation --- data pipeline, agents, allocator, and experiments --- is maintained as a reproducible repository at \url{https://github.com/WojciechNeuman/hybrid-multi-agent-trading-system}. The repository is kept private; interested readers may request access by contacting the author at \href{mailto:wojciech.neuman@gmail.com}{\nolinkurl{wojciech.neuman@gmail.com}}.
+\noindent\textbf{Source code.} The complete implementation --- data pipeline, agents, allocator, and experiments --- is publicly available as an open-source repository at \url{https://github.com/WojciechNeuman/hybrid-multi-agent-trading-system}, so that every reported result can be independently regenerated. Questions may be directed to the author at \href{mailto:wojciech.neuman@gmail.com}{\nolinkurl{wojciech.neuman@gmail.com}}.

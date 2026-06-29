@@ -1,19 +1,16 @@
 \chapter{Implementation}
 \label{05_Implementation}
-\thispagestyle{empty}
+
+This chapter describes how the methodology of the previous chapter is realised in software. It covers the language and library stack, the reproducible end-to-end pipeline and its caching, the standardised artifact contract that lets the agents be developed independently yet combined mechanically, and the shared backtesting engine. The emphasis throughout is reproducibility: every number reported in this thesis can be regenerated from raw data by re-running the pipeline.
+
 
 \section{Software Stack}
 \label{sec:software_stack}
 
-The system is implemented entirely in Python, organised as a single repository in which a shared core package provides the common utilities --- data loading, feature engineering, agent interfaces, and the backtesting engine --- and a sequence of self-contained notebooks drives the experiments. Each notebook is generated automatically from the corresponding source modules, so the university-facing notebooks and the maintained runtime code cannot drift apart. The repository is available privately and is described in Section~\ref{sec:reproducibility}.
+The system is implemented entirely in Python, organised as a single repository in which a shared core package provides the common utilities --- data loading, feature engineering, agent interfaces, and the backtesting engine --- and a sequence of self-contained notebooks drives the experiments. Each notebook is generated automatically from the corresponding source modules, so the university-facing notebooks and the maintained runtime code cannot drift apart. The complete implementation is publicly available as an open-source repository\footnote{\url{https://github.com/WojciechNeuman/hybrid-multi-agent-trading-system}} and is described in Section~\ref{sec:reproducibility}.
 
-\paragraph{Key libraries.}
-\begin{itemize}
-    \item \textbf{Data:} \texttt{pandas} and \texttt{numpy} for processing, \texttt{pyarrow} for columnar (Parquet) storage, and \texttt{requests} for the Binance and alternative.me APIs.
-    \item \textbf{Machine learning:} \texttt{lightgbm} for the gradient-boosting agent, \texttt{scikit-learn} for preprocessing, metrics, and feature selection, and \texttt{scipy} for the statistical tests.
-    \item \textbf{Deep learning:} \texttt{PyTorch} for the TCN, Mamba, and PatchTST models, their custom losses, and data loaders. The Mamba selective-scan is implemented in pure PyTorch without external CUDA kernels, so it runs unchanged on CPU, Apple MPS, or NVIDIA GPUs.
-    \item \textbf{Feature engineering:} \texttt{statsmodels} for the Augmented Dickey--Fuller test, \texttt{numba} for the accelerated Hurst-exponent computation, and custom implementations of all technical indicators.
-\end{itemize}
+
+The software stack is built around a small set of well-established Python libraries. Data ingestion and processing rely on \texttt{pandas} and \texttt{numpy}, with \texttt{pyarrow} for columnar (Parquet) storage and \texttt{requests} for the Binance and alternative.me APIs. The machine-learning components use \texttt{lightgbm} for the gradient-boosting agent and \texttt{scikit-learn} for preprocessing, metrics, and feature selection, with \texttt{scipy} providing the statistical tests. The deep-learning agents --- the TCN, Mamba, PatchTST, and the GRU/LSTM recurrent baselines --- are implemented in \texttt{PyTorch}, together with their custom losses and data loaders; the Mamba selective scan is written in pure PyTorch without external CUDA kernels, so it runs unchanged on CPU, Apple MPS, or NVIDIA GPUs. Finally, \texttt{statsmodels} provides the Augmented Dickey--Fuller test and the walk-forward ARIMA baseline, \texttt{numba} accelerates the Hurst-exponent computation, and all technical indicators are implemented directly from raw OHLCV data.
 
 \section{Reproducible Pipeline}
 \label{sec:reproducibility}
@@ -31,6 +28,5 @@ All agents share a single ATR-bracket backtester: a one-pass loop over the OOS i
 
 Most of the work runs comfortably on a personal machine. The gradient-boosting agent's walk-forward generates on the order of a hundred small model fits, each a few seconds, and its entire model-plus-trading grid search completes in minutes; the rule agents and the fund layer are similarly light. All of this, together with the TCN, was developed and trained locally on a MacBook Pro (M4 Pro, 2024, 48~GB unified memory) using the Apple MPS backend, on which a full TCN training run takes roughly fifteen to twenty-five minutes.
 
-\vspace{3mm}
 
 The selective state-space (Mamba) agent was the exception. Its expanding walk-forward retrains the model many times over, and despite the capable laptop this was impractical to iterate on locally; it was therefore trained on Google Colab using a single A100 GPU, under a paid subscription of the same kind used for the author's earlier (bachelor's) thesis. A complete walk-forward there takes roughly thirty to forty-five minutes. It was a useful reminder that even a fast laptop sometimes cannot replace a proper GPU, and that the hardware on hand quietly decided which experiments were realistic to run.
