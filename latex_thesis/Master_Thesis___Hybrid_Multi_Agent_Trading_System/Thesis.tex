@@ -200,6 +200,12 @@
 \setlength{\parskip}{0pt}% neutralise the global 3mm paragraph skip inside the ToC (matches the original look); restored after this group
 
 %\renewcommand{\contentsname}{\textbf{{\large TABLE OF CONTENTS}}}
+% Stop a chapter entry from being stranded as the last line of a ToC page (separated from its first
+% section). The default \l@chapter ends with \penalty\@highpenalty (301), which only discourages a
+% break there; raising it to \@M (infinite) keeps the chapter line glued to the following section.
+\makeatletter
+\patchcmd{\l@chapter}{\penalty\@highpenalty}{\penalty\@M}{}{}
+\makeatother
 \tableofcontents
 
 
