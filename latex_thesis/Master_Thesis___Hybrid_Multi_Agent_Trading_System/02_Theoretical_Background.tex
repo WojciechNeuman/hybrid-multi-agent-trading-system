@@ -49,22 +49,22 @@ Financial time series exhibit several properties that make modeling and predicti
 
 In practice, raw OHLCV data does not provide enough structure for the models used here. Feature engineering turns this raw signal into a richer representation, bringing out the structure, momentum, and volatility that otherwise stay buried in the bare price and volume series~\cite{sonkavde2023forecasting}.
 
-\paragraph{Technical indicators.}
+\subsection{Technical indicators}
 The most widely used features in algorithmic trading are technical indicators computed directly from OHLCV data. \textit{Trend} indicators such as Simple Moving Averages (\gloss{SMA}) and Exponential Moving Averages (\gloss{EMA}) smooth the price series and express the current price relative to its recent history; expressing close price as a ratio to, for example, the 200-period SMA separates the long-run trend from short-run fluctuations. \textit{Momentum} indicators capture the rate and direction of recent price changes: the Relative Strength Index (RSI) normalises average gains and losses over a rolling window to produce an oscillator bounded between 0 and 100; the Moving Average Convergence Divergence (MACD) histogram measures the difference between a fast and a slow EMA, highlighting shifts in momentum. \textit{Volatility} indicators such as the Average True Range (\gloss{ATR}) and Bollinger Bands quantify the range of price variation, which is essential both for risk management (setting stop-loss distances) and as a regime signal (periods of low volatility often precede explosive moves).
 
-\paragraph{Volume and microstructure features.}
+\subsection{Volume and microstructure features}
 Volume confirms or contradicts price movement: a breakout accompanied by high volume is a qualitatively different signal from the same breakout on thin volume. Volume-weighted indicators such as the Volume-Weighted Average Price (VWAP) and the Accumulation/Distribution line explicitly combine price and volume. At higher granularity, microstructure features derived from Binance's taker-volume feed — including the Taker Flow Imbalance (TFI), average trade size, and taker price premium — provide direct evidence of aggressive buying and selling pressure, which is otherwise invisible in aggregated OHLCV candles.
 
-\paragraph{Statistical and non-stationarity features.}
+\subsection{Statistical and non-stationarity features}
 Financial returns are non-stationary: the unconditional mean and variance of log-prices drift over time, which breaks the assumptions of most machine learning methods, since those methods expect independent, identically distributed data. Several approaches address this: computing log-returns or returns at fixed lags removes the deterministic trend; the Hurst exponent, estimated over a rolling window, distinguishes trending regimes ($H > 0.5$) from mean-reverting ones ($H < 0.5$)~\cite{sewell2011characterization}. Rolling skewness, kurtosis, and autocorrelation coefficients describe the local return distribution and are useful inputs for volatility-regime models.
 
-\paragraph{Fractional differentiation.}
+\subsection{Fractional differentiation}
 A principled approach to balancing stationarity and memory preservation is fractional differentiation, introduced by Hosking~\cite{hosking1981fractional} and applied to financial machine learning by L{\'o}pez de Prado~\cite{lopezdeprado2018advances}. Integer differentiation (i.e., computing first differences) achieves stationarity but discards all long-memory content; for a log-price series, this means losing the level information that market participants actually respond to. The fractional difference operator of order $d \in (0, 1)$ applies an infinite-order moving average with weights that decay hyperbolically, achieving stationarity for sufficiently large $d$ while retaining long-range dependencies. In practice, the minimum $d$ for which an Augmented Dickey-Fuller test rejects the unit-root null hypothesis is found by bisection search, and the resulting series is used as an additional input feature alongside the integer-differenced returns.
 
-\paragraph{Labelling methodology: Triple Barrier Method.}
+\subsection{Labelling methodology: Triple Barrier Method}
 Defining the prediction target is as important as feature construction. Naive next-bar labelling — classifying bars as \textit{up} if $\text{close}_{t+1} > \text{close}_t$ — assigns equal weight to trivially small moves and large directional moves, producing noisy labels dominated by the bid--ask spread and microstructure noise~\cite{lopezdeprado2018advances}. The Triple Barrier Method (\gloss{TBM}), introduced by L{\'o}pez de Prado~\cite{lopezdeprado2018advances}, resolves this by placing three barriers around each entry point: an upper horizontal barrier at $+k\sigma$, a lower horizontal barrier at $-k\sigma$ (where $\sigma$ is a rolling estimate of return volatility), and a vertical barrier after $T_{\max}$ bars. Each bar is labelled by whichever barrier is touched first: label $1$ (up) if the upper barrier is reached, label $0$ (down) if the lower barrier is reached, and label $2$ (flat) if the vertical barrier expires before either horizontal barrier is hit. The parameter $k$ controls the signal-to-noise ratio of the resulting labels: tighter barriers produce more samples but noisier ones; wider barriers produce fewer, cleaner labels with stronger directional content.
 
-\paragraph{Multi-timeframe and calendar features.}
+\subsection{Multi-timeframe and calendar features}
 Market participants operate on different horizons simultaneously. Features that capture multi-timeframe alignment — for instance, whether the 4-hour RSI, the daily trend, and the weekly momentum all point in the same direction — encode higher-level structure that single-timeframe indicators miss. Calendar features (hour of day, day of week, encoded as sine/cosine pairs to preserve periodicity) capture intraday and intraweek seasonality. For Bitcoin specifically, the approximately four-year halving cycle introduces macro-seasonal dynamics that can be encoded as a cycle-phase variable.
 
 \section{Artificial Intelligence Methods in Algorithmic Trading}
@@ -85,7 +85,7 @@ models. Sonkavde et al.~\cite{sonkavde2023forecasting} provide a broader
 review encompassing both classical and deep learning methods alongside
 traditional statistical techniques.
 
-\paragraph{Classical and statistical approaches.}
+\subsection{Classical and statistical approaches}
 Before machine learning took hold, automated trading ran mostly on
 hand-coded rules --- moving-average crossovers, momentum thresholds, and
 the like --- that captured a trader's expertise directly. Such rules are
@@ -97,7 +97,7 @@ assumption of linearity and stationarity limits their effectiveness on
 financial data where nonlinear dynamics and regime changes are the
 norm~\cite{zhang2024deep, sonkavde2023forecasting}.
 
-\paragraph{Machine learning methods.}
+\subsection{Machine learning methods}
 Machine learning methods learn patterns directly from data without
 requiring a predefined functional form. Tree-based ensembles — most
 notably Random Forest and XGBoost — have demonstrated competitive
@@ -108,10 +108,10 @@ heterogeneous ensembles. Support vector machines and $k$-nearest
 neighbours are also widely used, though they scale poorly to
 high-dimensional feature spaces without careful preprocessing.
 
-\paragraph{LightGBM.}
+\subsection{LightGBM}
 LightGBM~\cite{ke2017lightgbm} is a gradient boosting framework that builds an additive ensemble of decision trees by fitting each new tree to the residuals of all previous ones. Its key technical contributions relative to earlier gradient boosting implementations are (i) \textit{leaf-wise} (best-first) tree growth, which preferentially expands the leaf with the largest loss reduction rather than growing all leaves at the same depth level; and (ii) \textit{histogram-based splitting}, which discretises continuous feature values into bins, dramatically reducing the cost of finding optimal splits. Together these innovations allow LightGBM to train on large datasets with many features at a fraction of the cost of XGBoost while matching or exceeding its predictive accuracy. For financial data, the combination of efficient handling of high-dimensional tabular input, native support for early stopping on a held-out validation set, and built-in feature importance scores makes LightGBM a natural choice for the supervised classification component of the system.
 
-\paragraph{Deep learning for time series.}
+\subsection{Deep learning for time series}
 Deep learning has become the dominant paradigm for financial forecasting
 due to its ability to learn hierarchical representations without heavy
 reliance on manual feature design~\cite{zhang2024deep}. LSTM networks
@@ -125,13 +125,13 @@ variants such as Informer, Autoformer, and PatchTST have specifically
 addressed the scalability challenges of applying Transformers to long
 financial sequences~\cite{zhang2024deep}.
 
-\paragraph{Temporal Convolutional Networks.}
+\subsection{Temporal Convolutional Networks}
 Temporal Convolutional Networks (\gloss{TCN}s), introduced as a general sequence modelling architecture by Bai et al.~\cite{bai2018empirical}, build on the \textit{dilated causal convolution} mechanism originally proposed for audio generation in WaveNet~\cite{oord2016wavenet}. A causal convolution restricts each output to depend only on past and current inputs, preserving the temporal ordering required for financial forecasting without data leakage. Dilation exponentially increases the receptive field of deeper layers: with a kernel of size $k$ and dilation factor $d$, a single convolutional layer covers a span of $(k-1) \times d + 1$ timesteps. A stack of $L$ blocks with dilations $1, 2, 4, \ldots, 2^{L-1}$ achieves a total receptive field of $1 + 2(k-1)(2^L - 1)$, which grows exponentially with depth rather than linearly as in standard convolutions. Each TCN block pairs two dilated causal convolutions with weight normalisation~\cite{salimans2016weight} and dropout regularisation, followed by a residual connection that projects the input to the same width as the output using a $1{\times}1$ convolution when necessary. Unlike recurrent architectures, TCNs process the entire input sequence in parallel during training, leading to faster convergence and more stable gradients. Bai et al.~\cite{bai2018empirical} demonstrated that this simple architecture matches or outperforms LSTM and GRU across a broad range of sequence modelling benchmarks while being significantly easier to train.
 
-\paragraph{Multi-task learning.}
+\subsection{Multi-task learning}
 Multi-task learning trains a shared representation to simultaneously optimise two or more related objectives~\cite{zhang2024deep}. In the context of financial forecasting, a natural auxiliary task alongside directional classification is volatility forecasting: both tasks are grounded in the same underlying market dynamics, so gradients from the auxiliary regression task regularise the shared encoder and steer it away from fitting noise in the classification labels. The combined loss is typically a weighted sum $\mathcal{L} = \mathcal{L}_{\text{class}} + \lambda \mathcal{L}_{\text{aux}}$, where $\lambda$ controls the strength of the auxiliary signal.
 
-\paragraph{Reinforcement learning.}
+\subsection{Reinforcement learning}
 Reinforcement learning frames trading as a sequential decision problem
 in which an agent selects actions — buy, sell, or hold — and receives
 rewards reflecting realised returns. Unlike supervised methods, RL agents
@@ -143,7 +143,7 @@ al.~\cite{sezer2020financial} identify deep RL as one of the most
 promising directions for future research, particularly for applications
 requiring continuous adaptation to changing market conditions.
 
-\paragraph{Evolutionary computation.}
+\subsection{Evolutionary computation}
 Evolutionary methods such as genetic algorithms and neuroevolution
 provide gradient-free optimisation applicable to strategy design, feature
 selection, and hyperparameter tuning. In the financial deep learning
