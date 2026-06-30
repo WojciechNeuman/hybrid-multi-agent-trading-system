@@ -3,8 +3,9 @@ SHELL         := bash
 PYTHON        := python3
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-SRC_DIR  := src/hmats
-TEST_DIR := tests
+SRC_DIR    := src/hmats
+TEST_DIR   := tests
+THESIS_DIR := latex_thesis/Master_Thesis___Hybrid_Multi_Agent_Trading_System
 
 # ── Colours ───────────────────────────────────────────────────────────────────
 BOLD  := \033[1m
@@ -13,7 +14,7 @@ GREEN := \033[32m
 CYAN  := \033[36m
 
 .PHONY: help install install-dev sync lint format typecheck test test-fast \
-        clean clean-all notebook run
+        clean clean-all notebook run thesis thesis-clean
 
 # ── Help ──────────────────────────────────────────────────────────────────────
 help: ## Show this help message
@@ -66,6 +67,13 @@ notebook: ## Launch Jupyter Lab
 # ── Application ───────────────────────────────────────────────────────────────
 run: ## Run the CLI entry point (pass ARGS="..." to supply arguments)
 	uv run trading $(ARGS)
+
+# ── Thesis ────────────────────────────────────────────────────────────────────
+thesis: ## Compile the LaTeX thesis into Thesis.pdf
+	cd $(THESIS_DIR) && latexmk -pdf -interaction=nonstopmode Thesis.tex
+
+thesis-clean: ## Remove LaTeX build artefacts (keeps Thesis.pdf)
+	cd $(THESIS_DIR) && latexmk -c
 
 # ── Clean ─────────────────────────────────────────────────────────────────────
 clean: ## Remove build artefacts and cache files
