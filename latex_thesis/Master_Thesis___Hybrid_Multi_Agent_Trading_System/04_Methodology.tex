@@ -1,17 +1,17 @@
 \chapter{Methodology}
 \label{04_Methodology}
-\thispagestyle{empty}
+
+This chapter specifies in detail how the system is built and trained. It begins with the data and the unified feature pipeline, together with the leakage controls that keep the evaluation honest, and then documents each component in turn --- the learned agents (with their feature diets, labelling, architectures, and walk-forward protocols), the standard and classical baselines, and the rule-based agents --- before closing with the capital-allocation layer and the evaluation methodology. Where Chapter~\ref{03_System_Architecture} described \textit{what} the components are, this chapter describes \textit{how} they are constructed.
+
 
 \section{Data}
 \label{sec:data}
 
 The dataset used in this research consists of historical price data for ten cryptocurrency assets, selected based on their historical peak market capitalisation. All assets are quoted against USDT and sourced exclusively from the Binance exchange via its public REST API, ensuring consistency across symbols in terms of price discovery, liquidity, and data format. Stablecoins were excluded from the selection. The chosen assets are: Bitcoin (BTC), Ethereum (ETH), Binance Coin (BNB), XRP, Solana (SOL), Cardano (ADA), Dogecoin (DOGE), Avalanche (AVAX), Polkadot (DOT), and Chainlink (LINK).
 
-\vspace{3mm}
 
 Data collection was performed using a custom paginated downloader built on top of the Binance \texttt{/api/v3/klines} endpoint, which returns standard OHLCV (Open, High, Low, Close, Volume) candlestick data. For each asset, historical data was fetched from its earliest available hourly candle on Binance, resulting in varying start dates across symbols. Bitcoin and Ethereum data is available from August 2017, while more recently listed assets such as Solana and Avalanche begin in mid-2020. All data extends through May 2026. An overview of the dataset, including earliest availability dates and approximate peak market capitalisations, is presented in Table~\ref{tab:dataset_overview}.
 
-\vspace{3mm}
 
 \begin{table}[h!]
     \centering
@@ -35,11 +35,9 @@ Data collection was performed using a custom paginated downloader built on top o
     \end{tabular}
 \end{table}
 
-\vspace{3mm}
 
 The primary resolution used throughout this research is the one-hour candlestick interval, which offers a balance between granularity and signal-to-noise ratio suitable for the range of AI methods employed. For visualisation and certain indicator computations, hourly data is resampled to daily candles using standard aggregation rules: the opening price of the first hourly candle, the maximum high, the minimum low, the closing price of the final candle, and the sum of volume across all candles within the day. Figure~\ref{fig:btc_price_volume} presents the full Bitcoin price history on a logarithmic scale, illustrating the characteristic bull and bear market cycles, the impact of the third and fourth halving events, and the corresponding evolution of trading volume over time.
 
-\vspace{3mm}
 
 \begin{figure}[h!]
     \centering
@@ -48,7 +46,6 @@ The primary resolution used throughout this research is the one-hour candlestick
     \label{fig:btc_price_volume}
 \end{figure}
 
-\vspace{3mm}
 
 To ensure data integrity, the downloader implements an incremental update mechanism: upon re-execution, only candles newer than the most recently stored timestamp are fetched from the API, with all data persisted locally in the Apache Parquet format. This avoids redundant network requests and guarantees that the dataset remains consistent across training runs. A single Parquet file per asset stores the complete OHLCV history and serves as the sole input to all downstream preprocessing and feature engineering steps.
 
@@ -68,16 +65,14 @@ To ensure data integrity, the downloader implements an incremental update mechan
 
 All feature data for this research is stored in a single, consistently indexed parquet file produced by a self-contained, phase-by-phase ingestion pipeline. This unified design replaces the earlier practice of loading multiple separate files in each model stage, which introduced version drift and complicated dependency tracking. The pipeline is cache-aware: each phase checks whether its output already exists before computing, allowing re-runs to skip completed phases and enabling partial regeneration when a single feature group is corrected.
 
-\vspace{3mm}
 
 Feature breadth became one of the main engineering challenges of the project. The one-hour resolution is a real constraint --- it is too coarse to expose order-book microstructure, yet fine enough that a vast number of indicators can be computed from it. This made it easy to \textit{generate} features and hard to generate \textit{useful} ones: the candidate pool grew to several hundred columns, of which only a minority carried any stable predictive content. Moving beyond the handful of features that can be derived directly from raw OHLCV --- into multi-timeframe structure, microstructure proxies, cross-asset flow, and sentiment --- was the step that made it possible to train anything meaningful at all. On the supervisor's advice, a disciplined, advanced feature-selection stage was therefore treated as essential rather than cosmetic, and is described in Section~\ref{sec:lgbm_feature_selection}. This broad feature space also forced the project to test several modern time-series methods, from gradient boosting to selective state-space models, which is itself one of the contributions of this thesis.
 
-\vspace{3mm}
 
 The unified parquet merges five source libraries into a single, consistently indexed hourly time series spanning August 2017 to May 2026:
 
 \begin{itemize}
-    \item \textbf{technical library} (197 columns): returns, volatility, moving averages, oscillators, Ichimoku, SuperTrend, Fibonacci, pivot levels, candle patterns, Hurst exponent, halving cycle, and composite regime signals. Computed entirely from raw BTC/USDT OHLCV.
+    \item \textbf{technical library} (197 columns): returns, volatility, moving averages, oscillators, Ichimoku, SuperTrend, Fibonacci, pivot levels, candle patterns, Hurst exponent, halving cycle, and composite regime signals. Computed entirely from raw \mbox{BTC/USDT OHLCV}.
     \item \textbf{external library} (20 columns): fear \& greed index (alternative.me), cross-asset ratios (ETH/BTC), altcoin breadth, BTC and ETH market dominance, and stablecoin share from CoinGecko. Computed from external API feeds with a mandatory one-day lag (see Section~\ref{sec:leakage_audit}).
     \item \textbf{microstructure and regime library} (25 columns): taker flow imbalance, true VWAP deviation, average trade size, Hurst exponent at 24h and 72h windows, ADF stationarity statistics, and a binary sideways-flag. Computed from Binance taker-volume feeds.
     \item \textbf{Structural library} (39 columns): swing highs and lows, anchored VWAP at daily and weekly resolution, Point of Control from volume-at-price profiles, Bollinger-Keltner squeeze, and multi-timeframe alignment scores.
@@ -91,50 +86,40 @@ The unified panel holds 291 columns. After removing the five OHLCV columns (used
 
 Among the risks in a project of this kind, the hardest to catch is a feature that leaks information from the future, because it does not fail loudly --- it simply inflates the model's apparent performance. Midway through development, several configurations produced strikingly promising results that, on inspection, turned out to rest on a small number of contaminated features --- daily aggregates that had been forward-filled onto hourly bars without a lag, so that a bar effectively carried information from later in the same day. These false positives were a sobering reminder that in financial machine learning a result that looks too good is usually a leak rather than a discovery. Every feature was therefore audited explicitly before the final results were trusted.
 
-\vspace{3mm}
 
 The pipeline runs a forward-leakage audit as the final phase of ingestion. For each candidate feature, the Pearson correlation with the next-bar log-return $r_{t+1}$ is computed over the full history. A feature is flagged if $|\rho(x_t, r_{t+1})| > 0.05$. This threshold is conservative: for a series with $n \approx 74{,}000$ observations, the 99\% confidence interval for an uncorrelated pair is $|\rho| < 0.01$, so the threshold provides a substantial buffer above noise.
 
-\vspace{3mm}
 
 The features the audit flagged early on were all of one kind: daily external series --- market-cap aggregates, dominance, and sentiment --- that had been mapped onto the hourly bars by forward-filling without first being lagged, so that an hourly bar borrowed information from later in its own day. The remedy is uniform: every daily series is shifted by one day before it is aligned to the hourly index, and the few features that remained ambiguous were excluded from model training altogether. After this control process every feature in the final pool clears the audit, so the results reported in this thesis rest on a feature panel that has been explicitly validated to be free of forward-looking information.
 
-\vspace{3mm}
 
 A shared feature library of \textbf{285 ML-candidate features} is derived from the five source libraries described above, organised into 36 thematic groups covering price dynamics, volume, market structure, sentiment, microstructure, and macro cycle patterns. This library constitutes the broadest input space available to any agent in the system; individual agents then select or reduce this space according to their own learning mechanisms and computational constraints.
 
-\vspace{3mm}
 
 The feature groups are summarised in Table~\ref{tab:feature_groups}. Key design choices are highlighted below.
 
-\vspace{3mm}
 
 \textbf{Returns and volatility.} Raw and logarithmic price returns are computed at lags of 1, 2, 3, 6, 12, 24, 48, 72, and 168 hours, capturing momentum across intraday and weekly horizons. Volatility is measured via rolling standard deviations of log-returns and the Average True Range (ATR) at 14- and 24-period windows.
 
-\vspace{3mm}
 
 \textbf{Moving averages.} The close price is expressed relative to six Simple Moving Averages (SMA) and six Exponential Moving Averages (EMA), at periods of 7, 14, 20, 50, 100, and 200 hours. A separate long-cycle group extends this to periods of 336h, 504h, 720h, 2160h, and 4320h, capturing multi-week and multi-month trend alignment relevant to Bitcoin's macro market cycles.
 
-\vspace{3mm}
 
 \textbf{Oscillators.} RSI is computed at periods 7, 14, and 21; Stochastic \%K at 14 and 21; Williams \%R and Chaikin Money Flow (CMF) at their standard settings. MACD histograms are included for both the standard (12, 26, 9) and faster (5, 13, 4) parameter sets.
 
-\vspace{3mm}
 
 \textbf{Calendar and cycle features.} Hour-of-day and day-of-week are sine/cosine encoded to preserve periodicity. Bitcoin's $\approx$4-year halving cycle is encoded as raw position (0--1) and as sine and cosine components, capturing macro seasonality absent from traditional financial data.
 
-\vspace{3mm}
 
 \textbf{Statistical properties.} Rolling skewness, kurtosis, and autocorrelation at lags 1h, 6h, 12h, and 24h describe the local return distribution shape. The Hurst exponent over a 168-hour window distinguishes trending ($H>0.5$) from mean-reverting ($H<0.5$) regimes.
 
-\vspace{3mm}
 
-Additional technical groups cover Bollinger Bands, Ichimoku Cloud, SuperTrend signals at three multiplier values, Fibonacci retracement proximity, daily pivot levels, round-number distances, and composite scores combining momentum, volume, and regime signals. The external, microstructure, structural, and microstructure libraries add further signal diversity as described in Section~\ref{sec:unified_pipeline}.
+Additional technical groups cover Bollinger Bands, Ichimoku Cloud, SuperTrend signals at three multiplier values, Fibonacci retracement proximity, daily pivot levels, round-number distances, and composite scores combining momentum, volume, and regime signals. The external, microstructure, and structural libraries add further signal diversity as described in Section~\ref{sec:unified_pipeline}.
 
 \small
 \setlength{\LTleft}{0pt plus 1fill}
 \setlength{\LTright}{0pt plus 1fill}
-\begin{longtable}{llp{7.5cm}}
+\begin{longtable}{ll>{\raggedright\arraybackslash\hyphenpenalty=10000\exhyphenpenalty=10000}p{7.5cm}}
     \caption{Feature groups in the unified ML-candidate pool (285 total). All features are computed without look-ahead bias; daily-frequency external features are lagged by one day before being forward-filled to hourly bars.}
     \label{tab:feature_groups}\\
         \toprule
@@ -157,7 +142,7 @@ Additional technical groups cover Bollinger Bands, Ichimoku Cloud, SuperTrend si
         Long-Cycle MA        & 11 & Close vs SMA/EMA at 336h, 504h, 720h, 2160h, 4320h; weekly momentum \\
         Bollinger Bands      & 6  & Band width and position, 20- and 50-period windows; squeeze flags \\
         MACD                 & 4  & Histograms for (12,26,9) and (5,13,4) parameter sets \\
-        Oscillators          & 6  & RSI(7,14,21), Stochastic \%K(14,21), Williams \%R \\
+        Oscillators          & 6  & RSI(7,14,21), Stochastic \%K(14,21), Williams~\%R \\
         Volume               & 9  & Volume z-scores and ratios over 12h, 24h, 72h, 168h; OBV z-score \\
         Volume Profile       & 8  & VWAP(24h, 168h), MFI(14, 21), CMF, A/D z-scores, volume-weighted RSI \\
         Candle Structure     & 4  & Body fraction, upper/lower wick, bullish flag \\
@@ -182,7 +167,7 @@ Additional technical groups cover Bollinger Bands, Ichimoku Cloud, SuperTrend si
         Microstructure       & 3  & Amihud illiquidity, Kyle lambda, Roll spread (24-bar rolling) \\
         \midrule
         \multicolumn{3}{l}{\textit{Microstructure and Regime (25 features)}} \\
-        Taker Flow           & 8  & TFI, EMA-smoothed TFI (12/24), z-scored TFI (24h/72h/168h), avg trade size and deviation \\
+        Taker Flow           & 8  & TFI, EMA-smoothed TFI (12/24), z-scored TFI (24h/72h/168h), avg trade size and~\mbox{deviation} \\
         VWAP and Basis       & 5  & True VWAP deviation, taker price premium, buy/sell price spread \\
         Regime Signals       & 11 & Hurst(24h/72h), ADF stat and p-value (168h/336h/720h), BB width \%, vol-of-vol \%, sideways flag \\
         Fracdiff             & 1  & Fractionally-differenced log-price ($d = 0.2$) \\
@@ -201,20 +186,16 @@ Additional technical groups cover Bollinger Bands, Ichimoku Cloud, SuperTrend si
 \end{longtable}
 \normalsize
 
-\vspace{3mm}
 
 \textbf{Extended feature groups: microstructure and structural features.}
 Beyond the 197 technical indicators, two additional feature libraries enrich the input space for deep learning agents that can leverage higher-resolution signals.
 
-\vspace{3mm}
 
 The \textit{microstructure and regime} library (25 columns) is computed from Binance's taker-volume feed and mark/index price klines. It includes: Taker Flow Imbalance (TFI) and its z-scored rolling variants at 24h, 72h, and 168h — a direct measure of buy- versus sell-side aggressor pressure; average trade size and its normalised deviation from baseline, which is used to identify institutional block activity; the true VWAP derived from quote volume and the close-price deviation from it; the taker price premium (the difference between buy- and sell-side average trade prices, measuring urgency of market participants); Futures mark-price basis and premium, capturing the funding-rate signal; and index-price lead/lag, which measures how far the spot price has deviated from the global spot index. Regime features include the Hurst exponent at 24h and 72h windows, ADF test statistics over 168h, 336h, and 720h windows, the Bollinger Band width percentage, and a binary sideways-flag derived from the combination of low Hurst exponent and narrow volatility.
 
-\vspace{3mm}
 
 The \textit{structural} library (39 columns) captures market-microstructure geometry. It includes confirmed swing high and low anchors at both minor (12-bar) and major (48-bar) scales, expressed as price distances and binary proximity flags; rolling Point of Control (POC) from volume-at-price profiles; anchored VWAP at daily, weekly, 24h, and 168h resolutions with rolling z-score and exhaustion-spike flags; ATR at 20h and 72h periods; Bollinger--Keltner channel squeeze indicator; Garman--Klass realised volatility; and multi-timeframe (4h and daily) EMA spread, RSI, and composite alignment score.
 
-\vspace{3mm}
 
 \textbf{Agent-specific feature selection pipelines.}
 Each agent operates on a \textit{different subset} of the shared feature library, selected according to the agent's learning mechanism, capacity, and role in the ensemble. Using different feature subsets reduces redundancy across agents and better matches each model's strengths, since each agent uses only the features well-suited to its inductive bias. Table~\ref{tab:agent_feature_sets} summarises the per-agent feature diets.
@@ -224,23 +205,21 @@ Each agent operates on a \textit{different subset} of the shared feature library
     \small
     \caption{Feature set used by each of the four learned agents. The selections differ in motivation: LGBM applies a relevance--redundancy filter to the full candidate pool; Mamba uses the broad unified feature panel with fold-local scaling; and the TCN and PatchTST share an identical curated 32-feature sequential diet. The three rule-based agents are not included here, since they read a small, fixed set of features rather than a learned selection.}
     \label{tab:agent_feature_sets}
-    \begin{tabular}{lrp{7.5cm}}
+    \begin{tabular}{lr>{\raggedright\arraybackslash\hyphenpenalty=10000\exhyphenpenalty=10000}p{7.5cm}}
         \toprule
         \textbf{Agent} & \textbf{Features} & \textbf{Selection approach and composition} \\
         \midrule
-        LightGBM & 50 & Relevance--redundancy filter from all ML-eligible features (pre-OOS only): coverage/variance screen, direction-agnostic univariate AUC filter ($> 0.502$, 199 survivors), greedy Spearman redundancy pruning at $\rho_{\max}=0.85$, and truncation to the top 50 features. \\
+        LightGBM & 50 & Relevance--redundancy filter from all ML-eligible features (pre-OOS only): coverage/variance screen, direction-agnostic univariate AUC filter ($> 0.502$, 199 survivors), greedy Spearman redundancy pruning at $\rho_{\max}=0.85$, and truncation to the top 50~features. \\
         Mamba SSM & 285 & Full ML-eligible feature panel, used without any model-specific reduction. The state-space model receives all returns, trend, volatility, cross-asset, sentiment, flow, structural, and microstructure features, each normalised fold-locally with no OOS leakage. \\
-        TCN & 32 & Curated sequential diet: 9 LGBM-core features + 11 technical regime/volatility features + 7 microstructure (TFI, Hurst, VWAP deviation) + 4 structural (VWAP dev, ATR, multi-timeframe alignment) + fractionally-differenced log-price. Sequence length: 48 bars. \\
-        PatchTST & 32 & Identical 32-feature diet to TCN (same curated selection of technical, microstructure, structural, and fracdiff features). Sequence length: 48 bars; patched into 11 overlapping segments of 8 bars with stride 4. \\
+        TCN & 32 & Curated sequential diet: 9 LGBM-core features + 11 technical regime/volatility features + 7 microstructure (TFI, Hurst, VWAP deviation) + 4 structural (VWAP dev, ATR, multi-timeframe alignment) + fractionally-differenced log-price. Sequence length: 48~bars. \\
+        PatchTST & 32 & Identical 32-feature diet to TCN (same curated selection of technical, microstructure, structural, and fracdiff features). Sequence length: 48~bars; patched into 11 overlapping segments of 8 bars with stride 4. \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-\vspace{3mm}
 
 The LightGBM agent's selection is data-driven end-to-end: the relevance--redundancy filter runs on all pre-OOS data and produces a working set from the candidate pool (Section~\ref{sec:lgbm_feature_selection}). The Mamba agent instead keeps the broad unified panel and relies on fold-local rank normalisation plus its state-space gates to suppress unhelpful channels. The TCN and PatchTST agents share an identical 32-feature curated diet, which allows a direct controlled comparison of their architectures on the same input representation.
 
-\vspace{3mm}
 
 This design lets the system be extended with new feature groups without retraining existing agents: a new library can be introduced into the LGBM filter or added to the Mamba, TCN, or PatchTST diet while leaving the other agents unchanged.
 
@@ -253,7 +232,6 @@ This design lets the system be extended with new feature groups without retraini
 
 LightGBM~\cite{ke2017lightgbm} is a gradient boosting framework that builds an ensemble of decision trees using a leaf-wise growth strategy with histogram-based binning. Compared to level-wise boosting, leaf-wise growth tends to produce deeper, more expressive trees with fewer iterations, and scales efficiently to large datasets and high feature dimensionality. These properties make it well suited to the tabular, heterogeneous feature set described in Section~\ref{sec:feature_engineering}.
 
-\vspace{3mm}
 
 The prediction task is formulated as binary classification: at each hourly candle, the model estimates the probability $\hat{p} = P(\text{close}_{t+1} > \text{close}_t)$. A value $\hat{p} \geq \tau_{\text{long}}$ triggers a long entry; $\hat{p} \leq \tau_{\text{short}}$ triggers a short entry. The model output is thus a continuous confidence score rather than a hard label, which enables threshold-based signal filtering.
 
@@ -262,15 +240,14 @@ The prediction task is formulated as binary classification: at each hourly candl
 
 Reducing the 285-candidate pool to a compact working set is essential rather than cosmetic. High-dimensional inputs inflate variance and invite spurious in-sample fits --- a concern that is acute in financial machine learning, where the signal-to-noise ratio is low and the effective number of independent observations is far smaller than the bar count~\cite{lopezdeprado2018advances}. Feature selection methods are conventionally grouped into \textit{filter}, \textit{wrapper}, and \textit{embedded} families~\cite{guyon2003introduction}: filters score features by an intrinsic statistical criterion independent of the learner; wrappers search feature subsets by repeatedly training the model; embedded methods (such as the impurity-based importances of gradient boosting itself) select during training. Wrapper searches over a 285-feature pool are combinatorially infeasible when each evaluation is a full walk-forward run, so we adopt a \textit{filter} pipeline whose two free parameters --- the retained set size and the redundancy threshold --- are then tuned jointly with the model hyperparameters (Section~\ref{sec:lgbm_grid}). The pipeline is fitted strictly on pre-OOS data, so no information from the test window enters selection.
 
-\vspace{3mm}
 
 The filter is a \textit{relevance--redundancy} design, the same principle that underlies correlation-based feature selection~\cite{hall1999correlation} and the minimum-redundancy--maximum-relevance (mRMR) criterion~\cite{peng2005feature}: a good subset contains features that are individually predictive of the label (relevance) yet mutually decorrelated (low redundancy). It proceeds in four stages.
 
 \begin{enumerate}
     \item \textbf{Coverage and variance screen.} Features with fewer than 1{,}000 non-null pre-OOS observations or with near-zero variance are discarded, as they cannot contribute a stable split.
-    \item \textbf{Univariate relevance via direction-agnostic AUC.} Each feature's ROC-AUC against the binary directional label is computed on the pre-OOS window. Because a feature may be informative in either direction, the \textit{effective} relevance is taken as $\max(\text{AUC}, 1-\text{AUC})$, exploiting the symmetry of the AUC under label inversion~\cite{fawcett2006introduction}. Features with effective AUC $\leq 0.502$ are rejected. For a series with $n \approx 74{,}000$ near-balanced labels, the standard error of an uninformative AUC is $\approx 1/\sqrt{2n} \approx 0.003$, so the $0.502$ cut sits just below one standard error above the $0.5$ noise floor --- deliberately permissive, since the redundancy and truncation stages perform the stronger pruning. This stage retains 199 of the 279 features that clear the coverage screen.
+    \item \textbf{Univariate relevance via direction-agnostic AUC.} Each feature's ROC-AUC against the binary directional label is computed on the pre-OOS window. Because a feature may be informative in either direction, the \textit{effective} relevance is taken as $\max(\text{AUC}, 1-\text{AUC})$, exploiting the symmetry of the AUC under label inversion~\cite{fawcett2006introduction}. Features with effective AUC $\leq 0.502$ are rejected. For a series with $n \approx 74{,}000$ near-balanced labels, the standard error of an uninformative AUC is $\approx 1/\sqrt{2n} \approx 0.003$, so the $0.502$ cut sits just below one standard error above the $0.5$ noise floor --- deliberately permissive, since the redundancy and truncation stages perform the stronger pruning. This stage retains 199 of the 279 features that clear the coverage~screen.
     \item \textbf{Greedy redundancy pruning.} The surviving features are sorted by descending effective AUC and admitted one at a time; a candidate is rejected if its absolute Spearman rank correlation with any already-admitted feature exceeds the threshold $\rho_{\max}$. Sorting by relevance before pruning guarantees that, between two collinear features (e.g.\ SMA and EMA at the same period, or RSI at adjacent look-backs), the \textit{more} predictive one is the survivor --- the explicit relevance--redundancy trade-off of CFS/mRMR realised as a single greedy pass. Spearman rather than Pearson correlation is used so that monotone non-linear redundancies are also caught.
-    \item \textbf{Relevance truncation.} The decorrelated, relevance-ranked list is truncated to its top $N_{\text{feat}}$ entries, yielding the final working set passed to the walk-forward training loop.
+    \item \textbf{Relevance truncation.} The decorrelated, relevance-ranked list is truncated to its top $N_{\text{feat}}$ entries, yielding the final working set passed to the walk-forward training~loop.
 \end{enumerate}
 
 The final search fixes the selector at $N_{\text{feat}}=50$ and $\rho_{\max}=0.85$, the setting that gave the best validation trade-off after the corrected leakage controls. A more exhaustive permutation-based confirmation such as Boruta~\cite{kursa2010feature} --- which contrasts each feature's importance against column-permuted ``shadow'' copies --- was considered but not adopted here: its tens of model fits per candidate are costly inside a walk-forward grid. The filter approach is also competitive with more elaborate selectors on high-dimensional classification benchmarks~\cite{bommert2020benchmark}, which justifies the trade-off.
@@ -280,11 +257,9 @@ The final search fixes the selector at $N_{\text{feat}}=50$ and $\rho_{\max}=0.8
 
 The LightGBM agent uses a \textit{sliding} two-year walk-forward scheme (denoted M2Y): each fold trains on the trailing 17,520 hours (two years) and steps forward one month (720 hours), so the training distribution always reflects recent market character rather than accumulating stale regimes from the distant past. Training data preceding each OOS fold is split into a training portion (80\%) and a held-out validation tail (20\%), the latter used solely for early stopping (patience 50 rounds). All features are filled with zero for missing values before training; no normalisation is applied since gradient boosting is invariant to monotone feature transformations.
 
-\vspace{3mm}
 
 A 12-bar embargo is applied between each training window's end and the OOS inference window's start, preventing any information overlap from the boundary between training and prediction.
 
-\vspace{3mm}
 
 A joint search is conducted over model hyperparameters and trading execution parameters. With the selector fixed at the validated 50-feature, $\rho_{\max}=0.85$ setting, the model grid covers three axes ($2 \times 2 \times 2 = 8$ configurations):
 
@@ -296,11 +271,9 @@ A joint search is conducted over model hyperparameters and trading execution par
 
 For each trained model, the walk-forward probabilities are computed once and fixed. A second grid over nine trading parameters (asymmetric long/short entry thresholds, limit-entry ATR offset, stop-loss and take-profit ATR multipliers, minimum stop floor, minimum and maximum hold, cooldown) is evaluated on the pre-OOS validation window. This two-level structure avoids retraining the model for every trading configuration and makes the search computationally feasible. The optimisation target is validation Sharpe over 2022-01--2024-05, subject to a minimum-trade floor; the 2024-06--2026-05 OOS window is used only for final reporting.
 
-\vspace{3mm}
 
 A configuration is only admitted if it executes at least \textbf{120 trades} on the validation window. This floor is a deliberate correction to an earlier specification that required only 30 trades: with so weak a floor, the Sharpe-maximising configuration was an ultra-selective one that fired only a handful of times and left the equity curve flat for months at a stretch. Requiring a minimum trading frequency forces the search toward configurations that remain continuously engaged with the market, which both stabilises the Sharpe estimate and produces a return stream of practical use to the downstream fund allocator.
 
-\vspace{3mm}
 
 The resulting feature importances and OOS trading behaviour are examined in Chapter~\ref{06_Experiments_and_Results}. A practical advantage of gradient boosting is worth noting here: once each model is trained, computing its predictions over the validation and test windows and scoring thousands of trading configurations is almost instantaneous, so the entire search completes in minutes on a standard laptop.
 
@@ -315,7 +288,6 @@ The resulting feature importances and OOS trading behaviour are examined in Chap
 
 The TCN agent is a deep learning model based on the Temporal Convolutional Network (TCN) architecture~\cite{bai2018empirical}, which processes multi-feature time-series windows using stacked dilated causal convolutions. Unlike LightGBM, which operates on each candle independently as a tabular feature vector, the TCN receives the full historical context as a sequence, allowing it to learn temporal patterns such as momentum build-up, volatility clustering, and multi-bar candlestick formations directly from the raw feature time series.
 
-\vspace{3mm}
 
 The model follows a multi-task formulation: the primary task is three-class directional classification (up/flat/down) and the auxiliary task is forward realised volatility regression. The auxiliary task provides a richer gradient signal during early training, when the classification objective is dominated by the random-baseline cross-entropy, and acts as an implicit regulariser that prevents the shared encoder from overfitting to directional noise.
 
@@ -335,7 +307,6 @@ Sample weights are assigned inversely proportional to the class frequency and fu
 
 Each feature in the 32-feature input set is normalised independently using a \texttt{QuantileTransformer} fitted on the training partition only (no look-ahead bias), mapping the marginal distribution of each feature to a standard normal. This removes the need for the network to learn feature-specific scales and makes the representation insensitive to outliers, which matters for features such as volume z-scores that can spike by orders of magnitude during market events.
 
-\vspace{3mm}
 
 Sequences are constructed by sliding a window of length $T = 48$ bars over the normalised feature matrix. Each sequence therefore covers 48 hours (two calendar days) of history. The window stride is one bar, so the training set contains one sequence per hourly candle after a 48-bar burn-in. The fractionally-differenced log-price is included as the 32nd feature channel, providing the network with price-level context that plain returns discard while avoiding unit-root non-stationarity.
 
@@ -343,7 +314,6 @@ Sequences are constructed by sliding a window of length $T = 48$ bars over the n
 
 The TCN encoder consists of four sequential blocks, each comprising two dilated causal convolutions with weight normalisation~\cite{salimans2016weight} and dropout (rate 0.20), followed by a residual connection. The convolution parameters are: kernel size $k = 3$, output channels $C = 64$, and dilations $\{1, 2, 4, 8\}$ for blocks 1 through 4 respectively. With these parameters the receptive field spans $1 + 2(3-1)(1+2+4+8) = 61$ timesteps, comfortably covering the 48-bar input window. The total trainable parameter count is approximately 96,000, making the model fast to train and evaluate.
 
-\vspace{3mm}
 
 Two task-specific heads are attached to the final hidden state (last temporal position of the encoder output):
 \begin{itemize}
@@ -361,7 +331,6 @@ where $w_{\text{vol}}$ is the per-sample volatility weight, $\lambda_{\text{vol}
 
 The model is trained using the AdamW optimiser~\cite{loshchilov2019decoupled} with learning rate $3 \times 10^{-4}$ and weight decay $10^{-4}$, for a maximum of 100 epochs with early stopping (patience 20). A linear learning-rate warmup over the first 5 epochs stabilises early training. The batch size is 256. All training is performed on a single GPU or MPS device where available, with CPU fallback; the relatively compact model size makes the full training run complete in approximately 10--15 minutes.
 
-\vspace{3mm}
 
 The TCN uses an expanding walk-forward rather than a single static split. Each fold trains only on past data, keeps a 72-hour embargo before prediction, and retrains every three months; fold-local percentile calibration is applied to the output probabilities before trading thresholds are searched. Trading parameters are selected on the 2023-06--2024-05 validation window and then frozen for the 2024-06--2026-05 OOS evaluation.
 
@@ -369,7 +338,6 @@ The TCN uses an expanding walk-forward rather than a single static split. Each f
 
 Raw model outputs are three-class probabilities: $p_{\text{up}}$, $p_{\text{down}}$, $p_{\text{flat}}$. These are converted to trading signals using threshold rules: a long entry is triggered when $p_{\text{up}} \geq \tau_{\text{long}}$; a short entry when $p_{\text{down}} \geq \tau_{\text{short}}$, with an optional neutral-probability and edge-margin filter. The final grid is constrained to trade both directions and is selected by incremental skill over same-bracket always-long and always-short baselines, rather than raw return alone. This change prevents a convex long-only bracket from being mistaken for TCN forecasting skill.
 
-\vspace{3mm}
 
 The fee model applied to TCN backtests uses limit-entry orders for both long and short trades: an entry limit is placed $\text{entry\_atr\_mult} \times \text{ATR}$ away from the current close in the direction of the trade. If the limit level is touched within the next candle (determined by whether the candle high or low reaches the target, adjusted for a 5\,bp buffer), the trade fills at the maker rate (0\%); otherwise it is skipped rather than forced to market. Take-profit exits also use limit orders (0\% maker). Stop-loss and timeout exits are taker (0.05\%). Short positions are charged a conservative funding cost of $0.00077\%$ per hour.
 
@@ -382,7 +350,6 @@ The fee model applied to TCN backtests uses limit-entry orders for both long and
 
 The Mamba agent is based on the selective state-space model (SSM) architecture~\cite{gu2023mamba}, which processes sequential data through a learned input-dependent selection mechanism. Unlike the fixed dilated convolutions of the TCN, the Mamba block adapts its state-transition matrices to the current input at each step, selectively retaining or forgetting historical context. This property is theoretically advantageous for financial time series characterised by intermittent regime shifts: the model can amplify the signal from regime-change candles while suppressing noise during consolidation periods.
 
-\vspace{3mm}
 
 The agent is implemented in pure PyTorch using a chunked vectorised SSM scan for efficiency, avoiding the requirement for the \texttt{mamba-ssm} CUDA kernel library. The chunked scan divides each sequence of length $L$ into $L / \text{chunk\_size}$ groups, computing the SSM recurrence within each group using parallel prefix operations and carrying state across group boundaries sequentially. This provides GPU efficiency comparable to the fused kernel while running on any hardware (CPU, MPS, CUDA).
 
@@ -392,7 +359,7 @@ The model consists of an input projection layer followed by $N_{\text{layers}} =
 \begin{itemize}
     \item An input projection to the inner dimension $d_{\text{inner}} = d_{\text{model}} \times \text{expand} = 64 \times 2 = 128$.
     \item A depthwise 1D causal convolution with kernel size $d_{\text{conv}} = 4$, providing local context.
-    \item The selective SSM scan with state dimension $d_{\text{state}} = 16$, producing the sequence output.
+    \item The selective SSM scan with state dimension $d_{\text{state}} = 16$, producing the sequence~output.
     \item A residual connection around the entire block.
 \end{itemize}
 
@@ -402,7 +369,6 @@ The total parameter count is approximately 160,000, and a single forward pass on
 
 The Mamba agent operates on the broad unified feature panel after the common eligibility screen, rather than on a small hand-selected subset. Its label is the Triple Barrier Method outcome with symmetric volatility barriers and a 24-bar time limit, and the input sequences have length $\text{SEQ\_LEN}=24$ bars. Raw $P(\text{up})$ is converted to a fold-local validation percentile score before the trading grid is evaluated, reducing sensitivity to calibration drift between walk-forward folds.
 
-\vspace{3mm}
 
 All features are normalised using a \texttt{QuantileTransformer} fitted on each fold's training window only, mapping marginal distributions to standard normal. This removes the need to engineer scale-invariant representations and reduces the influence of extreme values.
 
@@ -410,11 +376,9 @@ All features are normalised using a \texttt{QuantileTransformer} fitted on each 
 
 Like the revised TCN, but unlike the sliding-window LightGBM agent, the Mamba agent uses an \textit{expanding-window} walk-forward: the training set always begins at a fixed floor of January 2019 --- chosen so that the daily external and cross-asset feeds have stable coverage before training starts, rather than at the August 2017 start of the raw BTC/USDT history --- and grows with each fold, while the model is retrained every 3 months. This lets the state-space model exploit the full history --- its selection mechanism is meant to suppress stale-regime data internally --- while still being re-fitted frequently enough to track the changing market character.
 
-\vspace{3mm}
 
 Training uses \texttt{AdamW} with $\text{lr} = 3\times10^{-4}$, a linear warmup over 5 epochs followed by cosine annealing to $10^{-6}$, and FocalLoss with $\gamma = 2.0$ to down-weight easy (near-50\%) probability examples. Early stopping with patience 8 is applied on the fold's validation AUC. The model is trained on Google Colab with an A100 GPU; the full multi-fold walk-forward requires 30--45 minutes.
 
-\vspace{3mm}
 
 After the WFO loop, fold-specific predictions are stitched to produce a continuous $P(\text{up})$ time series aligned to the hourly index. The same ATR-bracket backtester and grid-search pipeline used for LGBM and TCN is applied identically, enabling direct performance comparison across the three agents.
 
@@ -425,9 +389,11 @@ After the WFO loop, fold-specific predictions are stitched to produce a continuo
 
 \subsection{Method}
 
+The PatchTST agent is documented here in full for transparency, but it is a \textit{candidate that was removed from the final system at a later stage}: its out-of-sample directional accuracy proved no better than chance (AUC $\approx 0.50$), so it is not part of the predeclared fund roster (Chapter~\ref{06_Experiments_and_Results}). It is described in the same detail as the retained agents so that the exclusion can be judged on the method, not asserted.
+
+
 The PatchTST agent is based on the patch-based Transformer encoder introduced by Nie et al.~\cite{nie2023patchtst} for time-series forecasting, adapted here for binary directional classification. The core motivation for this architecture is to overcome a limitation shared by both the TCN and the Mamba agent: their respective receptive fields are determined by architectural hyperparameters (dilation schedule and sequence length), and they process features at individual bar granularity. PatchTST instead partitions the input sequence into coarser segments (patches), allowing the self-attention mechanism to relate non-adjacent market segments without paying the quadratic attention cost over all individual bars.
 
-\vspace{3mm}
 
 Unlike the original forecasting formulation, the PatchTST agent follows the same classification objective used by the TCN and Mamba agents: given a 48-bar feature window, estimate $\hat{p} = P(\text{close}_{t+1} > \text{close}_t \mid \text{TBM\_TP})$, where the label is generated by the Triple Barrier Method. The use of an identical input representation to the TCN (same 32-feature diet, same sequence length) ensures that performance differences can be attributed to the architectural choice rather than the input.
 
@@ -443,7 +409,6 @@ A learnable positional embedding $\mathbf{p}_i \in \mathbb{R}^{d_{\text{model}}}
 
 The Transformer encoder consists of 2 stacked layers, each with multi-head self-attention ($h = 4$ heads, head dimension $d_k = 16$) and a position-wise feed-forward sub-network with inner dimension $d_{\text{ff}} = 128$. Layer normalisation is applied before each sub-layer (pre-norm formulation) and dropout with rate 0.2 is applied after each sub-layer and in the attention weights. The output of the final encoder layer is mean-pooled over the 11 patch tokens to produce a single $d_{\text{model}} = 64$ dimensional representation, which is passed through a linear classification head to produce a raw logit.
 
-\vspace{3mm}
 
 \textbf{Temperature scaling.} After training, the logit is divided by a learned scalar temperature $T = 1.625$ before applying the sigmoid function. The temperature is calibrated post-hoc on the validation set by minimising the expected calibration error (ECE), following Guo et al.~\cite{guo2017calibration}. The calibrated probability is:
 \begin{equation}
@@ -465,7 +430,6 @@ Features are normalised with a \texttt{QuantileTransformer} (mapping each featur
 
 The PatchTST agent uses a \textit{single chronological split} rather than walk-forward cross-validation: training data covers August 2017 to December 2022, the validation set covers January 2023 to May 2024 (for hyperparameter optimisation and early stopping), and the held-out test set covers June 2024 to May 2026. This is less adaptive than the Mamba and TCN walk-forward loops, but it keeps the OOS period aligned with the rest of the system.
 
-\vspace{3mm}
 
 Training uses \texttt{AdamW} with $\text{lr} = 5 \times 10^{-4}$, weight decay $10^{-4}$, and a cosine annealing schedule over 80 epochs with linear warmup for the first 5 epochs. Like the TCN, the model is trained multi-task --- a directional head and an auxiliary forward-volatility head --- with binary cross-entropy on the direction target. Early stopping with patience 20 monitors validation loss; the best model (epoch 12, validation loss $= 0.693$) is retained. The OOS AUC on the test set is 0.502.
 
@@ -473,9 +437,28 @@ Training uses \texttt{AdamW} with $\text{lr} = 5 \times 10^{-4}$, weight decay $
 
 The PatchTST trading pipeline evaluates the calibrated probability series against a validation-only grid of directional thresholds, ATR-based stop-loss and take-profit multipliers, minimum and maximum hold durations, and a cooldown period. The selected policy is intentionally short-only: $\tau_{\text{short}}=0.555$, entry\_atr\_mult $=0.6$, sl\_atr\_mult $=1.0$, tp\_atr\_mult $=3.5$, min\_hold $=6$, max\_hold $=48$, cooldown $=12$ bars.
 
-\vspace{3mm}
 
 This makes PatchTST a specialist downside agent rather than a complete long/short system. Given the calibrated nature of the PatchTST output (temperature-scaled), the short threshold is interpreted as an abstention rule: the agent acts only when the model is sufficiently confident that the upper TBM barrier is unlikely to be reached first.
+
+% ---------------------------------------------------------------------------
+\section{Standard and Classical Baselines}
+\label{sec:standard_baselines}
+% ---------------------------------------------------------------------------
+
+The agents above span gradient boosting, dilated convolutions, a state-space model, and patch attention --- but none of them is the textbook tool a reader would first reach for on a financial time series: a \textit{recurrent neural network}, or a \textit{classical statistical} model. Two such baselines are therefore added explicitly, to test a fair question: \textit{does the system's heterogeneous, partly exotic machinery actually earn its keep over standard alternatives?} If a plain recurrent net or an ARIMA model matched the fund on the same data, the more elaborate design would be hard to justify. Both baselines are evaluated under the \textit{identical} protocol as the learned agents --- same unified feature panel, same Triple Barrier labelling, same walk-forward windows, and the same \texttt{bracket\_run} execution with realistic fees --- so the comparison is like-for-like.
+
+\subsection{Recurrent network (GRU / LSTM)}
+\label{sec:rnn_baseline}
+
+The recurrent baseline is a deliberate, minimal variation of the Mamba agent: it reuses Mamba's full pipeline --- the 285-feature unified panel, the $\pm 2\sigma_{24}$/24-bar Triple Barrier labels, expanding-window walk-forward retraining every three months, 24-bar sequences, fold-local \texttt{QuantileTransformer} scaling, and the fold-validation percentile signal transform --- and changes \textit{only the encoder}. A linear projection to a 64-dimensional embedding feeds a two-layer recurrent stack (hidden width 64, dropout 0.2), whose final hidden state is mapped by a linear head to the two-class direction logits. The recurrent cell is selected by a single switch, so both a \textbf{GRU} and an \textbf{LSTM} are trained from the same harness; reporting both answers the question of which standard recurrent unit fares better here. Optimisation matches the Mamba agent (\texttt{AdamW}, $\text{lr}=3\times10^{-4}$, weight decay $10^{-4}$, cosine schedule with warmup, class-balanced cross-entropy, early stopping on validation AUC). The tuned ATR-bracket parameters are grid-searched on the 2023-06--2024-05 validation window only and frozen before the hold-out, exactly as for the other agents.
+
+
+A \textit{predeclared promotion rule} was fixed before the hold-out was inspected: the recurrent agent enters the fund only if its standalone out-of-sample return clears $10\%$ per year. As reported in Chapter~\ref{06_Experiments_and_Results}, neither cell clears it --- both are negative after fees despite posting the highest \textit{validation}-window Sharpe of any learned agent --- so the recurrent network is reported as an honest negative and is not part of the roster.
+
+\subsection{Classical ARIMA and the random-walk null}
+\label{sec:arima_baseline}
+
+The classical baseline is an \textbf{ARIMA$(1,1,1)$} model with a naive \textbf{random walk} as the no-skill floor. It is estimated walk-forward over the hold-out: parameters are re-estimated weekly on a trailing window and one-step-ahead forecasts of the log-price are produced each hour, with the fixed-parameter state-space filter advanced between re-estimations (a leak-free rolling forecast). Two readings are taken. First, \textit{forecasting accuracy}: the one-step return forecast is scored by root-mean-square error and directional accuracy against the random walk (whose return forecast is zero). Second, a \textit{trading baseline}: the sign of the forecast sets a long/short position, filtered by a conviction threshold and a minimum holding period to avoid fee-churn, and charged the same taker fee as every agent. This places ARIMA on the same equity-curve footing as BTC buy-and-hold and the S\&P~500. The expected and observed result --- a directional accuracy near $50\%$ and no RMSE improvement over the random walk --- is precisely what a thesis built on \textit{nonlinear} structure needs to establish.
 
 % ---------------------------------------------------------------------------
 \section{Rule-Based Agents}
@@ -484,15 +467,12 @@ This makes PatchTST a specialist downside agent rather than a complete long/shor
 
 The four learned agents are all non-linear models fitted to overlapping views of the same feature panel, so they share failure modes: when the market moves in a way none of them learned, they tend to be wrong together. To add genuinely orthogonal behaviour, four classical \textit{rule-based} agents are introduced as candidates, whose edge --- where it exists --- comes from economic logic rather than from fitting the data. Each computes a causal, parameter-free conviction in $[0,1]$ ($0.5$ neutral) as a vote fraction over already-causal features using fixed thresholds, so no statistic is fitted on the data and there is no scaler or label that could leak future information.
 
-\vspace{3mm}
 
 \textbf{Trend} votes on the bullishness of the moving-average, SuperTrend, and MACD structure: a long when these filters agree upward, a short when they agree downward, neutral otherwise. \textbf{Volatility breakout} trades the direction of a confirmed 24-hour range break, with full conviction when the break follows a recent volatility squeeze and half conviction otherwise. \textbf{Dominance rotation} reads cross-asset capital flow: it leans long Bitcoin when the seven-day change in BTC dominance is positive while the ETH/BTC cross weakens (capital rotating into BTC), and short or neutral in the opposite, alt-season configuration. The daily dominance series is lagged by 24 hours before being used on hourly bars, precisely to avoid the same-day market-cap leakage discussed in Section~\ref{sec:leakage_audit}. A fourth candidate, a contrarian Fear \& Greed \textbf{sentiment} agent, is also built.
 
-\vspace{3mm}
 
-The final fund uses a \textit{predeclared} roster curated from this candidate pool for paradigm diversity and acceptable validation-window behaviour: the three learned models LightGBM, TCN and Mamba, plus the trend and dominance-rotation rules. The remaining candidates are reported as honest negatives in Chapter~\ref{06_Experiments_and_Results}: PatchTST is excluded because its out-of-sample directional accuracy is no better than chance, and the volatility-breakout and contrarian-sentiment rules are excluded for negative validation-window performance.
+The final fund uses a \textit{predeclared} roster curated from this candidate pool for paradigm diversity and acceptable validation-window behaviour: the three learned models LightGBM, TCN and Mamba, plus the trend and dominance-rotation rules. The remaining candidates are reported as honest negatives in Chapter~\ref{06_Experiments_and_Results}: PatchTST is excluded because its out-of-sample directional accuracy is no better than chance; the volatility-breakout and contrarian-sentiment rules are excluded for negative validation-window performance; and the standard recurrent (GRU/LSTM) and classical ARIMA baselines of Section~\ref{sec:standard_baselines} are excluded for failing the predeclared $10\%$/year promotion gate. Two further paradigms prototyped early --- a deep reinforcement-learning agent and a genetic-programming agent --- never developed a positive out-of-sample edge and are likewise omitted.
 
-\vspace{3mm}
 
 Crucially, the rule agents are not fitted: only their ATR-bracket execution parameters (entry, stop-loss and take-profit multiples, hold limits, thresholds) are grid-searched on the 2022-01--2024-05 validation window by validation Sharpe, and frozen before the hold-out is touched --- the identical protocol used for the learned agents. The same \texttt{bracket\_run} execution engine is used verbatim, so each agent reproduces bit-for-bit when the fund rebuilds it.
 

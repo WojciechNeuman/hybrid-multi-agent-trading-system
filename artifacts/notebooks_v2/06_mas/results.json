@@ -1,6 +1,6 @@
 {
   "notebook": "06_multi_agent_v1",
-  "created": "2026-06-22T23:57:31.515642",
+  "created": "2026-06-29T20:20:42.289753",
   "design": "hybrid multi-agent trading system built from a candidate pool of four learned models and several rule-based agents. The final fund uses a predeclared roster of five autonomous agents (LightGBM, TCN, Mamba, a trend-following rule, and a cross-asset dominance-rotation rule), curated for paradigm diversity and acceptable validation-window behaviour. Other candidates are reported as honest negatives: PatchTST shows no out-of-sample directional skill, while the volatility-breakout and contrarian-sentiment rules have negative validation-window performance. The original regime-gated coordinator is retained as an ablation; the final reported allocator is capped inverse-volatility risk parity over the predeclared roster.",
   "candidate_agents": [
     "lgbm",
@@ -23,7 +23,9 @@
     "patch": "patch transformer shows no out-of-sample directional skill (AUC ~0.50, unchanged under walk-forward retraining and instance normalisation); its standalone return is directional beta, not forecasting, so it is not included in the fund",
     "volbreak": "negative validation-window risk-adjusted performance",
     "sentiment_regime": "negative validation-window performance and below its random-bracket null",
-    "crossasset": "not part of the canonical 00-06 notebooks_v2 pipeline; no standard artifact is required"
+    "crossasset": "not part of the canonical 00-06 notebooks_v2 pipeline; no standard artifact is required",
+    "rnn_gru": "standard recurrent baseline (GRU) requested by the thesis advisor; built as a real candidate (notebook 09, same TBM labels / WFO / ATR-bracket engine as Mamba). OOS directional AUC ~0.51 and a negative standalone return after fees (-10.9%, Sharpe -0.22), below the predeclared 10%/yr promotion gate -> reported as an honest negative, not in the fund",
+    "rnn_lstm": "standard recurrent baseline (LSTM), companion to rnn_gru. OOS AUC ~0.50 (chance) and a negative standalone return after fees (-6.1%, Sharpe -0.12), below the 10%/yr gate -> honest negative, not in the fund"
   },
   "validation_sharpe": {
     "lgbm": {
@@ -221,6 +223,30 @@
       "sortino": 0.1172531115405478,
       "maxdd": -0.5008379402841711,
       "alpha": -7.993605777301127e-15
+    },
+    {
+      "name": "LSTM baseline",
+      "ret": -0.062325851457142534,
+      "sharpe": -0.11962815238298065,
+      "sortino": -0.107331956511698,
+      "maxdd": -0.3492977445450755,
+      "alpha": -0.15128713102495261
+    },
+    {
+      "name": "ARIMA(1, 1, 1)",
+      "ret": -0.15330834799212656,
+      "sharpe": -0.18167552843937165,
+      "sortino": -0.23042893743748893,
+      "maxdd": -0.4427633804897724,
+      "alpha": -0.24226962755993664
+    },
+    {
+      "name": "GRU baseline",
+      "ret": -0.10911265987864527,
+      "sharpe": -0.2150811452364718,
+      "sortino": -0.1538061141311983,
+      "maxdd": -0.25344161081805916,
+      "alpha": -0.19807393944645535
     },
     {
       "name": "Coordinator ablation (Sharpe x regime)",

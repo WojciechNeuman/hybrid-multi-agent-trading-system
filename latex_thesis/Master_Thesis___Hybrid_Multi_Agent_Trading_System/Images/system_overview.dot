@@ -30,6 +30,18 @@ digraph SystemOverview {
         LGBM -> TCN [style=invis];  MAMBA -> PATCH [style=invis];
     }
 
+    // ---- Standard & classical baselines (built, excluded — comparison only) ----
+    subgraph cluster_baselines {
+        label="Standard & classical baselines — comparison only (not in fund)";
+        labelloc="t"; fontname="Helvetica-Bold"; fontsize=11;
+        style="dashed,rounded"; color="#8a99a8"; margin=10;
+        GRUB  [label="GRU baseline  ✗ excluded\n−10.9% · below 10%/yr gate",  fillcolor="#ededed", color="#c0392b", penwidth=1.7];
+        LSTMB [label="LSTM baseline  ✗ excluded\n−6.1% · below 10%/yr gate", fillcolor="#ededed", color="#c0392b", penwidth=1.7];
+        ARIMA [label="ARIMA(1,1,1)  ✗ excluded\nclassical · −15.3% · ≈ random walk", fillcolor="#ededed", color="#c0392b", penwidth=1.7];
+        { rank=same; GRUB; LSTMB; ARIMA; }
+        GRUB -> LSTMB [style=invis];  LSTMB -> ARIMA [style=invis];
+    }
+
     // ---- Rule agents (2x2) ----
     subgraph cluster_rules {
         label="Rule-based agents — fixed economic logic";
@@ -66,5 +78,9 @@ digraph SystemOverview {
 
     ALLOC -> EXEC;
     COORD -> EXEC [style=dotted];
+    // Baselines share the same features (GRU/LSTM) and the same fee-charged backtest, but never
+    // feed the fund — shown for comparison only.
+    FEAT -> GRUB [lhead=cluster_baselines, style=dotted];
+    ARIMA -> EXEC [style=dotted, constraint=false];
     { rank=same; ALLOC; COORD; }
 }

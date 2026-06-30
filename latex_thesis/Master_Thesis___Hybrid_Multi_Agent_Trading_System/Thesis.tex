@@ -73,6 +73,12 @@
 % Disable indentation globally
 \setlength{\parindent}{0pt}
 
+% Consistent vertical space between EVERY paragraph (replaces the manual \vspace{3mm} that was
+% previously inserted by hand and applied unevenly). With no paragraph indentation, this skip is
+% what visually separates paragraphs, and applying it globally guarantees identical spacing
+% throughout the document. The table of contents resets it locally so it stays compact.
+\setlength{\parskip}{3mm}
+
 % Link the first emergence of an acronym to the Glossary chapter.
 \newcommand{\gloss}[1]{\hyperref[ch:glossary]{#1}}
 
@@ -81,8 +87,28 @@
 \Urlmuskip=0mu plus 1mu\relax
 \widowpenalty=10000
 \clubpenalty=10000
+% Robustly prevent widow/orphan lines (a single line of a paragraph stranded at the top or bottom
+% of a page). The nowidow package enforces this across page breaks more reliably than the penalties
+% alone; defaultlines=2 keeps at least two lines of a paragraph together at a page boundary.
+\usepackage[all,defaultlines=2]{nowidow}
+
+% Improve line breaking (character protrusion + font expansion). Reduces overfull/underfull lines
+% and, together with the parfillskip setting below, the number of single-word last lines.
+\usepackage[protrusion=true,expansion=true]{microtype}
+
+% Avoid a lone short word on the LAST line of a paragraph (a "runt"). By limiting how far the
+% last-line filler glue may stretch, a too-short last line becomes underfull and TeX re-breaks the
+% paragraph to pull a word down. Applied at begin-document so \textwidth is already set by geometry.
+\AtBeginDocument{\setlength{\parfillskip}{0pt plus 0.75\textwidth}}
 
 \usepackage{booktabs} % For professional table formatting
+\usepackage{array}    % enables >{...} column prefixes and \arraybackslash for ragged paragraph columns
+% Let long URLs (e.g. the GitHub link) break only at path separators --- slashes, hyphens, and
+% underscores --- so the domain (github.com) is never split mid-word and the break looks natural.
+\def\UrlBreaks{\do\/\do\-\do\_}
+% Ragged-right, non-hyphenating fixed-width column. Used for prose table cells so words are never
+% split into fragments and short last lines look natural rather than like justified ``runts''.
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash\hyphenpenalty=10000\exhyphenpenalty=10000}p{#1}}
 
 \usepackage{titlesec}
 
@@ -136,10 +162,12 @@
 
 
 
-% The following code redefines the plain pagestyle with the objective of moving the page number from the bottom to the top of the page. This only affects new chapter pages.
+% Redefine the plain pagestyle (used on chapter-opening and table-of-contents pages) so the page
+% number appears at the bottom centre, identical to the fancy style used on every other page. This
+% keeps the page numbering in one consistent location throughout the document.
 \fancypagestyle{plain}{
 \fancyhf{} %clear all header and footer fields
-\fancyhead[C]{\thepage} %puts number on top center of the page
+\fancyfoot[C]{\thepage} %puts number at the bottom centre of the page
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}}
 %ending of plain pagestyle modification.
@@ -169,6 +197,7 @@
 % \include{02_Acknowledgment}  % include your Acknowledgement file
 
 \begin{spacing}{1.0}%To make the table of contents, figures, and tables single spaced, as required by the formatting guidelines, pg. 24.
+\setlength{\parskip}{0pt}% keep the ToC compact; the global 3mm paragraph skip is restored after this group
 
 %\renewcommand{\contentsname}{\textbf{{\large TABLE OF CONTENTS}}}
 \setcounter{tocdepth}{2}% list chapters/sections/subsections only; keep run-in \paragraph headings out of the ToC

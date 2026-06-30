@@ -1,24 +1,24 @@
 \chapter{System Architecture}
 \label{03_System_Architecture}
-\thispagestyle{empty}
+
+This chapter presents the architecture of the proposed system from the top down. It first describes the overall design --- a fund of autonomous, heterogeneous agents bound together by a capital-allocation layer --- and then introduces each constituent in turn: the learned agents, the rule-based agents, the standard and classical baselines used for comparison, the allocation layer, and the walk-forward protocol under which everything is evaluated. The detailed construction of each component is deferred to Chapter~\ref{04_Methodology}; the aim here is to convey how the pieces fit together.
+
 
 \section{Overall Architecture}
 \label{sec:overall_architecture}
 
 The proposed system is a \textit{heterogeneous and hybrid} multi-agent architecture, best understood as a small \textit{fund of autonomous trading agents}. The term \textit{heterogeneous} refers to the nature of the constituent components: the agents are built from fundamentally different paradigms --- gradient boosting, dilated causal convolutions, selective state-space modelling, patch-based transformer attention, and classical rule-based trading logic. They are not variations of a single technique but categorically distinct methods, each with its own inductive bias and failure mode. The term \textit{hybrid} refers to the architecture --- the fact that these dissimilar components are integrated into a unified system that produces a single equity curve. Integration is achieved not by a single learned controller but by a capital-allocation layer that distributes risk across the agents.
 
-\vspace{3mm}
 
-Eight agents are built as candidates --- four \textit{learned} (LightGBM, a Temporal Convolutional Network (TCN), a selective state-space model (Mamba), and a patch-based Transformer (PatchTST)) and four \textit{rule-based} (trend following, volatility breakout, contrarian sentiment, and cross-asset dominance rotation). The final fund uses a \textit{predeclared} roster of \textit{five} agents, curated from this pool for paradigm diversity and acceptable validation-window behaviour: three learned (LightGBM, TCN, Mamba) and two rule-based (trend following, dominance rotation). PatchTST, the volatility-breakout agent, and the sentiment agent are built and analysed but not included --- PatchTST in particular shows no out-of-sample directional skill. Each roster agent is fully autonomous: it carries its own feature subset, its own directional signal, and its own risk-managed execution rule, and it produces an independent stream of positions, confidence values, and realised returns. This autonomy is what makes the system a fund rather than a single model with auxiliary inputs.
+Eight agents are built as candidates --- four \textit{learned} (LightGBM, a Temporal Convolutional Network (TCN), a selective state-space model (Mamba), and a patch-based Transformer (PatchTST)) and four \textit{rule-based} (trend following, volatility breakout, contrarian sentiment, and cross-asset dominance rotation). The final fund uses a \textit{predeclared} roster of \textit{five} agents, curated from this pool for paradigm diversity and acceptable validation-window behaviour: three learned (LightGBM, TCN, Mamba) and two rule-based (trend following, dominance rotation). PatchTST, the volatility-breakout agent, and the sentiment agent are built and analysed but not included --- PatchTST in particular shows no out-of-sample directional skill. In addition, two standard external baselines --- a textbook recurrent network (GRU/LSTM) and a classical ARIMA model --- are built to test whether the system's more elaborate machinery is justified; both fall short and are reported as benchmarks rather than fund members (Section~\ref{sec:baselines_arch}). Each roster agent is fully autonomous: it carries its own feature subset, its own directional signal, and its own risk-managed execution rule, and it produces an independent stream of positions, confidence values, and realised returns. This autonomy is what makes the system a fund rather than a single model with auxiliary inputs.
 
-\vspace{3mm}
 
 Figure~\ref{fig:system_overview} illustrates the high-level data flow. Raw market data is ingested and processed into layered feature libraries. Each agent selects a subset of these libraries according to its own constraints and operates an independent walk-forward training and inference loop, producing an out-of-sample (OOS) return stream. Every stream is evaluated by the same backtest, which brackets each trade with a stop-loss and take-profit set from recent volatility --- the Average True Range (\gloss{ATR}) --- and charges realistic fees; the mechanism is detailed in Chapter~\ref{04_Methodology}. The streams are then aligned on a common index and combined by a leak-free, risk-balanced allocator into the final fund equity curve. A learned regime-gated coordinator was also built, but it did not improve on this simpler allocator and is reported only as a comparison.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[width=\textwidth]{Images/system_overview.png}
-    \caption{High-level architecture of the hybrid multi-agent trading system. Raw OHLCV data and external feeds are processed into a unified feature library spanning four feature families (technical, external, microstructure, structural). Candidate agents --- learned (LightGBM, TCN, Mamba, PatchTST) and rule-based (trend, volatility breakout, sentiment, dominance rotation) --- each consume a distinct feature subset and produce an independent, risk-managed out-of-sample return stream through a shared ATR-bracket backtest. A predeclared roster of five agents is combined by a leak-free capped inverse-volatility allocator into the final fund equity curve; a learned regime-gated coordinator is retained as an ablation. All evaluation spans the three market regimes of the two-year hold-out window.}
+    \caption{High-level architecture of the hybrid multi-agent trading system. Raw OHLCV data and external feeds are processed into a unified feature library spanning four feature families (technical, external, microstructure, structural). Candidate agents --- learned (LightGBM, TCN, Mamba, PatchTST) and rule-based (trend, volatility breakout, sentiment, dominance rotation) --- each consume a distinct feature subset and produce an independent, risk-managed out-of-sample return stream through a shared ATR-bracket backtest. A predeclared roster of five agents is combined by a leak-free capped inverse-volatility allocator into the final fund equity curve; a learned regime-gated coordinator is retained as an ablation. Standard external baselines (a GRU/LSTM recurrent network and a classical ARIMA model) are evaluated under the same protocol for comparison but are not roster members. All evaluation spans the three market regimes of the two-year hold-out window.}
     \label{fig:system_overview}
 \end{figure}
 
@@ -27,19 +27,15 @@ Figure~\ref{fig:system_overview} illustrates the high-level data flow. Raw marke
 
 The four learned agents come from different model families, so that each carries a distinct inductive bias. This section introduces their \textit{roles}; the full specification of every agent --- its feature diet, labelling, architecture, and training protocol --- is given in Chapter~\ref{04_Methodology}.
 
-\vspace{3mm}
 
 \textbf{LightGBM} provides the tabular component. Gradient-boosted decision trees consume a compact feature subset selected from the full candidate pool and emit a directional probability at every hourly bar. Treating each bar as an independent feature vector, it is operationally simple and interpretable, but in the final strict run it is a weak diversifying contributor rather than the leading standalone strategy.
 
-\vspace{3mm}
 
 \textbf{The Temporal Convolutional Network (TCN)} provides the local-sequence component. Stacked dilated causal convolutions read a multi-day window of features and learn temporal patterns --- momentum build-up, volatility clustering, multi-bar candle formations --- that the tabular view cannot see. It is trained multi-task, forecasting both direction and forward volatility, and labelled with the Triple Barrier Method.
 
-\vspace{3mm}
 
 \textbf{Mamba} provides the selective-memory component. Its state-space architecture adapts its transitions to the input at each step, choosing what historical context to retain or forget, which is well matched to a market that shifts between regimes. It complements the TCN's fixed receptive field with input-dependent long-range memory.
 
-\vspace{3mm}
 
 \textbf{PatchTST} provides the attention-based component. It splits the input window into coarse patches and applies self-attention across them, relating non-adjacent market segments that a convolution cannot connect directly. It shares the TCN's feature diet, so the two agents differ by architecture alone. In the event its out-of-sample directional accuracy proved no better than chance --- a result that held under walk-forward retraining and instance normalisation --- so it is \textit{not} part of the predeclared final roster; it is retained here as a documented negative result (Chapter~\ref{06_Experiments_and_Results}).
 
@@ -48,24 +44,31 @@ The four learned agents come from different model families, so that each carries
 
 The four learned agents are all non-linear models fitted to overlapping views of the same price-and-technical feature panel, so they tend to share failure modes. To inject genuinely different sources of edge, three \textit{rule-based} agents are added, whose signals come from fixed economic logic rather than from fitting the data. Each emits a conviction in $[0,1]$ (with $0.5$ neutral) and is executed through the same ATR-bracket engine as the learned agents.
 
-\vspace{3mm}
 
 \textbf{The trend agent} follows direction: it goes long when the moving-average, SuperTrend, and MACD structure is bullish and short when it is bearish. By design it earns in directional (bull or bear) regimes and gives back ground in choppy ones.
 
-\vspace{3mm}
 
 \textbf{The volatility-breakout agent} trades the direction of a confirmed range break, with conviction reinforced when the break follows a volatility squeeze. Its edge is partly structural: the asymmetric take-profit/stop bracket gives it a convex pay-off when volatility expands. It is a candidate with negative validation-window performance and is not part of the predeclared final roster.
 
-\vspace{3mm}
 
 \textbf{The dominance-rotation agent} reads where capital is flowing within the crypto market. It leans long Bitcoin when BTC dominance rises while the ETH/BTC cross weakens (capital rotating into BTC), and flat or short when the alt-season rotation reverses. Its inputs are dominance and cross-asset momentum only, so it reads an information source no price-feature model uses; it is included for this diversification value rather than as a proven source of return.
+
+\section{Standard and Classical Baselines}
+\label{sec:baselines_arch}
+
+A natural objection to a system this elaborate is that a much simpler model might do just as well. Two standard baselines are built to confront that objection directly, each evaluated on the same data, labels, and fee-charged execution as the agents above.
+
+
+\textbf{The recurrent baseline (GRU / LSTM)} is the textbook deep-learning model for sequences. It is constructed as a minimal variation of the Mamba agent --- the same feature panel, labels, and walk-forward protocol, with only the encoder swapped for a two-layer GRU or LSTM --- so any difference is attributable to the architecture alone. Both recurrent units are trained and reported. Despite posting the strongest \textit{validation}-window result of any learned model, both lose money out of sample and so fail a promotion rule fixed in advance; they are reported as honest negatives, not roster members.
+
+
+\textbf{The classical baseline (ARIMA)} is the textbook statistical forecaster, with a naive random walk as the no-skill floor. It is fitted walk-forward and judged two ways: on forecasting accuracy against the random walk, and as a fee-charged trading strategy alongside BTC buy-and-hold and the S\&P~500. Its one-step forecast is no better than the random walk and it does not trade profitably --- evidence that there is no exploitable \textit{linear} structure at this horizon, which is exactly what motivates the nonlinear agents. Both baselines are quantified in Chapter~\ref{06_Experiments_and_Results}.
 
 \section{Capital Allocation Layer}
 \label{sec:supervisory_agent_arch}
 
 The allocation layer treats each agent as a separate strategy that contributes its own stream of returns, and its job is to decide how much capital to give each one. The final system uses a simple inverse-volatility rule: give more weight to the agents whose returns have been calmest recently and less to the volatile ones, so that every agent contributes a similar amount of \textit{risk} rather than a similar amount of money. (This idea has a standard name, \textit{inverse-volatility risk parity}.) To stop any single agent from taking over the fund during a lucky streak, each agent's weight is also capped --- at twice the equal share ($2/N$), which for the five-agent roster is $40\%$. Every weight is computed only from past returns, so the allocation never looks into the future. The precise formula is given in Chapter~\ref{04_Methodology}.
 
-\vspace{3mm}
 
 For comparison, a more elaborate \textit{regime-gated coordinator} was also built. It is the kind of adaptive controller one might expect to be the centrepiece of an ``intelligent'' system: it leans on whichever agents have performed best recently and which have historically suited the current type of market. It is kept only as an \textit{ablation} --- a controlled comparison in which a fancier component is swapped in for a simpler one to test whether the extra complexity actually helps. Here it does not: the simple capped rule performs better, which suggests that the contribution of this work is disciplined diversification rather than a clever controller. A naive equal-weight fund (every agent given the same share) is reported throughout as a further baseline. These comparisons are presented in Chapter~\ref{06_Experiments_and_Results}.
 
@@ -74,6 +77,5 @@ For comparison, a more elaborate \textit{regime-gated coordinator} was also buil
 
 All trained agents are evaluated chronologically to avoid look-ahead bias. The LightGBM agent uses a sliding two-year window that steps forward one month at a time, while the Mamba and TCN agents use expanding walk-forward retraining every three months. The PatchTST agent uses a fixed train/validation/test split with the test set reserved exclusively for final evaluation. The rule-based agents are not fitted to the data at all; only their ATR-bracket execution parameters are grid-searched on a pre-OOS validation window and frozen before the hold-out is touched. The capital-allocation layer is itself causal: every weight is computed from trailing return statistics only, so no future information enters the fund.
 
-\vspace{3mm}
 
 Under this protocol, each OOS point is generated only from past data: the agent that generated it, and the weight it was given, were determined entirely from data preceding the bar in question. The unified hold-out window runs from 1 June 2024 to 31 May 2026.

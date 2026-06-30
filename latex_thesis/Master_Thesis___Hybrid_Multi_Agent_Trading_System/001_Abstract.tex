@@ -28,10 +28,8 @@
 
 Can structurally different machine-learning methods be combined into a single trading system that is more robust than any of them alone? This thesis pursues that question by building a hybrid multi-agent system in which each agent is a different artificial-intelligence model, and evaluating it under a strict, leakage-audited walk-forward protocol. Hourly Bitcoin (BTC/USDT) data serves as a demanding, continuously traded testbed, but the pipeline is general and applies to any continuously traded asset.
 
-\vspace{3mm}
 
-The agents span the modern time-series toolkit: gradient-boosted trees (LightGBM), a temporal convolutional network (TCN), a selective state-space model (Mamba), and parameter-free rule-based strategies. A patch-based Transformer (PatchTST), deep reinforcement learning, and genetic-programming rule search were also built but ultimately discarded for lack of out-of-sample skill. A predeclared five-agent fund is combined by a causal, capped inverse-volatility allocator.
+The agents span the modern time-series toolkit: gradient-boosted trees (LightGBM), a temporal convolutional network (TCN), a selective state-space model (Mamba), and parameter-free rule-based strategies. Several other methods were built but discarded for lack of out-of-sample skill, among them a patch-based Transformer (PatchTST), deep reinforcement learning, genetic-programming rule search, and standard recurrent (LSTM/GRU) and ARIMA benchmarks. A predeclared five-agent fund is combined by a causal, capped inverse-volatility allocator.
 
-\vspace{3mm}
 
 Across a two-year out-of-sample period covering bull, bear, and sideways regimes, the fund earned $+53.7\%$ at a Sharpe ratio of $1.50$ (maximum drawdown $-9.2\%$), beating Bitcoin buy-and-hold (Sharpe $0.09$) and the S\&P~500 (Sharpe $1.16$). The findings are deliberately honest about where the gains originate: a learned adaptive coordinator did not beat simple risk parity, the highest-returning single agent failed a random-bracket skill test, and the allocator only narrowly exceeded equal weighting. The robustness therefore comes from holding uncorrelated, heterogeneous agents rather than from any ``intelligent'' central controller. A natural continuation is live deployment under real execution costs.
